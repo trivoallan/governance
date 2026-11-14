@@ -10,8 +10,14 @@ import { spawnSync } from 'node:child_process';
 
 class CheckError extends Error {}
 
+// A trait value as readTraits returns it; #32 derives these types from schemas.
+type Trait = string | string[];
+type Traits = Record<string, Trait>;
+type Options = { from: string; branch: string };
+type Check = (root: string, file: string, opts: Options) => number;
+
 // The single repository copy of an ADR, under a namespace directory.
-function findAdr(root, number) {
+function findAdr(root: string, number: string): string {
   const base = join(root, 'docs', 'adr');
   const pattern = `docs/adr/*/${number}-*.md`;
   const dirs = existsSync(base)
@@ -28,7 +34,7 @@ function findAdr(root, number) {
 }
 
 // A scalar as ontrack reads it: trailing ` # comment` cut, one pair of quotes removed.
-function scalar(raw) {
+function scalar(raw: string): string {
   let v = raw.replace(/\s+#.*$/, '').trim();
   if (v.length >= 2 && (v[0] === '"' || v[0] === "'") && v.at(-1) === v[0]) v = v.slice(1, -1);
   return v;
@@ -37,7 +43,7 @@ function scalar(raw) {
 // The keys of `traits.<group>` in the frontmatter, read line by line, no YAML parser.
 // A value is a string, a list (flow `[a, b]` or block `- a`), or '' when empty.
 // ponytail: handles the shapes governance ADRs use, not arbitrary YAML.
-function readTraits(text, group) {
+function readTraits(text: string, group: string): Traits | null {
   const lines = text.split(/\r?\n/);
   const end = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
   if (end === -1) return null;
@@ -46,14 +52,14 @@ function readTraits(text, group) {
   if (t === -1) return null;
   const g = front.findIndex((l, i) => i > t && l === `  ${group}:`);
   if (g === -1) return null;
-  const traits = {};
-  let current = null;
+  const traits: Traits = {};
+  let current: string | null = null;
   for (const line of front.slice(g + 1)) {
     if (!line.startsWith('    ')) break;
     const item = line.match(/^\s{6,}-\s*(.*)$/);
     if (item && current) {
       if (!Array.isArray(traits[current])) traits[current] = [];
-      traits[current].push(scalar(item[1]));
+      (traits[current] as string[]).push(scalar(item[1]));
       continue;
     }
     const kv = line.match(/^ {4}([\w-]+):\s*(.*)$/);
@@ -67,7 +73,7 @@ function readTraits(text, group) {
   return traits;
 }
 
-function resolveFrom(root, id) {
+function resolveFrom(root: string, id: string): string {
   try {
     return createRequire(join(root, 'package.json')).resolve(id);
   } catch {
@@ -75,8 +81,8 @@ function resolveFrom(root, id) {
   }
 }
 
-function commits(root, file, { from }) {
-  const traits = readTraits(readFileSync(file, 'utf8'), 'commits') ?? {};
+function commits(root: string, file: string, { from }: Options): number {
+  const traits: Traits = readTraits(readFileSync(file, 'utf8'), 'commits') ?? {};
   const tool = traits.tool;
   if (!tool) throw new CheckError(`ADR-0006: commits.tool is not set in ${file}; the ADR is not ruled`);
   if (tool === 'hook' || tool === 'none') {
@@ -110,33 +116,33 @@ function commits(root, file, { from }) {
 // --- Wiring: a ruled trait implies files the repository tracks. Presence only.
 
 // Tracked files only: wiring that was never committed is not wiring.
-function tracked(root) {
+function tracked(root: string): string[] {
   const r = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' });
   if (r.status !== 0) throw new CheckError(`git ls-files failed in ${root}: ${r.stderr.trim()}`);
   return r.stdout.split('\0').filter(Boolean);
 }
 
-const esc = (s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+const esc = (s: string) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
 
 // `*` matches within one path segment, `**/` any folders or none.
 // ponytail: only the two forms the table uses, not full glob syntax.
-function pattern(p) {
-  const segment = (part) => part.split('*').map(esc).join('[^/]*');
+function pattern(p: string): RegExp {
+  const segment = (part: string) => part.split('*').map(esc).join('[^/]*');
   return new RegExp(`^${p.split('**/').map(segment).join('(?:.*/)?')}$`);
 }
 
-const matching = (files, alts) => {
+const matching = (files: string[], alts: string[]) => {
   const res = alts.map(pattern);
   return files.filter((f) => res.some((r) => r.test(f)));
 };
 
 // A relative path as a prefix of tracked paths: `./docs` -> `docs/`, `.` -> ``.
-const prefix = (p) => {
+const prefix = (p: string) => {
   const d = p.replace(/^\.\/?/, '').replace(/\/+$/, '');
   return d ? `${d}/` : '';
 };
 
-function holds(root, file, strings) {
+function holds(root: string, file: string, strings: string[]): boolean {
   try {
     const text = readFileSync(join(root, file), 'utf8');
     return strings.some((s) => text.includes(s));
@@ -145,9 +151,18 @@ function holds(root, file, strings) {
   }
 }
 
+// What a row looks for: files matching each list of alternatives, a file
+// holding one of some strings, or any file under a path.
+type Row = { note?: string } & (
+  | { exists: string[][] }
+  | { contains: { in: string[]; any: string[] } }
+  | { path: string }
+);
+type Entry = { group: string; key: string; row: (value: string, ctx: { root: string; traits: Record<string, Traits> }) => Row | null };
+
 // { found } or { fail }, for one row against the tracked files.
-function evaluate(row, files, root) {
-  if (row.exists) {
+function evaluate(row: Row, files: string[], root: string): { found?: string; fail?: string } {
+  if ('exists' in row) {
     const found = [];
     const missing = [];
     for (const alts of row.exists) {
@@ -157,7 +172,7 @@ function evaluate(row, files, root) {
     }
     return missing.length ? { fail: `no tracked file matches ${missing.join('; ')}` } : { found: found.join(', ') };
   }
-  if (row.contains) {
+  if ('contains' in row) {
     const { in: where, any } = row.contains;
     const hit = matching(files, where).find((f) => holds(root, f, any));
     return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${any.join(' or ')}` };
@@ -168,11 +183,11 @@ function evaluate(row, files, root) {
 }
 
 const WORKFLOWS = ['.github/workflows/*.yml', '.github/workflows/*.yaml'];
-const inWorkflow = (...any) => ({ contains: { in: WORKFLOWS, any } });
-const byValue = (rows) => (value) => rows[value] ?? null;
+const inWorkflow = (...any: string[]): Row => ({ contains: { in: WORKFLOWS, any } });
+const byValue = (rows: Record<string, Row>) => (value: string) => rows[value] ?? null;
 
 // ADR-0010's arc42 files live in architecture/arc42/ under ADR-0008's docs.root, `docs/` by default.
-function docsRoot(root) {
+function docsRoot(root: string): string {
   try {
     const value = readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root;
     return typeof value === 'string' && value ? prefix(value) : 'docs/';
@@ -182,11 +197,11 @@ function docsRoot(root) {
   }
 }
 
-const gate = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
+const gate: Row = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
 
 // ADR number -> traits it wires. `row(value, ctx)` returns a row, or null for
 // "nothing to check". ctx: { root, traits: { <group>: { <key>: value } } }.
-const WIRING = {
+const WIRING: Record<string, Entry[]> = {
   'ADR-0008': [
     { group: 'docs', key: 'tool', row: byValue({
       starlight: { contains: { in: ['**/package.json'], any: ['@astrojs/starlight'] } },
@@ -233,12 +248,12 @@ const WIRING = {
   ],
 };
 
-function wiring(number, entries) {
+function wiring(number: string, entries: Entry[]): Check {
   return (root, file) => {
     const text = readFileSync(file, 'utf8');
-    const traits = {};
+    const traits: Record<string, Traits> = {};
     for (const { group } of entries) traits[group] ??= readTraits(text, group) ?? {};
-    let files;
+    let files: string[] | undefined;
     let failed = false;
     for (const { group, key, row } of entries) {
       const name = `${number}: ${group}.${key}`;
@@ -269,21 +284,21 @@ function wiring(number, entries) {
 // --- Checks that run a tool on the branch, as ADR-0006 runs commitlint.
 
 // The repository's own copy first, then PATH. Its report goes straight to our output.
-function runTool(root, name, args, trait) {
+function runTool(root: string, name: string, args: string[], trait: string): number {
   const PATH = [join(root, 'node_modules', '.bin'), process.env.PATH].join(delimiter);
   const r = spawnSync(name, args, { cwd: root, stdio: 'inherit', env: { ...process.env, PATH } });
-  if (r.error?.code === 'ENOENT') throw new CheckError(`${trait}, but ${name} is not installed (looked in node_modules/.bin and on PATH)`);
+  if ((r.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') throw new CheckError(`${trait}, but ${name} is not installed (looked in node_modules/.bin and on PATH)`);
   if (r.error) throw r.error;
   return r.status ?? 1;
 }
 
-const gitOut = (root, ...args) => {
+const gitOut = (root: string, ...args: string[]) => {
   const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
   return r.status === 0 ? r.stdout.trim() : '';
 };
 
-function branching(root, file, { branch }) {
-  const { prefixes } = readTraits(readFileSync(file, 'utf8'), 'branching') ?? {};
+function branching(root: string, file: string, { branch }: Options): number {
+  const { prefixes }: Traits = readTraits(readFileSync(file, 'utf8'), 'branching') ?? {};
   if (!Array.isArray(prefixes) || prefixes.length === 0) {
     throw new CheckError(`ADR-0009: branching.prefixes is not set in ${file}; the ADR is not ruled`);
   }
@@ -309,8 +324,8 @@ function branching(root, file, { branch }) {
   return 1;
 }
 
-function secrets(root, file, { from }) {
-  const { guard } = readTraits(readFileSync(file, 'utf8'), 'secrets') ?? {};
+function secrets(root: string, file: string, { from }: Options): number {
+  const { guard }: Traits = readTraits(readFileSync(file, 'utf8'), 'secrets') ?? {};
   if (!guard) throw new CheckError(`ADR-0015: secrets.guard is not set in ${file}; the ADR is not ruled`);
   if (guard !== 'gitleaks') {
     console.log(`ADR-0015: secrets.guard is ${guard}, nothing to check`);
@@ -319,8 +334,8 @@ function secrets(root, file, { from }) {
   return runTool(root, 'gitleaks', ['git', `--log-opts=${from}..HEAD`, '--redact', '--verbose', '--no-banner'], 'ADR-0015: secrets.guard is gitleaks');
 }
 
-function changes(root, file) {
-  const { framework, schema } = readTraits(readFileSync(file, 'utf8'), 'changes') ?? {};
+function changes(root: string, file: string): number {
+  const { framework, schema }: Traits = readTraits(readFileSync(file, 'utf8'), 'changes') ?? {};
   if (!framework) throw new CheckError(`ADR-0016: changes.framework is not set in ${file}; the ADR is not ruled`);
   if (framework !== 'openspec') {
     console.log(`ADR-0016: changes.framework is ${framework}, nothing to check`);
@@ -343,12 +358,12 @@ function changes(root, file) {
   }
   // Both commands run whatever the config says, so one run shows every problem.
   const trait = 'ADR-0016: changes.framework is openspec';
-  if (runTool(root, 'openspec', ['schema', 'validate', schema], trait) !== 0) failed = true;
+  if (runTool(root, 'openspec', ['schema', 'validate', schema as string], trait) !== 0) failed = true;
   if (runTool(root, 'openspec', ['validate', '--all', '--no-interactive'], trait) !== 0) failed = true;
   return failed ? 1 : 0;
 }
 
-const CHECKS = {
+const CHECKS: Record<string, Check> = {
   'ADR-0006': commits,
   'ADR-0009': branching,
   'ADR-0015': secrets,
@@ -356,10 +371,10 @@ const CHECKS = {
   ...Object.fromEntries(Object.entries(WIRING).map(([n, entries]) => [n, wiring(n, entries)])),
 };
 
-function main(argv, root = process.cwd()) {
+function main(argv: string[], root = process.cwd()): number {
   try {
     const [number, ...rest] = argv;
-    const opts = { from: 'origin/HEAD', branch: '' };
+    const opts: Options = { from: 'origin/HEAD', branch: '' };
     for (let i = 0; i < rest.length; i++) {
       if (rest[i] === '--from' && rest[i + 1]) opts.from = rest[++i];
       else if (rest[i] === '--branch' && rest[i + 1]) opts.branch = rest[++i];
