@@ -156,10 +156,10 @@ traits:
 runs it from your repository's root. It reads the keys you ruled and checks
 only that the files they imply are committed, not what those files say:
 
-- `architecture.document`: with `arc42`, all twelve files `01-*.md` to
-  `12-*.md` under `architecture/` in `docs.root` (ADR-0008), or under
-  `docs/architecture/` if ADR-0008 is not ruled; the check names each
-  missing section;
+- `architecture.document`: with `arc42`, all twelve files `01-*` to
+  `12-*`, each `.md` or `.mdx`, under `architecture/arc42/` in `docs.root`
+  (ADR-0008), or under `docs/architecture/arc42/` if ADR-0008 is not ruled;
+  the check names each missing section;
 - `architecture.model`: with `likec4`, at least one `.c4` or `.likec4` file.
 
 Any other value has nothing to check, and passes.

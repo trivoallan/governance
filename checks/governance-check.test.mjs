@@ -144,9 +144,10 @@ function wired({ adrs, files = {}, untracked = {} }) {
 const run = (cwd, number) => spawnSync(process.execPath, [script, number], { cwd, encoding: 'utf8' });
 const deps = (updater, automerge = 'none') =>
   ({ 'ADR-0018-dependencies.md': `  dependencies:\n    updater: ${updater}\n    automerge: ${automerge}` });
-const arc42 = (root, skip = 0) => Object.fromEntries(
+// The twelve arc42 sections under <root>architecture/arc42/, `mdx` of them as .mdx.
+const arc42 = (root, skip = 0, mdx = []) => Object.fromEntries(
   Array.from({ length: 12 }, (_, i) => i + 1).filter((n) => n !== skip)
-    .map((n) => [`${root}architecture/${String(n).padStart(2, '0')}-x.md`, 'x\n']),
+    .map((n) => [`${root}architecture/arc42/${String(n).padStart(2, '0')}-x.${mdx.includes(n) ? 'mdx' : 'md'}`, 'x\n']),
 );
 
 test('wiring: row passes', () => {
@@ -173,7 +174,7 @@ test('wiring: untracked file does not count', () => {
 test('wiring: every entry must match', () => {
   const r = run(wired({ adrs: { 'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid' }, files: arc42('docs/', 7) }), 'ADR-0010');
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /docs\/architecture\/07-\*\.md/);
+  assert.match(r.stderr, /docs\/architecture\/arc42\/07-\*\.md or docs\/architecture\/arc42\/07-\*\.mdx/);
   assert.doesNotMatch(r.stderr, /06-/);
 });
 
@@ -205,7 +206,7 @@ test('wiring: arc42 under another root', () => {
   });
   const r = run(dir, 'ADR-0010');
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /site\/architecture\/01-x\.md/);
+  assert.match(r.stdout, /site\/architecture\/arc42\/01-x\.md/);
 });
 
 test('wiring: gate states its ceiling', () => {
@@ -239,12 +240,32 @@ test('wiring: several traits in one ADR', () => {
   assert.match(r.stdout, /delivery\.target is none, nothing to check/);
 });
 
+test('wiring: arc42 sections in mdx, as ontrack writes them', () => {
+  const r = run(wired({ adrs: { 'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid' }, files: arc42('docs/', 0, [3, 5, 7]) }), 'ADR-0010');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('wiring: arc42 files directly in architecture/ do not count', () => {
+  const flat = Object.fromEntries(Object.entries(arc42('docs/')).map(([p, t]) => [p.replace('arc42/', ''), t]));
+  const r = run(wired({ adrs: { 'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid' }, files: flat }), 'ADR-0010');
+  assert.notEqual(r.status, 0);
+});
+
+test('wiring: Starlight site in a subfolder, as ontrack has it', () => {
+  const r = run(wired({
+    adrs: { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public' },
+    files: { 'package.json': '{"name":"x"}\n', 'site/package.json': '{"dependencies":{"@astrojs/starlight":"0.43.1"}}\n', 'docs/a.md': 'x\n' },
+  }), 'ADR-0008');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /docs\.tool is starlight, found site\/package\.json/);
+});
+
 // One passing case for each remaining row.
 const rows = [
   ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public' },
     { 'package.json': '{"dependencies":{"@astrojs/starlight":"1"}}\n', 'docs/index.md': 'x\n' }],
   ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: docusaurus\n    root: ./website\n    audience: team' },
-    { 'docusaurus.config.ts': 'x\n', 'website/a.md': 'x\n' }],
+    { 'website/docusaurus.config.ts': 'x\n', 'website/a.md': 'x\n' }],
   ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: mkdocs\n    root: docs\n    audience: team' },
     { 'mkdocs.yml': 'x\n', 'docs/a.md': 'x\n' }],
   ['ADR-0010', { 'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: likec4\n    diagrams: mermaid' },
