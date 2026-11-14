@@ -116,11 +116,11 @@ A version goes through two environments, in order, both on the tag:
 1. **`github`**: release-please's tag and GitHub release. Installing from
    Git at that tag (`#vX.Y.Z`) keeps working.
 2. **`npm`**: the same version, published to npmjs as
-   `@trivoallan/ontrack-source`. `governance` is taken on npm by an
+   `@trivoallan/ontrack-governance`. `governance` is taken on npm by an
    unrelated package, hence the scoped name. Publishing means removing
    `"private": true` from `package.json`, publishing with `--access public`,
-   and a release job that reads an npm token from a repository secret
-   (ADR-0011, rule 2). The ontrack namespace stays `trivoallan`, because it
+   and a release job that authenticates by npm trusted publishing (OIDC),
+   so no npm token is stored anywhere. The ontrack namespace stays `trivoallan`, because it
    is declared in `package.json`, not derived from the package name.
 
 ## Consequences
@@ -128,17 +128,18 @@ A version goes through two environments, in order, both on the tag:
 ### Positive
 
 - Consumers install a named version from npm (`npm i -D
-  @trivoallan/ontrack-source`), or from Git at its tag, instead of whatever
+  trivoallan@npm:@trivoallan/ontrack-governance`), or from Git at its tag, instead of whatever
   `main` holds.
 - Each version comes with a changelog generated from the commit messages
   that commitlint already checks (ADR-0006).
 
 ### Negative
 
-- release-please, its config, its workflow and the publish job do not exist
-  yet; until they do, there are no versions and consumers track `main`.
-- An npm token becomes a secret to rotate, and the `@trivoallan` scope must
-  exist on npmjs.
+- release-please opens its release pull request with a personal access
+  token (`RELEASE_PLEASE_TOKEN`), a secret to rotate: Actions may not open
+  pull requests in this repository.
+- The `@trivoallan` scope must exist on npmjs, and the package must declare
+  this repository's `release.yml` as its trusted publisher.
 - The package name changes, so the README's install lines change, and
   existing consumers installed as `trivoallan@git+…` keep working only from
   Git.

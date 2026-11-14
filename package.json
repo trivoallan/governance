@@ -1,5 +1,5 @@
 {
-  "name": "@trivoallan/ontrack-source",
+  "name": "@trivoallan/ontrack-governance",
   "version": "0.1.0",
   "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
   "repository": {
