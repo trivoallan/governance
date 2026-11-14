@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      # vX.Y.Z, the tag and the GitHub release the sbom job attaches to.
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
@@ -24,6 +26,39 @@ jobs:
           # Actions may not open pull requests in this repository, and a pull
           # request opened with GITHUB_TOKEN would trigger no workflow anyway.
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+  # ADR-0019 rule 6: the SBOM is built from what is released, by the release
+  # run, and attached to the GitHub release. Same gate as publish. A job of its
+  # own: attaching an asset needs contents: write, which the publish job, with
+  # its OIDC token and npm environment, should not hold.
+  sbom:
+    needs: release-please
+    if: github.ref == 'refs/heads/main' && needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # The tagged commit, which is what npm publish packs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+          persist-credentials: false
+      # Syft (vulnerabilities.sbom: cyclonedx, written by Syft). With no
+      # node_modules, it reads package-lock.json and leaves devDependencies
+      # out, so the SBOM lists what the tarball holds. The action's own release
+      # upload fires only on a release event; this run is a push, hence gh.
+      - uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: false
+      # --clobber: rerunning the job replaces the asset instead of failing.
+      - run: gh release upload "$TAG" sbom.cdx.json --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
 
   # Runs only on the push that merged the release pull request: the commit
   # checked out is the one release-please just tagged.
