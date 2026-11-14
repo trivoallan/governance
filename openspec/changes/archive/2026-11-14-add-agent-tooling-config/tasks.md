@@ -18,11 +18,11 @@
   - Approved: `superpowers` (tag `v7.0.2`), `source-control` (no tags: last `main` commit at least three days old), `claude-security`. `claude plugin validate` rejects `claude-security` in a third-party marketplace (reserved `claude-` prefix); the maintainer chose to enable it from `claude-plugins-official` directly, recorded as a departure in ADR-0017.
 - [x] 3.2 Write `marketplace/.claude-plugin/marketplace.json` (name `ontrack-trivoallan-tools`, owner, approved entries each with a `sha`); verify `claude plugin validate marketplace` reports no error and every `sha` matches `^[0-9a-f]{40}$`
 - [x] 3.3 Write `.claude/settings.json` with `extraKnownMarketplaces.ontrack-trivoallan-tools` as a `directory` source `./marketplace` and one `enabledPlugins` entry per marketplace plugin, plus `claude-security@claude-plugins-official`; verify the marketplace's plugin set equals the `@ontrack-trivoallan-tools` entries and `npx --no-install governance-check ADR-0017` exits `0`
-- [ ] 3.4 Run `claude plugin install <plugin>@ontrack-trivoallan-tools --scope project` for each plugin, then `/plugin`; verify each is reported installed
+- [x] 3.4 Run `claude plugin install <plugin>@ontrack-trivoallan-tools --scope project` for each plugin, then `/plugin`; verify each is reported installed
   - Left to the maintainer: installing fetches and runs third-party plugin code, after the pins are reviewed.
 
 ## 4. Documentation and rollout
 
 - [x] 4.1 Add a short README note: accept workspace trust, run the install command per plugin, turn off an upstream copy of the same plugin in `settings.local.json`; verify it links to ADR-0017
-- [ ] 4.2 After merge, in the main checkout remove the untracked `.claude/skills/` and `.claude/commands/` and pull; verify `git status` is clean and a new worktree holds `.claude/skills/openspec-propose/SKILL.md`
+- [x] 4.2 After merge, in the main checkout remove the untracked `.claude/skills/` and `.claude/commands/` and pull; verify `git status` is clean and a new worktree holds `.claude/skills/openspec-propose/SKILL.md`
 - [x] 4.3 Run `openspec validate add-agent-tooling-config --strict`; verify it passes
