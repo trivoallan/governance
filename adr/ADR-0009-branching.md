@@ -121,9 +121,12 @@ runs it from your repository's root, and it reads the keys you ruled:
   `branching.prefixes`;
 - on the default branch, or a checkout with no branch name, it has nothing
   to check, and passes;
-- on a branch opened by a release or update tool (one starting with
-  `release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/`),
-  whose name is the tool's, it has nothing to check either, and passes.
+- on a branch opened by the release tool ruled in ADR-0012
+  (`release-please--`, `releaser-pleaser--`) or the updater ruled in
+  ADR-0018 (`dependabot/`, `renovate/`), whose name is the tool's, it has
+  nothing to check either, and passes. A branch that no ruled answer names
+  must follow the prefixes. Rule ADR-0012 and ADR-0018 with (or before) this
+  ADR, or your bots' pull requests fail this check.
 
 It does not check `branching.model` or `branching.merge`: those live in
 your forge's settings, outside the repository.

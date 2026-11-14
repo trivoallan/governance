@@ -381,8 +381,9 @@ ADR-0009, ADR-0015 and ADR-0016 SHALL each ship with
 `revision`. Each how-to-rule block SHALL say that the line runs once the ADR
 is `accepted`, what the check runs for each value, which tool it needs
 installed, and what it does not check: for ADR-0009, `branching.model` and
-`branching.merge`, the branches of release and update tools
-(`release-please--…`, `releaser-pleaser--…`, `dependabot/…`, `renovate/…`), and that
+`branching.merge`, that a tool branch (`release-please--…`, `releaser-pleaser--…`,
+`dependabot/…`, `renovate/…`) has nothing to check only when ADR-0012 or ADR-0018
+names its tool, so ADR-0012 and ADR-0018 are to be ruled with or before it, and that
 `--branch <name>` may be appended; for ADR-0015, `secrets.storage`, that
 `--from <ref>` may be appended, and that a local hook skipped with
 `--no-verify` is what this check catches in CI; for ADR-0016, that it also
@@ -402,4 +403,4 @@ runs `openspec validate --all`.
 
 #### Scenario: Tool branches named
 - **WHEN** ADR-0009's how-to-rule block is read
-- **THEN** it says branches starting with `release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/` have nothing to check, and its `revision` is unchanged
+- **THEN** it says a branch starting with `release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/` has nothing to check only when ADR-0012 `delivery.release_tool` or ADR-0018 `dependencies.updater` names that tool, tells the reader to rule those ADRs with or before it, and its `revision` is unchanged

@@ -464,30 +464,93 @@ test('ADR-0009: default branch without origin/HEAD', () => {
   assert.match(r.stdout, /master is the default branch/);
 });
 
+const releaseAdr = (tool: string) => ({ 'ADR-0012-delivery.md': `  delivery:\n    release_tool: ${tool}` });
+
 test('ADR-0009: release tool branch', () => {
-  const dir = branched({ adrs: branchingAdr('[feat]') });
+  const dir = branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('release-please') } });
   git(dir, 'switch', '-q', '--detach');
   const r = runWith(dir, ['ADR-0009'], { GITHUB_HEAD_REF: 'release-please--branches--main--components--ontrack-governance' });
   assert.equal(r.status, 0, r.stderr);
-  assert.equal(r.stdout, 'ADR-0009: release-please--branches--main--components--ontrack-governance is a tool branch, nothing to check\n');
+  assert.equal(r.stdout, 'ADR-0009: release-please--branches--main--components--ontrack-governance is a tool branch (ADR-0012 delivery.release_tool: release-please), nothing to check\n');
 });
 
 test('ADR-0009: releaser-pleaser branch', () => {
-  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'releaser-pleaser--branches--main']);
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('releaser-pleaser') } }), ['ADR-0009', '--branch', 'releaser-pleaser--branches--main']);
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /tool branch/);
 });
 
 test('ADR-0009: update tool branch', () => {
-  for (const name of ['dependabot/npm_and_yarn/zod-4.1.0', 'renovate/zod-4.x']) {
-    const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', name]);
+  for (const [updater, name] of [['dependabot', 'dependabot/npm_and_yarn/zod-4.1.0'], ['renovate', 'renovate/zod-4.x']]) {
+    const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps(updater) } }), ['ADR-0009', '--branch', name]);
     assert.equal(r.status, 0, `${name}: ${r.stderr}`);
     assert.match(r.stdout, /tool branch/);
   }
 });
 
+test('ADR-0009: tool branch refused without its ADR', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'dependabot/npm_and_yarn/zod-4.1.0']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/npm_and_yarn\/zod-4\.1\.0 is not <prefix>/);
+  assert.match(r.stderr, /no ADR-0018 in docs\/adr\/\*\/ rules dependencies\.updater/);
+});
+
+test('ADR-0009: tool branch refused when another tool is ruled', () => {
+  let r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('renovate') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('none') } }), ['ADR-0009', '--branch', 'release-please--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not release-please/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('release-please') } }), ['ADR-0009', '--branch', 'releaser-pleaser--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /releaser-pleaser--branches--main is not <prefix>/);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not releaser-pleaser/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('none') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+});
+
+test('ADR-0009: ADR present with an empty key exempts nothing', () => {
+  let r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('') } }), ['ADR-0009', '--branch', 'release-please--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /release-please--branches--main is not <prefix>/);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not release-please/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+});
+
+test('ADR-0009: inherited object members are not tools', () => {
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('constructor') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+});
+
+test('ADR-0009: rejected ADR exempts nothing', () => {
+  const files = { 'docs/adr/trivoallan/ADR-0018-dependencies.md': '---\nadr: ADR-0018\nstatus: rejected\n---\n\n# ADR\n' };
+  const r = runWith(branched({ adrs: branchingAdr('[feat]'), files }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+});
+
+test('ADR-0009: duplicate tool ADR fails a tool branch only', () => {
+  const dir = branched({
+    adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') },
+    files: { 'docs/adr/other/ADR-0018-x.md': '---\nstatus: accepted\n---\n' },
+  });
+  const r = runWith(dir, ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /several files match/);
+  const ok = runWith(dir, ['ADR-0009', '--branch', 'feat/x']);
+  assert.equal(ok.status, 0, ok.stderr);
+});
+
 test('ADR-0009: tool prefix needs its separator', () => {
-  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'dependabot-tweaks']);
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') } }), ['ADR-0009', '--branch', 'dependabot-tweaks']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /dependabot-tweaks is not <prefix>/);
 });
