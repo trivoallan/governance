@@ -15,7 +15,7 @@ satisfy.
 
 **Goals:**
 - A repeatable way to turn one SDR into one governance ADR, so the three
-  batches are the same job done thirteen times.
+  batches are the same job done fourteen times.
 - A consuming repository can rule on each ADR without reading anything but
   the file itself.
 
@@ -108,6 +108,27 @@ PR #1 was squash-merged before batch 1 landed, so batch 1 was rebased onto
 `main` and opened as its own PR instead.
 Batches 2 and 3 each get their own branch and PR.
 
+### arc42 gets its own ADR
+
+SDR-0003 asks two things at once: the code's pattern and where the
+architecture document lives. governance splits them: ADR-0003 asks the
+pattern, ADR-0010 asks for the document. They are ruled at different times
+(a pattern is chosen before the code, a document once there is something to
+describe) and a repository can answer one without the other. ADR-0010 takes
+the next free number; batch 3 moves to 0011-0014, which no repository has
+seen yet. ADR-0010 recommends arc42 as one file per section under
+`docs/architecture/arc42/`, so a change touches only its section, and a
+LikeC4 model under `docs/architecture/model/` (trait `architecture.model`)
+so the context, building-block and deployment views are generated from one
+source instead of drawn by hand. Diagrams the model does not cover
+(sequences, states, flows) are Mermaid code blocks (trait
+`architecture.diagrams`), which GitHub and the documentation site render without
+a build step. ADR-0008 recommends Starlight: measured on 302 pages it built
+in 7.6 s against 10.4 s for Docusaurus with `future.faster` and 57.6 s for
+Docusaurus by default, and it embeds LikeC4 views through LikeC4's Vite
+plugin with no generation step. governance ships no arc42 template for now:
+ADR-0010 lists the twelve files.
+
 ## Risks / Trade-offs
 
 - [ontrack may not import `.mdschema.yml`, or may list it as `unreadable`
@@ -146,5 +167,5 @@ the consuming repository to copy the schema from
 - The answer governance recommends for each trait. Settled one ADR at a
   time while writing it with `/pm-skills:develop-adr`; it changes the ADR's
   text, not the task list.
-- What replaces `hosting.offer` in ADR-0011, and the enum for ADR-0012's
-  framework and ADR-0013's tracker. Settled when batch 3 starts.
+- What replaces `hosting.offer` in ADR-0012, and the enum for ADR-0013's
+  framework and ADR-0014's tracker. Settled when batch 3 starts.

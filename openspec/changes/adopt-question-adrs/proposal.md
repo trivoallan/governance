@@ -41,15 +41,16 @@ of it, imported *instead of* surdesrails, not alongside it.
   | 1 | ADR-0002 localization | SDR-0002 | none |
   | 1 | ADR-0006 commits | SDR-0006 | none |
   | 1 | ADR-0009 branching | SDR-0009 | none |
-  | 2 | ADR-0003 architecture | SDR-0003 | none |
-  | 2 | ADR-0004 languages | SDR-0004 | drop team-skills reasoning |
+  | 2 | ADR-0003 architecture | SDR-0003 | `architecture.document` moves to ADR-0010 |
+  | 2 | ADR-0004 languages | SDR-0004 | Python and TypeScript only; drop team-skills reasoning |
   | 2 | ADR-0005 validation | SDR-0005 | none |
   | 2 | ADR-0007 tests | SDR-0007 | none |
   | 2 | ADR-0008 documentation | SDR-0008 | narrow the `audience` enum |
-  | 3 | ADR-0010 forge and CI | SDR-0010 | GitHub assumed; only `gate` stays a question |
-  | 3 | ADR-0011 delivery | SDR-0011 | replace the `offer: caas\|paas` hosting trait |
-  | 3 | ADR-0012 frontend | SDR-0013 | no Angular-only enum, no WCS themes |
-  | 3 | ADR-0013 work tracking | SDR-0014 | which tracker, not a Jira project |
+  | 2 | ADR-0010 architecture documentation | SDR-0003 (`architecture.document`) | split out of ADR-0003; one file per arc42 section, LikeC4 model, Mermaid for other diagrams; no template shipped yet |
+  | 3 | ADR-0011 forge and CI | SDR-0010 | GitHub assumed; only `gate` stays a question |
+  | 3 | ADR-0012 delivery | SDR-0011 | replace the `offer: caas\|paas` hosting trait |
+  | 3 | ADR-0013 frontend | SDR-0013 | no Angular-only enum, no WCS themes |
+  | 3 | ADR-0014 work tracking | SDR-0014 | which tracker, not a Jira project |
 
 - SDR-0000 (aresis service baseline) is not adapted.
 
@@ -82,4 +83,4 @@ None.
 - governance diverges from surdesrails by design. Nothing detects when an
   SDR moves; the `References` source line is the only link.
 - Open questions to settle during design: the recommended default for each
-  trait, the trait that replaces `offer` in ADR-0011, and how to handle PR #1.
+  trait, the trait that replaces `offer` in ADR-0012, and how to handle PR #1.

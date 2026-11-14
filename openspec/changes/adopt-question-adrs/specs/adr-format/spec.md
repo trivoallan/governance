@@ -106,7 +106,7 @@ Every ADR adapted from surdesrails SHALL name, in its References section,
 the SDR it was adapted from and that SDR's revision.
 
 #### Scenario: Source recorded
-- **WHEN** the References section of ADR-0012 is read
+- **WHEN** the References section of ADR-0013 is read
 - **THEN** it names SDR-0013 and the SDR revision it was adapted from
 
 ### Requirement: Schema check
