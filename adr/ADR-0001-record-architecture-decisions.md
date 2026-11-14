@@ -117,7 +117,9 @@ an ADR's References: that line names the Claude Code skills that help carry
 out the decision ([ADR-0017](ADR-0017-agent-tooling.md)), and it is advice,
 not part of the question. The same goes for a `check:` line (rule 8) and
 for the scripts it calls. `ontrack plan` then reports an ADR as `revised`
-only when there is something to rule on again.
+only when there is something to rule on again. Each ADR above revision 1
+ends with a **Revisions** list that says what changed and what to re-answer:
+read it before ruling again.
 
 **7. `mdschema` attests, it refuses nothing.** The `.mdschema.yml` shipped
 next to these ADRs checks that a ruled ADR carries its verdict: status
@@ -228,3 +230,9 @@ would describe governance's context instead of its own.
 - [ontrack](https://github.com/trivoallan/ontrack): imports these ADRs and reports `new`, `revised` and `removed` ones.
 - [mdschema](https://github.com/jackchuka/mdschema): the checker behind `.mdschema.yml`.
 - [`ontrack check`](https://github.com/trivoallan/ontrack#ontrack-check-output-contract): runs the `check:` line of each decided ADR.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: rule 4's freeze applies to a repository's verdict, and governance changes the ADRs it ships only through `revision`; a `Suggested skills` line changes no revision. No key changed: nothing to re-answer.
+- Revision 3: rule 8 describes `check:` lines, rule 4 lets a ruled ADR receive one, and rule 6 says a `check:` line and its scripts change no revision. No key changed: nothing to re-answer.
