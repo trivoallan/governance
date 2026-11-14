@@ -46,6 +46,15 @@ devDependencies too: they run in CI and on contributors' machines, so a
 fixable critical in commitlint should block as well. Schedule: Monday
 06:00 UTC (`0 6 * * 1`), plus `workflow_dispatch`.
 
+Amended at implementation: the action runs twice in the job. `only-fixed`
+drops a finding with no fix from the output altogether, so a single run
+cannot both gate on fixable criticals and report unfixable ones, as the
+spec requires ("the finding is still reported"). A first run, `report`,
+has `fail-build: false` and no `only-fixed`, and writes the SARIF; a
+second run, the gate, has the settings above with `output-format: table`,
+so its findings show in the job log (the only place a fork's pull request
+shows them).
+
 **3. SARIF to code scanning with `github/codeql-action/upload-sarif`,
 `if: always()`, skipped on pull requests from forks.** ADR-0019 sends
 findings below the threshold there. The repository is public, so code
