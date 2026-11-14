@@ -1,2 +1,3 @@
 .nanopm/
 node_modules/
+dist/

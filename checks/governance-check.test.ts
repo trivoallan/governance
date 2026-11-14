@@ -8,10 +8,13 @@ import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const script = join(here, 'governance-check.mjs');
+const script = join(here, 'governance-check.ts');
 const modules = join(here, '..', 'node_modules');
 
-function git(cwd, ...args) {
+// Path -> content, for ADRs and committed files alike.
+type Files = Record<string, string>;
+
+function git(cwd: string, ...args: string[]): string {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   return r.stdout;
@@ -19,7 +22,7 @@ function git(cwd, ...args) {
 
 // A throwaway repository with a ruled ADR-0006, a base commit at origin/HEAD,
 // then `messages` committed on top. `traits` is the raw `commits:` block body.
-function repo({ traits, messages = [], withCommitlint = true }) {
+function repo({ traits, messages = [], withCommitlint = true }: { traits: string; messages?: string[]; withCommitlint?: boolean }) {
   const dir = mkdtempSync(join(tmpdir(), 'gc-test-'));
   git(dir, 'init', '-q', '-b', 'main');
   git(dir, 'config', 'user.email', 'test@example.invalid');
@@ -39,11 +42,11 @@ function repo({ traits, messages = [], withCommitlint = true }) {
   return dir;
 }
 
-function check(cwd, ...args) {
+function check(cwd: string, ...args: string[]) {
   return spawnSync(process.execPath, [script, 'ADR-0006', ...args], { cwd, encoding: 'utf8' });
 }
 
-const commitlint = (scopes) => `    scopes: ${scopes}\n    tool: commitlint`;
+const commitlint = (scopes: string) => `    scopes: ${scopes}\n    tool: commitlint`;
 
 test('ADR missing', () => {
   const dir = mkdtempSync(join(tmpdir(), 'gc-test-'));
@@ -121,13 +124,13 @@ test('repository left untouched', () => {
 // A throwaway repository holding ruled ADRs and committed files.
 // `adrs` maps a file name under docs/adr/trivoallan/ to the raw body of its
 // `traits:` block; `files` are committed, `untracked` are only written.
-function wired({ adrs, files = {}, untracked = {} }) {
+function wired({ adrs, files = {}, untracked = {} }: { adrs: Files; files?: Files; untracked?: Files }) {
   const dir = mkdtempSync(join(tmpdir(), 'gc-wiring-'));
   git(dir, 'init', '-q', '-b', 'main');
   git(dir, 'config', 'user.email', 'test@example.invalid');
   git(dir, 'config', 'user.name', 'Test');
   git(dir, 'config', 'commit.gpgsign', 'false');
-  const write = (path, text) => {
+  const write = (path: string, text: string) => {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     writeFileSync(join(dir, path), text);
   };
@@ -141,11 +144,11 @@ function wired({ adrs, files = {}, untracked = {} }) {
   return dir;
 }
 
-const run = (cwd, number) => spawnSync(process.execPath, [script, number], { cwd, encoding: 'utf8' });
-const deps = (updater, automerge = 'none') =>
+const run = (cwd: string, number: string) => spawnSync(process.execPath, [script, number], { cwd, encoding: 'utf8' });
+const deps = (updater: string, automerge = 'none') =>
   ({ 'ADR-0018-dependencies.md': `  dependencies:\n    updater: ${updater}\n    automerge: ${automerge}` });
 // The twelve arc42 sections under <root>architecture/arc42/, `mdx` of them as .mdx.
-const arc42 = (root, skip = 0, mdx = []) => Object.fromEntries(
+const arc42 = (root: string, skip = 0, mdx: number[] = []) => Object.fromEntries(
   Array.from({ length: 12 }, (_, i) => i + 1).filter((n) => n !== skip)
     .map((n) => [`${root}architecture/arc42/${String(n).padStart(2, '0')}-x.${mdx.includes(n) ? 'mdx' : 'md'}`, 'x\n']),
 );
@@ -215,7 +218,7 @@ test('wiring: gate states its ceiling', () => {
   assert.match(r.stdout, /ruleset .* is not verified/);
 });
 
-const delivery = (release, target, manifests) => ({
+const delivery = (release: string, target: string, manifests: string) => ({
   'ADR-0012-delivery.md': `  delivery:\n    target: ${target}\n    environments: []\n    release_tool: ${release}\n    registry:\n  deployment:\n    manifests: ${manifests}`,
 });
 
@@ -261,7 +264,7 @@ test('wiring: Starlight site in a subfolder, as ontrack has it', () => {
 });
 
 // One passing case for each remaining row.
-const rows = [
+const rows: [string, Files, Files][] = [
   ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public' },
     { 'package.json': '{"dependencies":{"@astrojs/starlight":"1"}}\n', 'docs/index.md': 'x\n' }],
   ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: docusaurus\n    root: ./website\n    audience: team' },
@@ -300,7 +303,7 @@ test('wiring: repository left untouched', () => {
 
 // A repository on `main` with ruled ADRs, `origin/HEAD -> origin/main` at the
 // first commit, then `branch` checked out and `commits` ({ path: text } each) on it.
-function branched({ adrs, files = {}, branch, commits = [] }) {
+function branched({ adrs, files = {}, branch, commits = [] }: { adrs: Files; files?: Files; branch?: string; commits?: Files[] }) {
   const dir = wired({ adrs, files });
   git(dir, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
   git(dir, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main');
@@ -318,7 +321,7 @@ function branched({ adrs, files = {}, branch, commits = [] }) {
 
 // A stand-in for `name` in the repository's node_modules/.bin: it logs its
 // arguments to <dir>/.fake-<name>.log and exits with $FAKE_EXIT_<first argument>.
-function stub(dir, name) {
+function stub(dir: string, name: string) {
   const bin = join(dir, 'node_modules', '.bin');
   mkdirSync(bin, { recursive: true });
   writeFileSync(join(bin, name), `#!/bin/sh\necho "$@" >> "${join(dir, `.fake-${name}.log`)}"\neval "exit \\\${FAKE_EXIT_$1:-0}"\n`, { mode: 0o755 });
@@ -326,15 +329,15 @@ function stub(dir, name) {
 }
 
 // GITHUB_HEAD_REF cleared so a CI run of these tests does not leak into them.
-const runWith = (cwd, args, env = {}) =>
+const runWith = (cwd: string, args: string[], env: Record<string, string> = {}) =>
   spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '', ...env } });
-const onPath = (name) => spawnSync('sh', ['-c', `command -v ${name}`]).status === 0;
+const onPath = (name: string) => spawnSync('sh', ['-c', `command -v ${name}`]).status === 0;
 // A PATH with git and node but neither gitleaks nor openspec.
 const barePath = [dirname(process.execPath), '/usr/bin', '/bin'].join(':');
 
-const branchingAdr = (prefixes) => ({ 'ADR-0009-branching.md': `  branching:\n    model: github-flow\n    merge: squash\n    prefixes: ${prefixes}` });
-const secretsAdr = (guard) => ({ 'ADR-0015-secrets.md': `  secrets:\n    storage: keychain\n    guard: ${guard}` });
-const changesAdr = (framework, schema) => ({ 'ADR-0016-changes.md': `  changes:\n    framework: ${framework}\n    schema: ${schema}` });
+const branchingAdr = (prefixes: string) => ({ 'ADR-0009-branching.md': `  branching:\n    model: github-flow\n    merge: squash\n    prefixes: ${prefixes}` });
+const secretsAdr = (guard: string) => ({ 'ADR-0015-secrets.md': `  secrets:\n    storage: keychain\n    guard: ${guard}` });
+const changesAdr = (framework: string, schema: string) => ({ 'ADR-0016-changes.md': `  changes:\n    framework: ${framework}\n    schema: ${schema}` });
 
 test('tool: installed in the repository is the one run', () => {
   const dir = branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x' });
@@ -439,7 +442,7 @@ test('ADR-0015: guard not set', () => {
 });
 
 // A private key that gitleaks' private-key rule finds; random, so it is no real key.
-const privateKey = () => `-----BEGIN RSA PRIVATE KEY-----\n${randomBytes(600).toString('base64').match(/.{1,64}/g).join('\n')}\n-----END RSA PRIVATE KEY-----\n`;
+const privateKey = () => `-----BEGIN RSA PRIVATE KEY-----\n${randomBytes(600).toString('base64').match(/.{1,64}/g)!.join('\n')}\n-----END RSA PRIVATE KEY-----\n`; // gitleaks:allow
 const realGitleaks = { skip: !onPath('gitleaks') && 'gitleaks not on PATH' };
 
 test('ADR-0015 with gitleaks: no leak', realGitleaks, () => {
@@ -461,7 +464,7 @@ test('ADR-0015 with gitleaks: leak before the base', realGitleaks, () => {
 
 // ADR-0016
 
-const openspecFiles = (schema) => ({ 'openspec/config.yaml': `schema: ${schema} # comment\n`, 'openspec/specs/.keep': '' });
+const openspecFiles = (schema: string) => ({ 'openspec/config.yaml': `schema: ${schema} # comment\n`, 'openspec/specs/.keep': '' });
 
 test('ADR-0016: ruled schema in use, both commands run', () => {
   const dir = branched({ adrs: changesAdr('openspec', 'spec-driven'), files: openspecFiles('spec-driven') });
@@ -517,7 +520,7 @@ test('tool checks leave the repository untouched', () => {
     ['ADR-0009', branchingAdr('[feat]'), {}],
     ['ADR-0015', secretsAdr('gitleaks'), {}],
     ['ADR-0016', changesAdr('openspec', 'spec-driven'), openspecFiles('spec-driven')],
-  ]) {
+  ] as [string, Files, Files][]) {
     const dir = branched({ adrs, files, branch: 'feat/x', commits: [{ 'a.txt': 'x\n' }] });
     const before = git(dir, 'status', '--porcelain', '--ignored');
     runWith(dir, [number]);

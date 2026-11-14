@@ -9,16 +9,18 @@
   "type": "module",
   "files": [
     "adr/",
-    "checks/governance-check.mjs"
+    "dist/governance-check.js"
   ],
   "bin": {
-    "governance-check": "checks/governance-check.mjs"
+    "governance-check": "dist/governance-check.js"
   },
   "engines": {
     "node": ">=22.18"
   },
   "scripts": {
-    "test": "node --test checks/*.test.mjs"
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test": "tsc --noEmit && node --test checks/*.test.ts"
   },
   "ontrack": {
     "adr": "adr",
@@ -27,7 +29,9 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
+    "@types/node": "22.20.5",
     "ontrack": "github:trivoallan/ontrack#v0.2.0",
-    "trivoallan": "github:trivoallan/governance"
+    "trivoallan": "github:trivoallan/governance",
+    "typescript": "7.0.2"
   }
 }
