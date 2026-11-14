@@ -8,7 +8,8 @@ surdesrails question each one adapts, and the traits each one asks for.
 ## ADDED Requirements
 
 ### Requirement: Shipped ADRs
-governance SHALL ship exactly these ADRs, each adapted from the named SDR:
+governance SHALL ship exactly these ADRs, each adapted from the named SDR
+unless the table says it is original:
 
 | ADR | slug | from | status as shipped |
 |---|---|---|---|
@@ -26,12 +27,13 @@ governance SHALL ship exactly these ADRs, each adapted from the named SDR:
 | ADR-0012 | delivery | SDR-0011 | proposed |
 | ADR-0013 | frontend | SDR-0013 | proposed |
 | ADR-0014 | work-tracking | SDR-0014 | proposed |
+| ADR-0015 | secrets | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the fourteen files in the table, with the slugs shown
+- **THEN** they are exactly the fifteen files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
