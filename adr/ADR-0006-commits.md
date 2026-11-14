@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0006
 traits:
   commits:
     scopes:
@@ -105,12 +106,26 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0006
 traits:
   commits:
     scopes: [api, cli, docs]
     tool: commitlint
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root, and it reads the keys you ruled:
+
+- with `commitlint`, it runs your repository's commitlint on the commits
+  between `origin/HEAD` and `HEAD`, with the Conventional Commits rules and
+  your scopes (`[]` refuses any scope). Install `@commitlint/cli` and
+  `@commitlint/config-conventional` as dev dependencies; without them, the
+  check fails and names the missing one. If your CI checkout has no
+  `origin/HEAD`, append the base you compare to, as in
+  `check: npx --no-install governance-check ADR-0006 --from origin/main`;
+- with `hook` or `none`, it prints that there is nothing to check, and
+  passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
