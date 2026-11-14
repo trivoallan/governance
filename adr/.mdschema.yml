@@ -94,6 +94,8 @@ frontmatter:
     # ADR-0020
     - { name: "traits.admission.approver", enum: [person, agent], optional: true }
     - { name: "traits.admission.install_scripts", enum: [ignored, allowed], optional: true }
+    # ADR-0021
+    - { name: "traits.supply_chain.build_level", enum: [0, 1, 2, 3], optional: true }
 structure:
   - heading:
       pattern: "^# .+"
