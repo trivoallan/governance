@@ -93,8 +93,8 @@ SHALL change the ADRs it ships, ADR-0001 included, only through `revision`.
 - **THEN** ADR-0001's `revision` goes up by one and no superseding ADR is written
 
 #### Scenario: Check line copied into a ruled ADR
-- **WHEN** a repository that ruled ADR-0006 before governance added its `check:` line copies that line into its copy
-- **THEN** nothing else in the file changes, and the ADR stays ruled
+- **WHEN** a repository that ruled ADR-0006 before governance added its `check:` line runs `ontrack apply`
+- **THEN** `apply` reports ADR-0006 `synced`, its copy gains the `check:` line, nothing else in the file changes, and the ADR stays ruled
 
 ### Requirement: Revision tracks the question
 `revision` SHALL increase by one when, and only when, the question an ADR
@@ -118,8 +118,8 @@ of governance's package.
 - **THEN** that ADR's `revision` is unchanged and `ontrack plan` reports it `unchanged`
 
 #### Scenario: Check line added
-- **WHEN** governance adds a `check:` line to ADR-0006
-- **THEN** ADR-0006's `revision` is unchanged and `ontrack plan` reports it `unchanged`
+- **WHEN** governance adds a `check:` line to ADR-0006 and a repository whose copy is up to date runs `ontrack plan`
+- **THEN** ADR-0006's `revision` is unchanged, `ontrack plan` reports it `check` and shows the line that would come, and `ontrack apply` writes that line
 
 ### Requirement: Source line
 Every ADR adapted from surdesrails SHALL name, in its References section,
