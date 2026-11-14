@@ -146,6 +146,15 @@ commits you reviewed). `marketplace/.claude-plugin/marketplace.json`:
 Adopted as recommended: this repository is worked on with Claude Code,
 and its OpenSpec skills and commands already live under `.claude/`.
 
+**Departure: `claude-security` enabled from `claude-plugins-official`.**
+`.claude/settings.json` turns on `claude-security@claude-plugins-official`
+directly, a third-party marketplace enabled directly with an entry that
+carries no `sha` (rule 4). Claude Code refuses a plugin name starting with
+`claude-` in a marketplace other than Anthropic's, so this plugin cannot be
+listed, and pinned, in `ontrack-trivoallan-tools`. It follows the head of
+the official marketplace; that marketplace is Anthropic's, the publisher of
+the agent itself.
+
 ## Consequences
 
 ### Positive
