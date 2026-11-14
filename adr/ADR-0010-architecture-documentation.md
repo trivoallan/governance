@@ -3,7 +3,7 @@ adr: ADR-0010
 slug: architecture-documentation
 title: Architecture documentation
 status: proposed
-revision: 1
+revision: 2
 date:
 authors: []
 supersedes: []
@@ -59,9 +59,7 @@ answer one without the other.
 **The document is a directory, `docs/architecture/arc42/`, with one file
 per section.** One file per section keeps each change small, lets a pull
 request touch only the section it changes, and gives an agent a precise
-file to open. It lives under the documentation root of
-[ADR-0008](ADR-0008-documentation.md); if `docs.root` is not `docs/`, the
-path moves with it.
+file to open. The path is fixed: it does not move with `docs.root`.
 
 **governance ships no template for now.** Create the twelve files below.
 Fill only those you have something to say in; a section with nothing to say
@@ -98,6 +96,18 @@ Cross-cutting Concepts, section 8) are not structure, so they do not belong
 in the model. They are written as Mermaid code blocks in the section file
 itself. Never redraw in Mermaid an element the model already holds: that is
 the second source the model exists to avoid.
+
+**This document is not the user documentation of
+[ADR-0008](ADR-0008-documentation.md).** It is written for whoever changes
+the product, often an agent, and borrows nothing from ADR-0008 but,
+possibly, the site that serves both. Diátaxis does not classify its
+sections, and `docs.audience` does not apply to it.
+
+**Its audience, and that of the ADRs, is the repository's visibility**:
+whoever can read the repository reads them. It is observed, not asked, so
+it has no key. A private repository whose user documentation is `public`
+keeps its architecture private only if its site does not publish
+`docs/architecture/`; ADR-0008 shows how to exclude it.
 
 **This recommendation does not bind your repository.** If your architecture
 already lives in a mature document elsewhere, say `elsewhere` and name the
@@ -139,7 +149,7 @@ adr: ADR-0010
 slug: architecture-documentation
 title: Architecture documentation
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
@@ -157,9 +167,8 @@ runs it from your repository's root. It reads the keys you ruled and checks
 only that the files they imply are committed, not what those files say:
 
 - `architecture.document`: with `arc42`, all twelve files `01-*` to
-  `12-*`, each `.md` or `.mdx`, under `architecture/arc42/` in `docs.root`
-  (ADR-0008), or under `docs/architecture/arc42/` if ADR-0008 is not ruled;
-  the check names each missing section;
+  `12-*`, each `.md` or `.mdx`, under `docs/architecture/arc42/`, whatever
+  ADR-0008's `docs.root` says; the check names each missing section;
 - `architecture.model`: with `likec4`, at least one `.c4` or `.likec4` file.
 
 Any other value has nothing to check, and passes.

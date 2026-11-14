@@ -247,18 +247,6 @@ test('wiring: a list where one value is expected fails, every entry reported', (
   assert.match(r.stdout, /delivery\.release_tool is none, nothing to check/);
 });
 
-test('wiring: arc42 with a list as docs.root falls back to docs/', () => {
-  const r = run(wired({
-    adrs: {
-      'ADR-0008-documentation.md': '  docs:\n    tool: none\n    root: [site/]\n    audience: public',
-      'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid',
-    },
-    files: arc42('docs/'),
-  }), 'ADR-0010');
-  assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /docs\/architecture\/arc42\/01-x\.md/);
-});
-
 test('wiring: trait not set', () => {
   const r = run(wired({ adrs: { 'ADR-0017-agent-tooling.md': '  agent:\n    host:' } }), 'ADR-0017');
   assert.notEqual(r.status, 0);
@@ -266,16 +254,16 @@ test('wiring: trait not set', () => {
 });
 
 test('wiring: arc42 under another root', () => {
-  const dir = wired({
-    adrs: {
-      'ADR-0008-documentation.md': '  docs:\n    tool: none\n    root: site/\n    audience: public',
-      'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid',
-    },
-    files: arc42('site/'),
-  });
-  const r = run(dir, 'ADR-0010');
+  const adrs = {
+    'ADR-0008-documentation.md': '  docs:\n    tool: none\n    root: site/\n    audience: public',
+    'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid',
+  };
+  const moved = run(wired({ adrs, files: arc42('site/') }), 'ADR-0010');
+  assert.notEqual(moved.status, 0);
+  assert.match(moved.stderr, /docs\/architecture\/arc42\/01-\*\.md/);
+  const r = run(wired({ adrs, files: arc42('docs/') }), 'ADR-0010');
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /site\/architecture\/arc42\/01-x\.md/);
+  assert.match(r.stdout, /docs\/architecture\/arc42\/01-x\.md/);
 });
 
 test('wiring: gate states its ceiling', () => {
