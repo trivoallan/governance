@@ -16,5 +16,5 @@
 
 ## 4. End to end
 
-- [ ] 4.1 In a scratch consumer, install the tarball from `npm pack`, rule ADR-0015 with `guard: [gitleaks]`, and run `npx --no-install governance-check ADR-0015`; verify it exits non-zero naming `secrets.guard`, and that `zod` was installed with governance
-- [ ] 4.2 Run `openspec validate validate-checks-with-zod --strict`; verify it passes
+- [x] 4.1 In a scratch consumer, install the tarball from `npm pack`, rule ADR-0015 with `guard: [gitleaks]`, and run `npx --no-install governance-check ADR-0015`; verify it exits non-zero naming `secrets.guard`, and that `zod` was installed with governance
+- [x] 4.2 Run `openspec validate validate-checks-with-zod --strict`; verify it passes
