@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jackchuka/mdschema/main/schema.json
+#
+# Schema for the governance ADRs once a repository has RULED on them.
+#
+# It checks that an ADR carries its verdict: status decided, date set, no
+# trait key left empty, Nygard sections present, and the how-to-rule block
+# gone. A question ADR exactly as governance ships it FAILS this schema, on
+# purpose: it is still `proposed` and its traits are empty. Only ADR-0001,
+# which ships `accepted`, passes it inside governance itself. There is no
+# second schema for shipped questions: two schemas drift (surdesrails learned
+# this the hard way), so review is the check on governance's side.
+#
+# Run it FROM THIS DIRECTORY, because schema discovery walks up from the
+# current directory, not from the file being checked:
+#
+#   cd docs/adr/trivoallan && npx @jackchuka/mdschema@0.15.1 check '*.md'
+#
+# Trait keys are `optional`: an ABSENT key passes, so a `rejected` ADR with
+# no `traits:` block passes. A key that is PRESENT but empty is refused and
+# named. Four keys are exceptions: the language overrides of ADR-0002
+# (`documentation`, `commits`, `code`, `comments`) may be empty, which means
+# "same as `default`". `default` itself may not be empty.
+frontmatter:
+  fields:
+    - { name: "adr", type: string }
+    - { name: "slug", type: string }
+    - { name: "title", type: string }
+    - { name: "status", enum: [accepted, rejected] }
+    - { name: "revision", type: number }
+    - { name: "date", format: date }
+    - { name: "authors", type: array }
+    - { name: "supersedes", type: array }
+    - { name: "traits", type: object, optional: true }
+    # ADR-0001
+    - { name: "traits.record-architecture-decisions.format", enum: [nygard], optional: true }
+    # ADR-0002
+    - { name: "traits.localization.language.default", enum: [french, english], optional: true }
+    - { name: "traits.localization.language.documentation", enum: [french, english, null], optional: true }
+    - { name: "traits.localization.language.commits", enum: [french, english, null], optional: true }
+    - { name: "traits.localization.language.code", enum: [french, english, null], optional: true }
+    - { name: "traits.localization.language.comments", enum: [french, english, null], optional: true }
+    # ADR-0003
+    - { name: "traits.architecture.pattern", enum: [event-driven, hexagonal, layered, microservices, monolithic, soa], optional: true }
+    - { name: "traits.architecture.document", enum: [arc42, elsewhere, none], optional: true }
+    # ADR-0004
+    - { name: "traits.languages.main.name", type: string, optional: true }
+    # ADR-0005
+    - { name: "traits.validation.boundary", type: string, optional: true }
+    - { name: "traits.validation.data_files", type: string, optional: true }
+    # ADR-0006
+    - { name: "traits.commits.scopes", type: array, optional: true }
+    - { name: "traits.commits.tool", enum: [commitlint, hook, none], optional: true }
+    # ADR-0007
+    - { name: "traits.tests.coverage_target", optional: true }
+    # ADR-0008
+    - { name: "traits.docs.tool", enum: [docusaurus, mkdocs, none], optional: true }
+    - { name: "traits.docs.root", type: string, optional: true }
+    - { name: "traits.docs.audience", enum: [single-user, team, public], optional: true }
+    # ADR-0009
+    - { name: "traits.branching.model", enum: [github-flow, trunk-based, gitflow], optional: true }
+    - { name: "traits.branching.merge", enum: [squash, merge-commit, rebase], optional: true }
+    - { name: "traits.branching.prefixes", type: array, optional: true }
+structure:
+  - heading:
+      pattern: "^# .+"
+    children:
+      - heading: "## Status"
+      - heading: "## Context"
+      - heading: "## Decision"
+        forbidden_text: ["Everything below disappears when you rule"]
+      - heading: "## Consequences"
+        children:
+          - heading: "### Positive"
+          - heading: "### Negative"
+          - heading: "### Neutral"
+      - heading: "## Alternatives Considered"
+        allow_additional: true
+      - heading: "## References"

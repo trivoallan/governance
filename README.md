@@ -1,10 +1,19 @@
 # governance
 
-My governance: the ADRs I apply to my own repositories, shared as an
+The questions I ask of my own repositories, shipped as ADRs through an
 [ontrack](https://github.com/trivoallan/ontrack) source.
 
-It is real, not a demo. ADRs change when my practice changes; a new
-`revision:` means the question itself moved.
+Each ADR asks one question (commit format, branching, localization…),
+gives the answer I recommend and why, and leaves the verdict to the
+repository that imports it. It arrives `status: proposed`; you rule on it
+by filling its `traits:` and setting it `accepted` or `rejected`.
+[ADR-0001](adr/ADR-0001-record-architecture-decisions.md) explains how.
+
+governance is a personal edition of
+[surdesrails](https://github.com/trivoallan/surdesrails), without its
+enterprise context. Import one or the other, not both.
+
+It is real, not a demo. A new `revision:` means the question itself moved.
 
 ## Use it
 
