@@ -76,6 +76,9 @@ frontmatter:
     # ADR-0014
     - { name: "traits.tracking.tool", enum: [github-issues, linear, jira, none], optional: true }
     - { name: "traits.tracking.project", type: string, optional: true }
+    # ADR-0015
+    - { name: "traits.secrets.storage", type: string, optional: true }
+    - { name: "traits.secrets.guard", type: string, optional: true }
 structure:
   - heading:
       pattern: "^# .+"
