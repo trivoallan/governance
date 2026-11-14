@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/trivoallan/governance/compare/v0.2.0...v0.3.0) (2026-11-14)
+
+
+### Features
+
+* **adr:** open a change on explicit request in ADR-0016 ([#55](https://github.com/trivoallan/governance/issues/55)) ([991e4ae](https://github.com/trivoallan/governance/commit/991e4ae06006ff2c92c8b08dde3cced2fa467710))
+* **checks:** write governance-check in TypeScript and ship it compiled ([#57](https://github.com/trivoallan/governance/issues/57)) ([650a03c](https://github.com/trivoallan/governance/commit/650a03c4c1e1fcedf8676532237e3ef1dbc75d08))
+
 ## [0.2.0](https://github.com/trivoallan/governance/compare/v0.1.0...v0.2.0) (2026-11-14)
 
 
