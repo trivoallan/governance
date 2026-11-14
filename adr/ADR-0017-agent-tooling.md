@@ -253,6 +253,7 @@ sessions are guaranteed the same tools.
 
 ## References
 
+- Suggested skills: `plugin-structure` and `skill-development` from `plugin-dev@claude-plugins-official`; `check` from `skill-quality@melodic-software`, before vendoring a skill.
 - Original to governance; no surdesrails SDR. The vendoring rule follows the
   one surdesrails SDR-0013 applies to its Angular skill.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on, and why `Suggested skills` lines change no `revision`.

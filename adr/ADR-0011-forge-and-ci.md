@@ -212,6 +212,7 @@ from here; copy those you keep into your own ADR.
 
 ## References
 
+- Suggested skills: `setup` from `actionlint@melodic-software`, to install and wire actionlint.
 - Adapted from surdesrails [SDR-0010](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0010-forge-and-ci.md), revision 2 (GitHub only: `forge.vendor` and the sections for the other forge dropped; the `image` stage follows `delivery.target` instead of `hosting.offer`).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [actionlint](https://github.com/rhysd/actionlint) and [act](https://github.com/nektos/act).

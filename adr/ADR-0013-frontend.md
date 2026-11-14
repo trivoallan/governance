@@ -175,6 +175,7 @@ enterprise design system.
 
 ## References
 
+- Suggested skills: `frontend-design` from `frontend-design@claude-plugins-official`; `playwright` from `playwright@melodic-software` (rule 7); `accessibility-review` from `design@knowledge-work-plugins`.
 - Adapted from surdesrails [SDR-0013](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0013-frontend.md), revision 1 (framework opened to any value; its design-system theme trait and every rule tied to that design system dropped; only the framework-agnostic rules kept).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [Astro](https://astro.build/) and [Playwright](https://playwright.dev/).

@@ -178,6 +178,7 @@ themselves.
 
 ## References
 
+- Suggested skills: `track` from `work-items@melodic-software`, within rule 2 (no tracker write without an explicit request).
 - Adapted from surdesrails [SDR-0014](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0014-work-tracking.md), revision 1 (the tool becomes a trait instead of a requirement; the `proposal.md` line and the four agent rules kept).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0016](ADR-0016-changes.md): where the first artefact of a change lives.

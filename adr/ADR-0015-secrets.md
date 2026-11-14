@@ -219,6 +219,7 @@ which is when revocation becomes mandatory.
 
 ## References
 
+- Suggested skills: `claude-security` from `claude-security@claude-plugins-official`, to scan the repository or a diff.
 - Original to governance: no surdesrails SDR asks this question.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): where CI secrets live, and the rules that keep them out of logs and forks.

@@ -164,6 +164,7 @@ Review keeps the convention. Enough when versions are set by hand.
 
 ## References
 
+- Suggested skills: `commit` from `source-control@melodic-software`.
 - Adapted from surdesrails [SDR-0006](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0006-commits.md), revision 1.
 - [Conventional Commits](https://www.conventionalcommits.org/).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
