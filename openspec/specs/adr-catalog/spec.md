@@ -56,8 +56,10 @@ that a `Suggested skills` line changes no `revision`. It SHALL also state that
 an ADR may carry a `check:` line that `ontrack check` runs once the ADR is
 `accepted`, that a `check:` line and the scripts it calls change no
 `revision`, that those scripts follow governance's package version, and that
-a repository which ruled an ADR before governance added its `check:` line adds
-the line by hand.
+a `check:` line governance adds to an ADR a repository has already ruled
+reaches that repository's copy through `ontrack plan`, which reports the ADR
+`check`, and `ontrack apply`, which reports it `synced` and writes only that
+line.
 
 #### Scenario: Drift is written down
 - **WHEN** the Consequences of ADR-0001 are read
@@ -69,7 +71,7 @@ the line by hand.
 
 #### Scenario: Check rules stated
 - **WHEN** ADR-0001's Decision is read
-- **THEN** it names `ontrack check`, the `check:` key, and says that `check:` lines and their scripts change no `revision`
+- **THEN** it names `ontrack check`, the `check:` key, says that `check:` lines and their scripts change no `revision`, and says that `ontrack apply` writes a `check:` line added after a repository ruled the ADR
 
 ### Requirement: Traits carried over unchanged
 ADR-0002, ADR-0005, ADR-0006, ADR-0007 and ADR-0009 SHALL ask the
