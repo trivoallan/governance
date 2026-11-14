@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/trivoallan/governance/compare/v0.3.0...v0.4.0) (2026-11-14)
+
+
+### Features
+
+* **adr:** separate user documentation from architecture documentation ([#73](https://github.com/trivoallan/governance/issues/73)) ([0a92d25](https://github.com/trivoallan/governance/commit/0a92d25fe806caa15be6cb97d7df5df9c851d670)), closes [#71](https://github.com/trivoallan/governance/issues/71)
+* **checks:** enforce ADR-0009 branch prefixes in the pull request gate ([#65](https://github.com/trivoallan/governance/issues/65)) ([a148a23](https://github.com/trivoallan/governance/commit/a148a23f600657774efaad172358609e80096c76))
+* **checks:** exempt only the tool branches ADR-0012 and ADR-0018 name ([#74](https://github.com/trivoallan/governance/issues/74)) ([3f4d533](https://github.com/trivoallan/governance/commit/3f4d533a2c57902f163fde00406cab0395756df6))
+* **checks:** fail npm test below ADR-0007's line coverage ([#64](https://github.com/trivoallan/governance/issues/64)) ([b8c11ee](https://github.com/trivoallan/governance/commit/b8c11ee4e7e5cdad0e84d3484f5ac7af0ae2aad6))
+* **checks:** refuse commits carrying a secret with a gitleaks pre-commit hook ([#63](https://github.com/trivoallan/governance/issues/63)) ([c90f2c4](https://github.com/trivoallan/governance/commit/c90f2c45317113a7fcabf2cd2e8657bccc30d5c6))
+* declare the ontrack-source keyword and list the questions ([#60](https://github.com/trivoallan/governance/issues/60)) ([53f28b0](https://github.com/trivoallan/governance/commit/53f28b079507112c8ef028e62373bfa18529fb59)), closes [#48](https://github.com/trivoallan/governance/issues/48)
+
+
+### Bug Fixes
+
+* **adr:** point ADR-0009 at ADR-0011 for forge and CI ([#70](https://github.com/trivoallan/governance/issues/70)) ([70e2a1b](https://github.com/trivoallan/governance/commit/70e2a1bd6f4bc4a4bce0a6b205ba2bf26f6f404c))
+* **checks:** validate arguments and traits with zod ([#62](https://github.com/trivoallan/governance/issues/62)) ([e26b648](https://github.com/trivoallan/governance/commit/e26b648ebdd89f1d47a922688ece4a58bbe8bba8))
+
 ## [0.3.0](https://github.com/trivoallan/governance/compare/v0.2.0...v0.3.0) (2026-11-14)
 
 
