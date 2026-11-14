@@ -5,6 +5,7 @@
     }
   },
   "enabledPlugins": {
+    "claude-security@claude-plugins-official": true,
     "source-control@ontrack-trivoallan-tools": true,
     "superpowers@ontrack-trivoallan-tools": true
   }

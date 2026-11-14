@@ -44,7 +44,11 @@ Accept the workspace trust dialog, then install each plugin once:
 ```bash
 claude plugin install source-control@ontrack-trivoallan-tools --scope project
 claude plugin install superpowers@ontrack-trivoallan-tools --scope project
+claude plugin install claude-security@claude-plugins-official --scope project
 ```
+
+`claude-security` comes from Anthropic's marketplace, unpinned: a departure
+recorded in ADR-0017.
 
 If you already have one of them from its upstream marketplace, turn that
 copy off in your untracked `.claude/settings.local.json`
