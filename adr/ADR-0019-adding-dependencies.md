@@ -257,7 +257,6 @@ is recommended until a tool documents the exception.
 
 ## References
 
-- Suggested skills: `sonatype-guide` from `sonatype-guide@claude-plugins-official`, to look up a candidate package's vulnerabilities and quality before declaring it. It queries Sonatype's service.
 - Original to governance; no surdesrails SDR asks this question.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): why npm and Python are the ecosystems tabulated.
