@@ -27,12 +27,13 @@ unless the table says it is original:
 | ADR-0013 | frontend | SDR-0013 | proposed |
 | ADR-0014 | work-tracking | SDR-0014 | proposed |
 | ADR-0015 | secrets | none (original to governance) | proposed |
+| ADR-0016 | changes | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the fifteen files in the table, with the slugs shown
+- **THEN** they are exactly the sixteen files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
@@ -97,7 +98,12 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
   `astro`, with no WCS theme trait.
 - ADR-0014 SHALL ask `tracking.tool` (`github-issues`, `linear`, `jira`,
   `none`), recommending `github-issues`, and `tracking.project`, not a Jira
-  project key.
+  project key, and SHALL place its `Issue served` line in the first
+  artefact of a change as ADR-0016 defines it.
+- ADR-0016 SHALL ask `changes.framework` (`openspec`, `none`), recommending
+  `openspec`, and `changes.schema` (a name `openspec schema validate`
+  accepts, or `none`), recommending `spec-driven-with-adr` copied and
+  adjusted so that its ADRs follow ADR-0001.
 
 #### Scenario: Architecture split in two
 - **WHEN** the `traits:` blocks of ADR-0003 and ADR-0010 are read

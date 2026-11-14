@@ -49,8 +49,10 @@ cleanup can ship without one, and saying so is enough.
 | `tracking.project` | *your project* | any value governance proposed would be a guess that sends issues to someone else's project. For `github-issues`, write `owner/repo`; for `linear` or `jira`, the key that prefixes issue identifiers (`PLAT` in `PLAT-142`) |
 
 **Each change says which issue it serves**, once this ADR is accepted. The
-first file of an OpenSpec change (`openspec/changes/<name>/proposal.md`)
-carries exactly one of these lines:
+first artefact of each change, as [ADR-0016](ADR-0016-changes.md) defines
+it (`openspec/changes/<name>/proposal.md` with the recommended schema, the
+pull request description without a framework), carries exactly one of
+these lines:
 
 - `Issue served: <ref>`, where `<ref>` is `owner/repo#123` for
   `github-issues`, or `KEY-123` for `linear` and `jira`;
@@ -178,6 +180,7 @@ themselves.
 
 - Adapted from surdesrails [SDR-0014](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0014-work-tracking.md), revision 1 (the tool becomes a trait instead of a requirement; the `proposal.md` line and the four agent rules kept).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0016](ADR-0016-changes.md): where the first artefact of a change lives.
 
 **The keys.**
 
