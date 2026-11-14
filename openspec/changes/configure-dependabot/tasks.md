@@ -16,7 +16,7 @@
 
 ## 3. Verify
 
-- [ ] 3.1 Run `node checks/governance-check.mjs ADR-0018` with both files committed on the branch; verify it exits `0` and names `.github/dependabot.yml` and `dependabot-automerge.yml`
+- [x] 3.1 Run `node checks/governance-check.mjs ADR-0018` with both files committed on the branch; verify it exits `0` and names `.github/dependabot.yml` and `dependabot-automerge.yml`
 - [ ] 3.2 Open the pull request (`ci:` type); verify `test` passes and the ADR-0006 step ran on it
 - [ ] 3.3 After the merge, on the first Dependabot pull requests: verify the title starts with `chore: bump `, the ADR-0006 step is skipped and `test` passes, an npm patch gets auto-merge enabled and merges after `test`, and an action update or an npm minor does not
-- [ ] 3.4 Run `openspec validate configure-dependabot --strict`; verify it passes
+- [x] 3.4 Run `openspec validate configure-dependabot --strict`; verify it passes
