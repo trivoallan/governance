@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0015
 traits:
   secrets:
     storage:
@@ -144,12 +145,28 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0015
 traits:
   secrets:
     storage: keychain
     guard: gitleaks
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root, and it reads the keys you ruled:
+
+- with `gitleaks`, it runs `gitleaks git` on the commits between
+  `origin/HEAD` and `HEAD`, secrets redacted from its report, and fails on
+  any finding. This is what catches, in CI, a commit whose local hook was
+  skipped with `--no-verify`. `gitleaks` must be installed where the check
+  runs, from `node_modules/.bin` or `PATH`; it is not an npm package, so CI
+  installs it from its GitHub release. If your CI checkout has no
+  `origin/HEAD`, append the base, as in
+  `check: npx --no-install governance-check ADR-0015 --from origin/main`;
+- with `none` or another tool, it has nothing to check, and passes.
+
+It does not check `secrets.storage`.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

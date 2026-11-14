@@ -1,9 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -272,4 +273,233 @@ test('wiring: repository left untouched', () => {
   const before = git(dir, 'status', '--porcelain', '--ignored');
   run(dir, 'ADR-0018');
   assert.equal(git(dir, 'status', '--porcelain', '--ignored'), before);
+});
+
+// --- Checks that run a tool
+
+// A repository on `main` with ruled ADRs, `origin/HEAD -> origin/main` at the
+// first commit, then `branch` checked out and `commits` ({ path: text } each) on it.
+function branched({ adrs, files = {}, branch, commits = [] }) {
+  const dir = wired({ adrs, files });
+  git(dir, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+  git(dir, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main');
+  if (branch) git(dir, 'switch', '-q', '-c', branch);
+  for (const c of commits) {
+    for (const [path, text] of Object.entries(c)) {
+      mkdirSync(dirname(join(dir, path)), { recursive: true });
+      writeFileSync(join(dir, path), text);
+    }
+    git(dir, 'add', '.');
+    git(dir, 'commit', '-q', '-m', 'chore: change');
+  }
+  return dir;
+}
+
+// A stand-in for `name` in the repository's node_modules/.bin: it logs its
+// arguments to <dir>/.fake-<name>.log and exits with $FAKE_EXIT_<first argument>.
+function stub(dir, name) {
+  const bin = join(dir, 'node_modules', '.bin');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, name), `#!/bin/sh\necho "$@" >> "${join(dir, `.fake-${name}.log`)}"\neval "exit \\\${FAKE_EXIT_$1:-0}"\n`, { mode: 0o755 });
+  return () => readFileSync(join(dir, `.fake-${name}.log`), 'utf8');
+}
+
+// GITHUB_HEAD_REF cleared so a CI run of these tests does not leak into them.
+const runWith = (cwd, args, env = {}) =>
+  spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '', ...env } });
+const onPath = (name) => spawnSync('sh', ['-c', `command -v ${name}`]).status === 0;
+// A PATH with git and node but neither gitleaks nor openspec.
+const barePath = [dirname(process.execPath), '/usr/bin', '/bin'].join(':');
+
+const branchingAdr = (prefixes) => ({ 'ADR-0009-branching.md': `  branching:\n    model: github-flow\n    merge: squash\n    prefixes: ${prefixes}` });
+const secretsAdr = (guard) => ({ 'ADR-0015-secrets.md': `  secrets:\n    storage: keychain\n    guard: ${guard}` });
+const changesAdr = (framework, schema) => ({ 'ADR-0016-changes.md': `  changes:\n    framework: ${framework}\n    schema: ${schema}` });
+
+test('tool: installed in the repository is the one run', () => {
+  const dir = branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x' });
+  const log = stub(dir, 'gitleaks');
+  const r = runWith(dir, ['ADR-0015'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(log(), /^git --log-opts=origin\/HEAD\.\.HEAD --redact --verbose --no-banner$/m);
+});
+
+test('tool: missing is named', () => {
+  const r = runWith(branched({ adrs: secretsAdr('gitleaks') }), ['ADR-0015'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /secrets\.guard is gitleaks, but gitleaks is not installed/);
+});
+
+// ADR-0009
+
+test('ADR-0009: conforming branch', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat, fix, docs]'), branch: 'feat/schema-port' }), ['ADR-0009']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /branch feat\/schema-port matches/);
+});
+
+test('ADR-0009: prefix outside the list', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat, fix, docs]'), branch: 'chore/bump' }), ['ADR-0009']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /feat, fix, docs/);
+});
+
+test('ADR-0009: description not in kebab case', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat]'), branch: 'feat/Schema_Port' }), ['ADR-0009']);
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0009: block list of prefixes', () => {
+  const r = runWith(branched({ adrs: branchingAdr('\n      - feat\n      - fix'), branch: 'fix/a-b-1' }), ['ADR-0009']);
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0009: pull request in CI', () => {
+  const dir = branched({ adrs: branchingAdr('[fix]') });
+  git(dir, 'switch', '-q', '--detach');
+  const r = runWith(dir, ['ADR-0009'], { GITHUB_HEAD_REF: 'fix/dead-link' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /fix\/dead-link/);
+});
+
+test('ADR-0009: detached with no name has nothing to check', () => {
+  const dir = branched({ adrs: branchingAdr('[fix]') });
+  git(dir, 'switch', '-q', '--detach');
+  const r = runWith(dir, ['ADR-0009']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /nothing to check/);
+});
+
+test('ADR-0009: explicit branch wins', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[docs]'), branch: 'chore/x' }), ['ADR-0009', '--branch', 'docs/readme'], { GITHUB_HEAD_REF: 'chore/y' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /docs\/readme/);
+});
+
+test('ADR-0009: default branch', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, 'ADR-0009: main is the default branch, nothing to check\n');
+});
+
+test('ADR-0009: default branch without origin/HEAD', () => {
+  const dir = wired({ adrs: branchingAdr('[feat]') });
+  git(dir, 'branch', '-m', 'master');
+  const r = runWith(dir, ['ADR-0009']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /master is the default branch/);
+});
+
+test('ADR-0009: prefixes not set', () => {
+  const r = runWith(branched({ adrs: branchingAdr(''), branch: 'feat/x' }), ['ADR-0009']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /branching\.prefixes is not set/);
+});
+
+// ADR-0015
+
+test('ADR-0015: gitleaks status passed through, --from honoured', () => {
+  const dir = branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x' });
+  const log = stub(dir, 'gitleaks');
+  const r = runWith(dir, ['ADR-0015', '--from', 'develop'], { FAKE_EXIT_git: '1' });
+  assert.equal(r.status, 1);
+  assert.match(log(), /--log-opts=develop\.\.HEAD/);
+});
+
+test('ADR-0015: guard none', () => {
+  const r = runWith(branched({ adrs: secretsAdr('none') }), ['ADR-0015'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, 'ADR-0015: secrets.guard is none, nothing to check\n');
+});
+
+test('ADR-0015: guard not set', () => {
+  const r = runWith(branched({ adrs: secretsAdr('') }), ['ADR-0015']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /secrets\.guard is not set/);
+});
+
+// A private key that gitleaks' private-key rule finds; random, so it is no real key.
+const privateKey = () => `-----BEGIN RSA PRIVATE KEY-----\n${randomBytes(600).toString('base64').match(/.{1,64}/g).join('\n')}\n-----END RSA PRIVATE KEY-----\n`;
+const realGitleaks = { skip: !onPath('gitleaks') && 'gitleaks not on PATH' };
+
+test('ADR-0015 with gitleaks: no leak', realGitleaks, () => {
+  const r = runWith(branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x', commits: [{ 'a.txt': 'hello\n' }] }), ['ADR-0015']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('ADR-0015 with gitleaks: leak in a branch commit, redacted', realGitleaks, () => {
+  const key = privateKey();
+  const r = runWith(branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x', commits: [{ id_rsa: key }] }), ['ADR-0015']);
+  assert.notEqual(r.status, 0);
+  assert.doesNotMatch(r.stdout + r.stderr, new RegExp(key.split('\n')[1].replace(/[+/]/g, '\\$&')));
+});
+
+test('ADR-0015 with gitleaks: leak before the base', realGitleaks, () => {
+  const r = runWith(branched({ adrs: secretsAdr('gitleaks'), files: { id_rsa: privateKey() }, branch: 'feat/x', commits: [{ 'a.txt': 'hello\n' }] }), ['ADR-0015']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+// ADR-0016
+
+const openspecFiles = (schema) => ({ 'openspec/config.yaml': `schema: ${schema} # comment\n`, 'openspec/specs/.keep': '' });
+
+test('ADR-0016: ruled schema in use, both commands run', () => {
+  const dir = branched({ adrs: changesAdr('openspec', 'spec-driven'), files: openspecFiles('spec-driven') });
+  const log = stub(dir, 'openspec');
+  const r = runWith(dir, ['ADR-0016']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(log(), 'schema validate spec-driven\nvalidate --all --no-interactive\n');
+});
+
+test('ADR-0016: config names another schema', () => {
+  const dir = branched({ adrs: changesAdr('openspec', 'spec-driven-with-adr'), files: openspecFiles('spec-driven') });
+  const log = stub(dir, 'openspec');
+  const r = runWith(dir, ['ADR-0016']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /spec-driven-with-adr, but openspec\/config\.yaml has schema: spec-driven$/m);
+  assert.match(log(), /validate --all/, 'the openspec commands still run');
+});
+
+test('ADR-0016: no config file', () => {
+  const dir = branched({ adrs: changesAdr('openspec', 'spec-driven') });
+  stub(dir, 'openspec');
+  const r = runWith(dir, ['ADR-0016']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /there is no openspec\/config\.yaml/);
+});
+
+test('ADR-0016: invalid change', () => {
+  const dir = branched({ adrs: changesAdr('openspec', 'spec-driven'), files: openspecFiles('spec-driven') });
+  stub(dir, 'openspec');
+  assert.notEqual(runWith(dir, ['ADR-0016'], { FAKE_EXIT_validate: '1' }).status, 0);
+  assert.notEqual(runWith(dir, ['ADR-0016'], { FAKE_EXIT_schema: '1' }).status, 0);
+});
+
+test('ADR-0016: framework none', () => {
+  const r = runWith(branched({ adrs: changesAdr('none', 'none') }), ['ADR-0016'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, 'ADR-0016: changes.framework is none, nothing to check\n');
+});
+
+test('ADR-0016: schema none with openspec', () => {
+  const r = runWith(branched({ adrs: changesAdr('openspec', 'none') }), ['ADR-0016']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /goes with changes\.framework: none/);
+});
+
+test('ADR-0016 with openspec: ruled schema in use and valid', { skip: !onPath('openspec') && 'openspec not on PATH' }, () => {
+  const r = runWith(branched({ adrs: changesAdr('openspec', 'spec-driven'), files: openspecFiles('spec-driven') }), ['ADR-0016']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('tool checks leave the repository untouched', () => {
+  for (const [number, adrs, files] of [
+    ['ADR-0009', branchingAdr('[feat]'), {}],
+    ['ADR-0015', secretsAdr('gitleaks'), {}],
+    ['ADR-0016', changesAdr('openspec', 'spec-driven'), openspecFiles('spec-driven')],
+  ]) {
+    const dir = branched({ adrs, files, branch: 'feat/x', commits: [{ 'a.txt': 'x\n' }] });
+    const before = git(dir, 'status', '--porcelain', '--ignored');
+    runWith(dir, [number]);
+    assert.equal(git(dir, 'status', '--porcelain', '--ignored'), before, number);
+  }
 });

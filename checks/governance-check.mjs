@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// governance-check <ADR number> [--from <ref>]
+// governance-check <ADR number> [--from <ref>] [--branch <name>]
 // Runs the check governance ships for one ADR, from the consuming repository's
 // root, as called by that ADR's `check:` line through `ontrack check`.
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, delimiter } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -116,13 +116,15 @@ function tracked(root) {
   return r.stdout.split('\0').filter(Boolean);
 }
 
+const esc = (s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+
 // `*` matches within one path segment, a leading `**/` any directory or none.
 // ponytail: only the two forms the table uses, not full glob syntax.
 function pattern(p) {
   const any = p.startsWith('**/');
   const body = (any ? p.slice(3) : p)
     .split('*')
-    .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+    .map(esc)
     .join('[^/]*');
   return new RegExp(`^${any ? '(?:.*/)?' : ''}${body}$`);
 }
@@ -265,23 +267,109 @@ function wiring(number, entries) {
   };
 }
 
+// --- Checks that run a tool on the branch, as ADR-0006 runs commitlint.
+
+// The repository's own copy first, then PATH. Its report goes straight to our output.
+function runTool(root, name, args, trait) {
+  const PATH = [join(root, 'node_modules', '.bin'), process.env.PATH].join(delimiter);
+  const r = spawnSync(name, args, { cwd: root, stdio: 'inherit', env: { ...process.env, PATH } });
+  if (r.error?.code === 'ENOENT') throw new CheckError(`${trait}, but ${name} is not installed (looked in node_modules/.bin and on PATH)`);
+  if (r.error) throw r.error;
+  return r.status ?? 1;
+}
+
+const gitOut = (root, ...args) => {
+  const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+  return r.status === 0 ? r.stdout.trim() : '';
+};
+
+function branching(root, file, { branch }) {
+  const { prefixes } = readTraits(readFileSync(file, 'utf8'), 'branching') ?? {};
+  if (!Array.isArray(prefixes) || prefixes.length === 0) {
+    throw new CheckError(`ADR-0009: branching.prefixes is not set in ${file}; the ADR is not ruled`);
+  }
+  // A pull request in GitHub Actions checks out a detached HEAD; its branch is in GITHUB_HEAD_REF.
+  const name = branch || process.env.GITHUB_HEAD_REF || gitOut(root, 'branch', '--show-current');
+  if (!name) {
+    console.log('ADR-0009: no branch name (detached checkout), nothing to check');
+    return 0;
+  }
+  const head = gitOut(root, 'symbolic-ref', '--short', 'refs/remotes/origin/HEAD');
+  // ponytail: main/master guess when origin/HEAD is unset; `git remote set-head origin -a` sets it.
+  const defaults = head ? [head.slice(head.indexOf('/') + 1)] : ['main', 'master'];
+  if (defaults.includes(name)) {
+    console.log(`ADR-0009: ${name} is the default branch, nothing to check`);
+    return 0;
+  }
+  const form = new RegExp(`^(?:${prefixes.map(esc).join('|')})/[a-z0-9]+(?:-[a-z0-9]+)*$`);
+  if (form.test(name)) {
+    console.log(`ADR-0009: branch ${name} matches branching.prefixes`);
+    return 0;
+  }
+  console.error(`ADR-0009: branch ${name} is not <prefix>/<kebab-case-description> with a prefix in branching.prefixes: ${prefixes.join(', ')}`);
+  return 1;
+}
+
+function secrets(root, file, { from }) {
+  const { guard } = readTraits(readFileSync(file, 'utf8'), 'secrets') ?? {};
+  if (!guard) throw new CheckError(`ADR-0015: secrets.guard is not set in ${file}; the ADR is not ruled`);
+  if (guard !== 'gitleaks') {
+    console.log(`ADR-0015: secrets.guard is ${guard}, nothing to check`);
+    return 0;
+  }
+  return runTool(root, 'gitleaks', ['git', `--log-opts=${from}..HEAD`, '--redact', '--verbose', '--no-banner'], 'ADR-0015: secrets.guard is gitleaks');
+}
+
+function changes(root, file) {
+  const { framework, schema } = readTraits(readFileSync(file, 'utf8'), 'changes') ?? {};
+  if (!framework) throw new CheckError(`ADR-0016: changes.framework is not set in ${file}; the ADR is not ruled`);
+  if (framework !== 'openspec') {
+    console.log(`ADR-0016: changes.framework is ${framework}, nothing to check`);
+    return 0;
+  }
+  if (!schema) throw new CheckError(`ADR-0016: changes.schema is not set in ${file}; the ADR is not ruled`);
+  if (schema === 'none') throw new CheckError('ADR-0016: changes.schema is none, which goes with changes.framework: none, not openspec');
+
+  let failed = false;
+  const config = ['openspec/config.yaml', 'openspec/config.yml'].find((p) => existsSync(join(root, p)));
+  const line = config && readFileSync(join(root, config), 'utf8').split(/\r?\n/).map((l) => l.match(/^schema:(.*)$/)).find(Boolean);
+  const used = line ? scalar(line[1]) : '';
+  if (used === schema) {
+    console.log(`ADR-0016: ${config} uses schema ${schema}`);
+  } else {
+    console.error(config
+      ? `ADR-0016: changes.schema is ${schema}, but ${config} has schema: ${used || '(none)'}`
+      : `ADR-0016: changes.schema is ${schema}, but there is no openspec/config.yaml`);
+    failed = true;
+  }
+  // Both commands run whatever the config says, so one run shows every problem.
+  const trait = 'ADR-0016: changes.framework is openspec';
+  if (runTool(root, 'openspec', ['schema', 'validate', schema], trait) !== 0) failed = true;
+  if (runTool(root, 'openspec', ['validate', '--all', '--no-interactive'], trait) !== 0) failed = true;
+  return failed ? 1 : 0;
+}
+
 const CHECKS = {
   'ADR-0006': commits,
+  'ADR-0009': branching,
+  'ADR-0015': secrets,
+  'ADR-0016': changes,
   ...Object.fromEntries(Object.entries(WIRING).map(([n, entries]) => [n, wiring(n, entries)])),
 };
 
 function main(argv, root = process.cwd()) {
   try {
     const [number, ...rest] = argv;
-    let from = 'origin/HEAD';
+    const opts = { from: 'origin/HEAD', branch: '' };
     for (let i = 0; i < rest.length; i++) {
-      if (rest[i] === '--from' && rest[i + 1]) from = rest[++i];
+      if (rest[i] === '--from' && rest[i + 1]) opts.from = rest[++i];
+      else if (rest[i] === '--branch' && rest[i + 1]) opts.branch = rest[++i];
       else throw new CheckError(`unknown argument: ${rest[i]}`);
     }
-    if (!number) throw new CheckError('usage: governance-check <ADR number> [--from <ref>]');
+    if (!number) throw new CheckError('usage: governance-check <ADR number> [--from <ref>] [--branch <name>]');
     const check = CHECKS[number];
     if (!check) throw new CheckError(`governance ships no check for ${number}`);
-    return check(root, findAdr(root, number), { from });
+    return check(root, findAdr(root, number), opts);
   } catch (e) {
     if (!(e instanceof CheckError)) throw e;
     console.error(e.message);

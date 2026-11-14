@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0016
 traits:
   changes:
     framework:
@@ -147,12 +148,23 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0016
 traits:
   changes:
     framework: openspec
     schema: spec-driven-with-adr
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root, and it reads the keys you ruled:
+
+- with `openspec`, it checks rule 2 (`openspec/config.yaml` names the
+  `changes.schema` you ruled) and rule 1 (`openspec schema validate
+  <changes.schema>` passes), then runs `openspec validate --all`, so a
+  change that does not validate fails it too. `openspec` must be installed
+  where the check runs, from `node_modules/.bin` or `PATH`;
+- with `none`, it has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

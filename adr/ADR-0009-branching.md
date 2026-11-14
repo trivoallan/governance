@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0009
 traits:
   branching:
     model:
@@ -100,6 +101,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0009
 traits:
   branching:
     model: github-flow
@@ -107,6 +109,20 @@ traits:
     prefixes: [feat, fix, docs]
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root, and it reads the keys you ruled:
+
+- it checks the name of the branch being worked on: `--branch <name>` if
+  you append it to the line, else `GITHUB_HEAD_REF` (set on a pull request
+  in GitHub Actions, whose checkout has no branch), else the current branch.
+  The name must be `<prefix>/<description-in-kebab-case>` with a prefix from
+  `branching.prefixes`;
+- on the default branch, or a checkout with no branch name, it has nothing
+  to check, and passes.
+
+It does not check `branching.model` or `branching.merge`: those live in
+your forge's settings, outside the repository.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
