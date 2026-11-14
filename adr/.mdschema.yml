@@ -82,6 +82,8 @@ frontmatter:
     # ADR-0016
     - { name: "traits.changes.framework", enum: [openspec, none], optional: true }
     - { name: "traits.changes.schema", type: string, optional: true }
+    # ADR-0017
+    - { name: "traits.agent.host", enum: [claude-code, none], optional: true }
 structure:
   - heading:
       pattern: "^# .+"

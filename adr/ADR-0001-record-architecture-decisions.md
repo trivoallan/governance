@@ -3,7 +3,7 @@ adr: ADR-0001
 slug: record-architecture-decisions
 title: Record architecture decisions
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-14
 authors: [Tristan Rivoallan]
 supersedes: []
@@ -81,11 +81,17 @@ The reverse edge is not written, it is computed: an ADR is superseded when
 another one lists it in `supersedes:`. Storing it twice would give two
 places to keep in step, and nothing would compare them.
 
-**4. The body freezes once ruled; the status does not.** From `accepted`
-or `rejected` on, the text does not change, and reopening the decision takes
-a new ADR. The one thing still written in a frozen ADR is its `status`. A
-superseded ADR stays in the directory, marked: the directory is a log of
-decisions, not a list of what is in force.
+**4. The body freezes once ruled; the status does not.** Once your
+repository rules an ADR `accepted` or `rejected`, your copy's text does not
+change, and reopening the decision takes a new ADR. The one thing still
+written in a frozen ADR is its `status`. A superseded ADR stays in the
+directory, marked: the directory is a log of decisions, not a list of what
+is in force.
+
+This freeze is about **your verdict**. The ADRs governance ships, this one
+included, change only through `revision` (rule 6): governance edits the
+file and raises the number, and `ontrack plan` tells you. It does not write
+a superseding ADR for its own revisions.
 
 **5. A governance ADR asks a question, and the answer belongs to your
 repository.** It arrives `status: proposed`, with every key under `traits:`
@@ -104,8 +110,11 @@ stands in for the decision, so an agent knows what to go by.
 **6. `revision` dates the question.** governance raises it by one when, and
 only when, the question changes: a trait added, removed or renamed, an enum
 value changed, or the recommended answer changed. A wording, typo or link
-fix leaves it alone. `ontrack plan` then reports an ADR as `revised` only
-when there is something to rule on again.
+fix leaves it alone, and so does a change to a `Suggested skills` line in
+an ADR's References: that line names the Claude Code skills that help carry
+out the decision ([ADR-0017](ADR-0017-agent-tooling.md)), and it is advice,
+not part of the question. `ontrack plan` then reports an ADR as `revised`
+only when there is something to rule on again.
 
 **7. `mdschema` attests, it refuses nothing.** The `.mdschema.yml` shipped
 next to these ADRs checks that a ruled ADR carries its verdict: status
@@ -190,6 +199,7 @@ would describe governance's context instead of its own.
 
 ## References
 
+- Suggested skills: `develop-adr` from `pm-skills@product-on-purpose`, to write a governance ADR or your own.
 - Adapted from surdesrails [SDR-0001](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0001-record-architecture-decisions.md), revision 1.
 - Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) (2011).
 - [ontrack](https://github.com/trivoallan/ontrack): imports these ADRs and reports `new`, `revised` and `removed` ones.
