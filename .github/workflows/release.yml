@@ -19,9 +19,11 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - id: release
-        # ponytail: default GITHUB_TOKEN; its release pull request triggers no
-        # workflow, so once a required check exists, switch to a PAT secret.
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          # Actions may not open pull requests in this repository, and a pull
+          # request opened with GITHUB_TOKEN would trigger no workflow anyway.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
   # Runs only on the push that merged the release pull request: the commit
   # checked out is the one release-please just tagged.
