@@ -19,9 +19,14 @@ It is real, not a demo. A new `revision:` means the question itself moved.
 
 ```bash
 npm i -D ontrack@git+https://github.com/trivoallan/ontrack.git
-npm i -D trivoallan@git+https://github.com/trivoallan/governance.git
+npm i -D trivoallan@npm:@trivoallan/ontrack-source
 npx ontrack plan
 ```
+
+From Git instead, pin a released tag:
+`npm i -D trivoallan@git+https://github.com/trivoallan/governance.git#vX.Y.Z`.
+Check the npm package was built by this repository's release workflow with
+`npm audit signatures`.
 
 Install ontrack first: without it, `npx ontrack` fetches and runs an
 unrelated package of the same name from the npm registry.
