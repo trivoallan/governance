@@ -2,7 +2,7 @@
 
 ## 1. Dependency
 
-- [ ] 1.1 Confirm `migrate-checks-to-typescript` has landed (`checks/governance-check.ts` exists); ask before installing, in ADR-0020's form, for `zod` (latest 4.x at least three days old, source, why, provenance from `npm audit signatures`); on a yes, `npm install zod`; verify `dependencies` in `package.json` holds exactly `zod` and the lockfile entry has no install script
+- [x] 1.1 Confirm `migrate-checks-to-typescript` has landed (`checks/governance-check.ts` exists); ask before installing, in ADR-0020's form, for `zod` (latest 4.x at least three days old, source, why, provenance from `npm audit signatures`); on a yes, `npm install zod`; verify `dependencies` in `package.json` holds exactly `zod` and the lockfile entry has no install script
 
 ## 2. Arguments
 
