@@ -332,10 +332,28 @@ const gitOut = (root: string, ...args: string[]) => {
 
 const Branching = z.object({ prefixes: list().min(1) });
 
-// Branches opened by the release and update tools governance's ADRs recommend or
-// offer (ADR-0012, ADR-0018): their names are the tool's, not the repository's.
-// Not a trait: the list follows from those ADRs' answers.
-const TOOL_BRANCHES = ['release-please--', 'releaser-pleaser--', 'dependabot/', 'renovate/'];
+// Branches opened by the release and update tools (ADR-0012, ADR-0018): their names are
+// the tool's, not the repository's. Not a trait: the list follows from those ADRs'
+// answers, and an unanswered ADR (missing, empty key, other tool) exempts nothing.
+const TOOLS: [adr: string, group: string, key: string, prefixes: Record<string, string>][] = [
+  ['ADR-0012', 'delivery', 'release_tool', { 'release-please': 'release-please--', 'releaser-pleaser': 'releaser-pleaser--' }],
+  ['ADR-0018', 'dependencies', 'updater', { dependabot: 'dependabot/', renovate: 'renovate/' }],
+];
+
+function toolBranches(root: string): { prefix: string; source: string }[] {
+  return TOOLS.flatMap(([adr, group, key, prefixes]) => {
+    let file: string;
+    try {
+      file = findAdr(root, adr);
+    } catch (e) {
+      if (e instanceof CheckError && /no file matches/.test(e.message)) return [];
+      throw e;
+    }
+    const value = readTraits(readFileSync(file, 'utf8'), group)?.[key];
+    const prefix = typeof value === 'string' ? prefixes[value] : undefined;
+    return prefix ? [{ prefix, source: `${adr} ${group}.${key}: ${value}` }] : [];
+  });
+}
 
 function branching(root: string, file: string, { branch }: Options): number {
   const { prefixes } = traitsOf(Branching, 'ADR-0009', 'branching', file, readFileSync(file, 'utf8'));
@@ -352,8 +370,9 @@ function branching(root: string, file: string, { branch }: Options): number {
     console.log(`ADR-0009: ${name} is the default branch, nothing to check`);
     return 0;
   }
-  if (TOOL_BRANCHES.some((p) => name.startsWith(p))) {
-    console.log(`ADR-0009: ${name} is a tool branch, nothing to check`);
+  const tool = toolBranches(root).find(({ prefix }) => name.startsWith(prefix));
+  if (tool) {
+    console.log(`ADR-0009: ${name} is a tool branch (${tool.source}), nothing to check`);
     return 0;
   }
   const form = new RegExp(`^(?:${prefixes.map(esc).join('|')})/[a-z0-9]+(?:-[a-z0-9]+)*$`);
@@ -361,7 +380,9 @@ function branching(root: string, file: string, { branch }: Options): number {
     console.log(`ADR-0009: branch ${name} matches branching.prefixes`);
     return 0;
   }
-  console.error(`ADR-0009: branch ${name} is not <prefix>/<kebab-case-description> with a prefix in branching.prefixes: ${prefixes.join(', ')}`);
+  const named = TOOLS.find(([, , , prefixes]) => Object.values(prefixes).some((p) => name.startsWith(p)));
+  const hint = named ? ` (not exempt: ${named[0]} ${named[1]}.${named[2]} is not ${Object.entries(named[3]).find(([, p]) => name.startsWith(p))![0]})` : '';
+  console.error(`ADR-0009: branch ${name} is not <prefix>/<kebab-case-description> with a prefix in branching.prefixes: ${prefixes.join(', ')}${hint}`);
   return 1;
 }
 
