@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0008
 traits:
   docs:
     tool:
@@ -134,6 +135,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0008
 traits:
   docs:
     tool: starlight
@@ -141,6 +143,17 @@ traits:
     audience: public
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `docs.tool`: with `starlight`, `package.json` names `@astrojs/starlight`;
+  with `docusaurus`, a `docusaurus.config.js`, `.mjs` or `.ts`; with
+  `mkdocs`, `mkdocs.yml`;
+- `docs.root`: at least one committed file under that path.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

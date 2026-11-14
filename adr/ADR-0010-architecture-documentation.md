@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0010
 traits:
   architecture:
     document:
@@ -142,6 +143,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0010
 traits:
   architecture:
     document: arc42
@@ -149,6 +151,18 @@ traits:
     diagrams: mermaid
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `architecture.document`: with `arc42`, all twelve files `01-*.md` to
+  `12-*.md` under `architecture/` in `docs.root` (ADR-0008), or under
+  `docs/architecture/` if ADR-0008 is not ruled; the check names each
+  missing section;
+- `architecture.model`: with `likec4`, at least one `.c4` or `.likec4` file.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
