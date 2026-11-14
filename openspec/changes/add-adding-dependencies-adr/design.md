@@ -75,7 +75,7 @@ this file.
   disagree.
 
 **Non-Goals:**
-- Requiring provenance or SLSA levels from dependencies: ADR-0020 (build
+- Requiring provenance or SLSA levels from dependencies: ADR-0021 (build
   provenance) concerns what a repository **publishes**, not what it admits.
 - A list of allowed or forbidden packages, a minimum download count, or a
   required licence: each of these goes stale, and a licence policy is a
@@ -207,8 +207,8 @@ common way an agent installs the wrong Python package.
 
 ## Migration Plan
 
-One pull request containing ADR-0019, the schema lines, the ADR-0018 line
-and this change. Consumers see ADR-0019 `new` in `ontrack plan`. Rollback
+One pull request containing ADR-0020, the schema lines, the ADR-0018 line
+and this change. Consumers see ADR-0020 `new` in `ontrack plan`. Rollback
 is a revert of the pull request.
 
 ## Sources

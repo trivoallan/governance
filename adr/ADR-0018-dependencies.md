@@ -51,9 +51,10 @@ days before proposing it lets others find out first; it proves nothing
 about the code.
 
 **Not concerned:** security alerts that report a vulnerable dependency
-without proposing an update. They inform; this ADR is about what keeps the
+without proposing an update. They inform, under
+[ADR-0019](ADR-0019-vulnerabilities.md); this ADR is about what keeps the
 repository current. Nor is adding a new dependency: that is
-[ADR-0019](ADR-0019-adding-dependencies.md)'s question.
+[ADR-0020](ADR-0020-adding-dependencies.md)'s question.
 
 ## Decision
 

@@ -1,5 +1,5 @@
 ---
-adr: ADR-0019
+adr: ADR-0020
 slug: adding-dependencies
 title: Adding a dependency
 status: proposed
@@ -170,7 +170,7 @@ interpreting it:
 
 ```yaml
 ---
-adr: ADR-0019
+adr: ADR-0020
 slug: adding-dependencies
 title: Adding a dependency
 status: accepted
@@ -262,6 +262,7 @@ is recommended until a tool documents the exception.
 - [ADR-0004](ADR-0004-languages.md): why npm and Python are the ecosystems tabulated.
 - [ADR-0015](ADR-0015-secrets.md): the active leak that install code exploits.
 - [ADR-0018](ADR-0018-dependencies.md): updates, and the cooldown this ADR reuses.
+- [ADR-0019](ADR-0019-vulnerabilities.md): scanning the dependencies once admitted.
 - npm: [config](https://docs.npmjs.com/cli/v12/using-npm/config), [approve-scripts](https://docs.npmjs.com/cli/v12/commands/npm-approve-scripts), [audit signatures](https://docs.npmjs.com/cli/v11/commands/npm-audit); pnpm: [build settings](https://pnpm.io/settings/build), [dependency resolution](https://pnpm.io/settings/dependency-resolution); uv: [settings](https://docs.astral.sh/uv/reference/settings/), [resolution](https://docs.astral.sh/uv/concepts/resolution/); pip: [install](https://pip.pypa.io/en/stable/cli/pip_install/), [secure installs](https://pip.pypa.io/en/stable/topics/secure-installs/); [pypi-attestations](https://github.com/pypi/pypi-attestations). Read on 2026-11-14.
 
 **The keys.**

@@ -13,7 +13,7 @@ name.
 
 ## What Changes
 
-- Add **ADR-0019 "Adding a dependency"**, a question ADR original to
+- Add **ADR-0020 "Adding a dependency"**, a question ADR original to
   governance (no surdesrails SDR asks it). Its question: *who lets a new
   dependency in, and what may it run when it arrives?* It has two traits:
   - `admission.approver` (`person`, `agent`), recommending `person`: the
@@ -28,7 +28,7 @@ name.
     (wheels only). Neither uv nor pip documents an exception for one
     package, so a Python package with no wheel for the platform is not
     admitted under `ignored`.
-- ADR-0004 recommends Python or TypeScript, so ADR-0019 gives **npm and
+- ADR-0004 recommends Python or TypeScript, so ADR-0020 gives **npm and
   Python side by side** for each rule. Each rule names the npm mechanism,
   the uv mechanism (the default Python tool), and the pip mechanism where
   it differs. Python has one trap npm does not: the **import name is not
@@ -56,7 +56,7 @@ name.
      `uv sync --locked`, or pip with `--require-hashes`), so what was
      admitted is what runs.
 - ADR-0018's "Not concerned" paragraph gains one line pointing new
-  dependencies to ADR-0019. This is a wording change, so ADR-0018's
+  dependencies to ADR-0020. This is a wording change, so ADR-0018's
   `revision` stays 1.
 - Add the two traits to `adr/.mdschema.yml`.
 
@@ -68,17 +68,17 @@ None.
 
 ### Modified Capabilities
 
-- `adr-catalog`: the catalog gains ADR-0019 and its two traits.
+- `adr-catalog`: the catalog gains ADR-0020 and its two traits.
 
 ## Impact
 
-- `adr/ADR-0019-adding-dependencies.md`: new. Consumers see it `new` in
+- `adr/ADR-0020-adding-dependencies.md`: new. Consumers see it `new` in
   `ontrack plan`.
 - `adr/ADR-0018-dependencies.md`: one line under Context, no revision
   change.
 - `adr/.mdschema.yml`: two traits added.
-- ADR-0019 ships `proposed`. governance has two devDependencies
+- ADR-0020 ships `proposed`. governance has two devDependencies
   (commitlint) but does not rule its own ADRs in this change.
-- Not in this change: ADR-0020 (build provenance, SLSA L2) and publishing
+- Not in this change: ADR-0021 (build provenance, SLSA L2) and publishing
   governance to npm, which were discussed together and are proposed
   separately.

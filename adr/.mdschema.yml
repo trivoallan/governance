@@ -88,6 +88,10 @@ frontmatter:
     - { name: "traits.dependencies.updater", enum: [dependabot, renovate, none], optional: true }
     - { name: "traits.dependencies.automerge", enum: [none, patch, minor], optional: true }
     # ADR-0019
+    - { name: "traits.vulnerabilities.sbom", enum: [cyclonedx, spdx, none], optional: true }
+    - { name: "traits.vulnerabilities.scanner", type: string, optional: true }
+    - { name: "traits.vulnerabilities.fail_on", enum: [critical, high, medium, low, none], optional: true }
+    # ADR-0020
     - { name: "traits.admission.approver", enum: [person, agent], optional: true }
     - { name: "traits.admission.install_scripts", enum: [ignored, allowed], optional: true }
 structure:
