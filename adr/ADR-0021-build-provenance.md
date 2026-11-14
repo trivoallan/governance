@@ -215,7 +215,7 @@ consumers model a compromised build step as a threat.
 
 - Original to governance; no surdesrails SDR asks this question.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
-- [ADR-0011](ADR-0011-forge-and-ci.md): the `release` stage condition, and the rules every workflow obeys, the publishing one included.
+- [ADR-0011](ADR-0011-forge-and-ci.md): the rules every workflow obeys, the publishing one included.
 - [ADR-0012](ADR-0012-delivery.md): `delivery.target`, which decides whether this ADR applies.
 - [ADR-0020](ADR-0020-adding-dependencies.md): the admission rule that reports a dependency's provenance.
 - SLSA: [v1.1 security levels](https://slsa.dev/spec/v1.1/levels), [v1.2 Build track basics](https://slsa.dev/spec/v1.2/build-track-basics). GitHub: [using artifact attestations](https://docs.github.com/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds), [actions/attest-build-provenance](https://github.com/actions/attest-build-provenance) (plan limits in its README), [reaching SLSA L3](https://github.blog/enterprise-software/devsecops/enhance-build-security-and-reach-slsa-level-3-with-github-artifact-attestations/), [slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). npm: [generating provenance statements](https://docs.npmjs.com/generating-provenance-statements). PyPI: [attestations](https://docs.pypi.org/attestations/). Read on 2026-11-14.
