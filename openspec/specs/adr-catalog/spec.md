@@ -31,12 +31,13 @@ unless the table says it is original:
 | ADR-0017 | agent-tooling | none (original to governance) | proposed |
 | ADR-0018 | dependencies | none (original to governance) | proposed |
 | ADR-0019 | vulnerabilities | none (original to governance) | proposed |
+| ADR-0020 | adding-dependencies | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the nineteen files in the table, with the slugs shown
+- **THEN** they are exactly the twenty files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
@@ -245,4 +246,58 @@ ADR-0011's stage table SHALL list a `scan` stage conditioned on
 
 #### Scenario: Original to governance
 - **WHEN** ADR-0019's References are read
+- **THEN** they state that no surdesrails SDR asks this question
+
+### Requirement: ADR-0020 asks who lets a new dependency in
+ADR-0020 SHALL ask `admission.approver` (`person`, `agent`), recommending
+`person`, and `admission.install_scripts` (`ignored`, `allowed`),
+recommending `ignored`. Its Decision SHALL fix, whatever the repository
+rules:
+- the name of a new dependency comes from the package's own documentation
+  or repository, and the registry entry matches that source;
+- the version added was published at least three days earlier, as ADR-0018
+  rule 2;
+- the pull request that adds a dependency declares its name, its version,
+  why it is needed, and why the standard library or a few lines of code do
+  not cover it;
+- that declaration states whether the package carries registry signatures
+  or a provenance attestation, without requiring either;
+- the lockfile is committed and CI installs from it.
+It SHALL state that with `admission.approver: person` the agent asks before
+installing, not at review, because installing already runs the package's
+install code unless `admission.install_scripts` is `ignored`.
+For each fixed rule and for `admission.install_scripts`, it SHALL give the
+mechanism for npm and for Python. For Python it SHALL name uv's mechanism,
+and pip's where it differs, and it SHALL state that a wheel runs no install
+code while a source distribution does, and that neither uv nor pip offers
+a documented exception for one package, so under `ignored` a Python
+package with no wheel for the platform is not admitted. It SHALL state that in Python the
+name installed is the distribution name, never the import name.
+
+#### Scenario: Two traits
+- **WHEN** the `traits:` block of ADR-0020 is read
+- **THEN** it holds exactly `admission.approver` and `admission.install_scripts`
+
+#### Scenario: Asking before installing
+- **WHEN** an agent in a repository that ruled `admission.approver: person` needs a package not in its manifest
+- **THEN** ADR-0020's Decision requires it to ask a person before running the install command
+
+#### Scenario: Undeclared addition
+- **WHEN** a pull request adds an entry to a dependency manifest without naming it, its version, its reason and why the standard library does not cover it
+- **THEN** ADR-0020's Decision names that pull request as breaking a fixed rule
+
+#### Scenario: Import name is not the distribution name
+- **WHEN** a Python module does `import yaml` and the package is missing
+- **THEN** ADR-0020's Decision requires the agent to install the distribution its documentation names, `PyYAML`, and not a package called `yaml`
+
+#### Scenario: Install code off in a Python repository
+- **WHEN** a Python repository rules `admission.install_scripts: ignored`
+- **THEN** ADR-0020 shows how uv and pip refuse source distributions, and states that a package with no wheel for the platform is not admitted: the person picks another package, or the repository rules `allowed` and names the cost
+
+#### Scenario: Provenance not required
+- **WHEN** a package without a provenance attestation is admitted with its declaration
+- **THEN** ADR-0020's Decision allows it
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0020's References are read
 - **THEN** they state that no surdesrails SDR asks this question
