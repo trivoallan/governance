@@ -55,6 +55,30 @@ reuses the random private key helper of `governance-check.test.mjs`
 scenarios run only when gitleaks is on `PATH`, as the existing real-tool
 tests do; "gitleaks missing" runs with a bare `PATH`.
 
+## Adaptations at implementation
+
+Main moved after this design was written: the check became
+`checks/governance-check.ts`, built by `tsc` to `dist/`, and `package.json`
+already had `"prepare": "npm run build"`.
+
+- **Test file name.** `npm test` runs `node --test checks/*.test.ts`, so the
+  test is `checks/pre-commit-hook.test.ts`, not `.test.mjs`.
+- **One `prepare`.** The hook command is its own script, `hooks`, and
+  `prepare` is `npm run build && npm run hooks`: the build still runs in
+  CI, in `npm publish` and in a git install.
+- **The guard compares the git top level with the package directory**
+  instead of only asking whether a git directory exists:
+  `[ "$(git rev-parse --show-toplevel 2>/dev/null)" = "$(pwd -P)" ] && git config core.hooksPath .githooks || true`.
+  `git rev-parse --git-dir` also succeeds in a directory nested inside some
+  other repository (an unpacked tarball, a vendored copy), and would then set
+  that enclosing repository's `core.hooksPath`. A worktree's top level is the
+  worktree itself, so worktrees still match.
+- **The key helper is shared.** `privateKey` (and `onPath`, `barePath`)
+  moved from `governance-check.test.ts` to `checks/test-helpers.ts`, imported
+  by both tests; `tsconfig.json` gains `rewriteRelativeImportExtensions` so
+  the `./test-helpers.ts` import compiles. The helper lands in `dist/` but
+  not in the package (`files` lists `dist/governance-check.js` only).
+
 ## Risks / Trade-offs
 
 - [`git commit --no-verify` skips it] → The ADR-0015 check in the

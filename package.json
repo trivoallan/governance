@@ -19,7 +19,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
+    "hooks": "[ \"$(git rev-parse --show-toplevel 2>/dev/null)\" = \"$(pwd -P)\" ] && git config core.hooksPath .githooks || true",
+    "prepare": "npm run build && npm run hooks",
     "test": "tsc --noEmit && node --test checks/*.test.ts"
   },
   "ontrack": {

@@ -1,0 +1,12 @@
+#!/bin/sh
+# ADR-0015 (secrets.guard: gitleaks): refuse a commit whose staged changes
+# carry a secret. `npm install` installs it (package.json "hooks", run by
+# "prepare", sets core.hooksPath to .githooks). Fails closed: without
+# gitleaks, no commit. A refusal means removing the secret, and revoking it
+# if it was pushed; never `git commit --no-verify`.
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks is not installed, so the ADR-0015 secret guard cannot run." >&2
+  echo "Install it (brew install gitleaks, or a release binary from https://github.com/gitleaks/gitleaks/releases), then commit again." >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact
