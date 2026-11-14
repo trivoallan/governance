@@ -7,6 +7,7 @@ revision: 2
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0012
 traits:
   delivery:
     target:
@@ -146,6 +147,7 @@ revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0012
 traits:
   delivery:
     target: container
@@ -158,6 +160,18 @@ traits:
     manifests: https://github.com/your-name/your-app-manifests
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `delivery.release_tool`: with `release-please`, a workflow uses
+  `googleapis/release-please-action`;
+- `delivery.target`: with `container`, a `Dockerfile` or `Containerfile`;
+- `deployment.manifests`: with a relative path, at least one committed file
+  under it. A URL has nothing to check.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

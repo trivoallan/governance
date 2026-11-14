@@ -107,7 +107,168 @@ function commits(root, file, { from }) {
   }
 }
 
-const CHECKS = { 'ADR-0006': commits };
+// --- Wiring: a ruled trait implies files the repository tracks. Presence only.
+
+// Tracked files only: wiring that was never committed is not wiring.
+function tracked(root) {
+  const r = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' });
+  if (r.status !== 0) throw new CheckError(`git ls-files failed in ${root}: ${r.stderr.trim()}`);
+  return r.stdout.split('\0').filter(Boolean);
+}
+
+// `*` matches within one path segment, a leading `**/` any directory or none.
+// ponytail: only the two forms the table uses, not full glob syntax.
+function pattern(p) {
+  const any = p.startsWith('**/');
+  const body = (any ? p.slice(3) : p)
+    .split('*')
+    .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+    .join('[^/]*');
+  return new RegExp(`^${any ? '(?:.*/)?' : ''}${body}$`);
+}
+
+const matching = (files, alts) => {
+  const res = alts.map(pattern);
+  return files.filter((f) => res.some((r) => r.test(f)));
+};
+
+// A relative path as a prefix of tracked paths: `./docs` -> `docs/`, `.` -> ``.
+const prefix = (p) => {
+  const d = p.replace(/^\.\/?/, '').replace(/\/+$/, '');
+  return d ? `${d}/` : '';
+};
+
+function holds(root, file, strings) {
+  try {
+    const text = readFileSync(join(root, file), 'utf8');
+    return strings.some((s) => text.includes(s));
+  } catch {
+    return false; // tracked but deleted from the working tree
+  }
+}
+
+// { found } or { fail }, for one row against the tracked files.
+function evaluate(row, files, root) {
+  if (row.exists) {
+    const found = [];
+    const missing = [];
+    for (const alts of row.exists) {
+      const hit = matching(files, alts)[0];
+      if (hit) found.push(hit);
+      else missing.push(alts.join(' or '));
+    }
+    return missing.length ? { fail: `no tracked file matches ${missing.join('; ')}` } : { found: found.join(', ') };
+  }
+  if (row.contains) {
+    const { in: where, any } = row.contains;
+    const hit = matching(files, where).find((f) => holds(root, f, any));
+    return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${any.join(' or ')}` };
+  }
+  const dir = prefix(row.path);
+  const hit = files.find((f) => f.startsWith(dir));
+  return hit ? { found: hit } : { fail: `no tracked file under ${dir || './'}` };
+}
+
+const WORKFLOWS = ['.github/workflows/*.yml', '.github/workflows/*.yaml'];
+const inWorkflow = (...any) => ({ contains: { in: WORKFLOWS, any } });
+const byValue = (rows) => (value) => rows[value] ?? null;
+
+// ADR-0010's arc42 files live under ADR-0008's docs.root, `docs/` by default.
+function docsRoot(root) {
+  try {
+    const value = readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root;
+    return typeof value === 'string' && value ? prefix(value) : 'docs/';
+  } catch (e) {
+    if (e instanceof CheckError) return 'docs/';
+    throw e;
+  }
+}
+
+const gate = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
+
+// ADR number -> traits it wires. `row(value, ctx)` returns a row, or null for
+// "nothing to check". ctx: { root, traits: { <group>: { <key>: value } } }.
+const WIRING = {
+  'ADR-0008': [
+    { group: 'docs', key: 'tool', row: byValue({
+      starlight: { contains: { in: ['package.json'], any: ['@astrojs/starlight'] } },
+      docusaurus: { exists: [['docusaurus.config.js', 'docusaurus.config.mjs', 'docusaurus.config.ts']] },
+      mkdocs: { exists: [['mkdocs.yml']] },
+    }) },
+    { group: 'docs', key: 'root', row: (v) => ({ path: v }) },
+  ],
+  'ADR-0010': [
+    { group: 'architecture', key: 'document', row: (v, { root }) => v === 'arc42'
+      ? { exists: Array.from({ length: 12 }, (_, i) => [`${docsRoot(root)}architecture/${String(i + 1).padStart(2, '0')}-*.md`]) }
+      : null },
+    { group: 'architecture', key: 'model', row: byValue({ likec4: { exists: [['**/*.c4', '**/*.likec4']] } }) },
+  ],
+  'ADR-0011': [
+    { group: 'forge', key: 'gate', row: byValue({ blocking: gate, informative: gate }) },
+  ],
+  'ADR-0012': [
+    { group: 'delivery', key: 'release_tool', row: byValue({ 'release-please': inWorkflow('googleapis/release-please-action') }) },
+    { group: 'delivery', key: 'target', row: byValue({ container: { exists: [['**/Dockerfile', '**/Containerfile']] } }) },
+    { group: 'deployment', key: 'manifests', row: (v) => (v === 'none' || v.includes('://') ? null : { path: v }) },
+  ],
+  'ADR-0017': [
+    { group: 'agent', key: 'host', row: byValue({ 'claude-code': { exists: [['.claude/settings.json']] } }) },
+  ],
+  'ADR-0018': [
+    { group: 'dependencies', key: 'updater', row: byValue({
+      dependabot: { exists: [['.github/dependabot.yml', '.github/dependabot.yaml']] },
+      renovate: { exists: [['renovate.json', 'renovate.json5', '.renovaterc', '.renovaterc.json', '.github/renovate.json', '.github/renovate.json5']] },
+    }) },
+    // ponytail: no row with renovate, whose automerge lives in its own config.
+    { group: 'dependencies', key: 'automerge', row: (v, { traits }) =>
+      (v === 'patch' || v === 'minor') && traits.dependencies.updater === 'dependabot'
+        ? inWorkflow('dependabot/fetch-metadata')
+        : null },
+  ],
+  'ADR-0021': [
+    { group: 'supply_chain', key: 'build_level', row: (v) => (['1', '2', '3'].includes(v)
+      ? inWorkflow('actions/attest-build-provenance', '--provenance', 'pypa/gh-action-pypi-publish')
+      : null) },
+  ],
+};
+
+function wiring(number, entries) {
+  return (root, file) => {
+    const text = readFileSync(file, 'utf8');
+    const traits = {};
+    for (const { group } of entries) traits[group] ??= readTraits(text, group) ?? {};
+    let files;
+    let failed = false;
+    for (const { group, key, row } of entries) {
+      const name = `${number}: ${group}.${key}`;
+      const value = traits[group][key];
+      if (!value) {
+        console.error(`${name} is not set in ${file}; the ADR is not ruled`);
+        failed = true;
+        continue;
+      }
+      const r = row(String(value), { root, traits });
+      if (!r) {
+        console.log(`${name} is ${value}, nothing to check`);
+        continue;
+      }
+      files ??= tracked(root);
+      const result = evaluate(r, files, root);
+      if (result.fail) {
+        console.error(`${name} is ${value}, but ${result.fail}`);
+        failed = true;
+      } else {
+        console.log(`${name} is ${value}, found ${result.found}${r.note ? `; ${r.note}` : ''}`);
+      }
+    }
+    return failed ? 1 : 0;
+  };
+}
+
+const CHECKS = {
+  'ADR-0006': commits,
+  ...Object.fromEntries(Object.entries(WIRING).map(([n, entries]) => [n, wiring(n, entries)])),
+};
 
 function main(argv, root = process.cwd()) {
   try {

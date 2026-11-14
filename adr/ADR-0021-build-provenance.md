@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0021
 traits:
   supply_chain:
     build_level:
@@ -147,11 +148,22 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0021
 traits:
   supply_chain:
     build_level: 2
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `supply_chain.build_level`: with `1`, `2` or `3`, a workflow holds
+  `actions/attest-build-provenance`, `--provenance` or
+  `pypa/gh-action-pypi-publish`. It does not tell the levels apart.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

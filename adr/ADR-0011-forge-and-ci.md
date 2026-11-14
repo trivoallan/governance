@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0011
 traits:
   forge:
     gate:
@@ -154,11 +155,23 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0011
 traits:
   forge:
     gate: blocking
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `forge.gate`: with `blocking` or `informative`, at least one workflow in
+  `.github/workflows/`. **It does not verify the ruleset** that makes the
+  pipeline required on the default branch: that is a GitHub setting, outside
+  the repository, and the check's output says so.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0018
 traits:
   dependencies:
     updater:
@@ -162,12 +163,29 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0018
 traits:
   dependencies:
     updater: dependabot
     automerge: patch
 ---
 ```
+
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It reads the keys you ruled and checks
+only that the files they imply are committed, not what those files say:
+
+- `dependencies.updater`: with `dependabot`, `.github/dependabot.yml` (or
+  `.yaml`); with `renovate`, a `renovate.json`, `renovate.json5`,
+  `.renovaterc`, `.renovaterc.json`, or one of the first two under `.github/`;
+- `dependencies.automerge`: with `patch` or `minor` and `dependabot`, a
+  workflow uses `dependabot/fetch-metadata`. With `renovate`, automerge lives
+  in its configuration and has nothing to check.
+
+`none` has nothing to check: a `.github/dependabot.yml` left behind after
+ruling `none` is not reported.
+
+Any other value has nothing to check, and passes.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
