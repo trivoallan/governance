@@ -179,7 +179,7 @@ what makes a decision different from an accepted default.
 - A flaky pipeline blocks everyone, and the pressure to bypass the check
   grows with it.
 - Pinning actions by SHA makes updates a deliberate chore, unless a tool
-  such as Dependabot proposes them.
+  proposes them: [ADR-0018](ADR-0018-dependencies.md) decides which.
 - No tool enforces rules 3 to 5 (see References): review reads every
   `uses:`, `image:` and `run:`.
 

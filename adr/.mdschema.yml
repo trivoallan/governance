@@ -84,6 +84,9 @@ frontmatter:
     - { name: "traits.changes.schema", type: string, optional: true }
     # ADR-0017
     - { name: "traits.agent.host", enum: [claude-code, none], optional: true }
+    # ADR-0018
+    - { name: "traits.dependencies.updater", enum: [dependabot, renovate, none], optional: true }
+    - { name: "traits.dependencies.automerge", enum: [none, patch, minor], optional: true }
 structure:
   - heading:
       pattern: "^# .+"
