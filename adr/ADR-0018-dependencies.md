@@ -52,7 +52,8 @@ about the code.
 
 **Not concerned:** security alerts that report a vulnerable dependency
 without proposing an update. They inform; this ADR is about what keeps the
-repository current.
+repository current. Nor is adding a new dependency: that is
+[ADR-0019](ADR-0019-adding-dependencies.md)'s question.
 
 ## Decision
 

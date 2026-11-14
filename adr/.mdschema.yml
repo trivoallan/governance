@@ -87,6 +87,9 @@ frontmatter:
     # ADR-0018
     - { name: "traits.dependencies.updater", enum: [dependabot, renovate, none], optional: true }
     - { name: "traits.dependencies.automerge", enum: [none, patch, minor], optional: true }
+    # ADR-0019
+    - { name: "traits.admission.approver", enum: [person, agent], optional: true }
+    - { name: "traits.admission.install_scripts", enum: [ignored, allowed], optional: true }
 structure:
   - heading:
       pattern: "^# .+"
