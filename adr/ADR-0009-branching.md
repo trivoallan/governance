@@ -154,6 +154,7 @@ continuously.
 
 ## References
 
+- Suggested skills: `worktree` and `pull-request` from `source-control@melodic-software`; `finishing-a-development-branch` from `superpowers@superpowers-marketplace`.
 - Adapted from surdesrails [SDR-0009](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0009-branching.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0006](ADR-0006-commits.md): the commit format and its eleven types.

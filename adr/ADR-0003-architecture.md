@@ -152,6 +152,7 @@ Shared services, coupled through contracts.
 
 ## References
 
+- Suggested skills: `architecture` and `system-design` from `engineering@knowledge-work-plugins`.
 - Adapted from surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.pattern` key; `architecture.document` is asked by ADR-0010).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 

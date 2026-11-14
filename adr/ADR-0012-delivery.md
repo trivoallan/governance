@@ -204,6 +204,7 @@ it is proven on GitHub Actions. governance assumes GitHub only, where
 
 ## References
 
+- Suggested skills: `deploy-checklist` from `engineering@knowledge-work-plugins`.
 - Adapted from surdesrails [SDR-0011](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0011-delivery.md), revision 1 (its internal hosting-offer trait `hosting.offer` replaced by `delivery.target`; recommends `release-please` instead of `releaser-pleaser`).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [release-please](https://github.com/googleapis/release-please) and [Semantic Versioning](https://semver.org/).
