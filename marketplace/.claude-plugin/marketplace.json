@@ -9,7 +9,7 @@
         "source": "git-subdir",
         "url": "https://github.com/melodic-software/claude-code-plugins.git",
         "path": "plugins/source-control",
-        "sha": "e1b55c3c4ab9cc65ae5ad82134aa8fa57e8ca671"
+        "sha": "c546665517e9a7955dfe8c4dc2749c28afa2d249"
       }
     },
     {
