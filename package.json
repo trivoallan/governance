@@ -2,6 +2,9 @@
   "name": "@trivoallan/ontrack-governance",
   "version": "0.3.0",
   "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
+  "keywords": [
+    "ontrack-source"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trivoallan/governance.git"
