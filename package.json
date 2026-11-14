@@ -3,7 +3,13 @@
   "version": "0.3.0",
   "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
   "keywords": [
-    "ontrack-source"
+    "ontrack-source",
+    "adr",
+    "ontrack",
+    "supply-chain",
+    "slsa",
+    "ci",
+    "coding-agents"
   ],
   "repository": {
     "type": "git",

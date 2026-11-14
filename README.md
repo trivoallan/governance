@@ -1,110 +1,128 @@
 # governance
 
-The questions I ask of my own repositories, shipped as ADRs through an
-[ontrack](https://github.com/trivoallan/ontrack) source.
+**Opinionated ADRs you import, overrule where you disagree, and check in CI.**
 
-Each ADR asks one question (commit format, branching, localization…),
-gives the answer I recommend and why, and leaves the verdict to the
-repository that imports it. It arrives `status: proposed`; you rule on it
-by filling its `traits:` and setting it `accepted` or `rejected`.
-[ADR-0001](adr/ADR-0001-record-architecture-decisions.md) explains how.
+The 21 questions I answer for every Python or TypeScript repository I keep
+on GitHub (commits, branching, delivery, supply chain, agent tooling), each
+with the answer I recommend and why; 11 of them come with a check.
 
-governance is a personal edition of
-[surdesrails](https://github.com/trivoallan/surdesrails), without its
-enterprise context. Import one or the other, not both.
+governance is an [ontrack](https://github.com/trivoallan/ontrack) source:
+an npm package of ADRs that your repository imports and rules on, one
+question at a time.
 
-It is real, not a demo. A new `revision:` means the question itself moved.
+## What you get
 
-## What it asks
-
-The source asks 21 questions, one per ADR. You receive all of them, and
-you may answer `rejected` to those that do not apply to your repository.
-
-A question marked "check" names a command that `ontrack check` runs in your
-repository once you accept the ADR. That command is `governance-check`,
-shipped in this package.
-
-| ADR | Question | Check |
+| Domain | What you gain | What `governance-check` verifies |
 | --- | --- | --- |
-| [ADR-0001](adr/ADR-0001-record-architecture-decisions.md) | Record architecture decisions | yes |
-| [ADR-0002](adr/ADR-0002-localization.md) | Localization |  |
-| [ADR-0003](adr/ADR-0003-architecture.md) | Software architecture |  |
-| [ADR-0004](adr/ADR-0004-languages.md) | Languages |  |
-| [ADR-0005](adr/ADR-0005-validation.md) | Validation |  |
-| [ADR-0006](adr/ADR-0006-commits.md) | Commits | yes |
-| [ADR-0007](adr/ADR-0007-tests.md) | Tests |  |
-| [ADR-0008](adr/ADR-0008-documentation.md) | Documentation | yes |
-| [ADR-0009](adr/ADR-0009-branching.md) | Branching | yes |
-| [ADR-0010](adr/ADR-0010-architecture-documentation.md) | Architecture documentation | yes |
-| [ADR-0011](adr/ADR-0011-forge-and-ci.md) | Forge and continuous integration | yes |
-| [ADR-0012](adr/ADR-0012-delivery.md) | Delivery | yes |
-| [ADR-0013](adr/ADR-0013-frontend.md) | Frontend |  |
-| [ADR-0014](adr/ADR-0014-work-tracking.md) | Work tracking |  |
-| [ADR-0015](adr/ADR-0015-secrets.md) | Secrets | yes |
-| [ADR-0016](adr/ADR-0016-changes.md) | Changes | yes |
-| [ADR-0017](adr/ADR-0017-agent-tooling.md) | Agent tooling | yes |
-| [ADR-0018](adr/ADR-0018-dependencies.md) | Dependencies | yes |
-| [ADR-0019](adr/ADR-0019-vulnerabilities.md) | Vulnerabilities |  |
-| [ADR-0020](adr/ADR-0020-adding-dependencies.md) | Adding a dependency |  |
-| [ADR-0021](adr/ADR-0021-build-provenance.md) | Build provenance | yes |
+| **Workflow** (0006, 0009, 0014, 0016) | One convention for commits and branch names, refused at the gate instead of argued in review | the branch's commits pass commitlint; the branch name has an accepted prefix; OpenSpec uses the schema you chose |
+| **Delivery** (0011, 0012) | A pipeline designed once (stages, a blocking gate, releases cut from tags) that your agent writes from the rules | a workflow exists; release-please runs in one; a Dockerfile if you ship a container |
+| **Supply chain** (0015, 0018, 0019, 0020, 0021) | Current practice, by name: gitleaks before every commit, dependencies admitted by a person with install scripts ignored, a CycloneDX SBOM scanned by Grype, SLSA Build Level 2 provenance | gitleaks finds no secret on the branch; Dependabot is configured, and so is its automerge; the publishing workflow emits provenance |
+| **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |
+| **Code** (0004, 0005, 0007, 0013) | Validation at every boundary (`zod` or `pydantic`), and a test coverage target you set | nothing is verified |
+| **Decisions & docs** (0001, 0002, 0008) | Decisions kept as ADRs, docs in one language under one root | the docs tool and root exist. Separately, the `.mdschema.yml` shipped beside the ADRs attests that each ruled ADR carries its verdict |
+| **Agents** (0017) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned | `.claude/settings.json` exists |
+
+Checks confirm the wiring is there, not that it is right: the gate's
+ruleset, for one, is yours to set on GitHub. Reject any question that
+doesn't fit your repository.
+
+### The questions
+
+- [ADR-0001](adr/ADR-0001-record-architecture-decisions.md) Record architecture decisions
+- [ADR-0002](adr/ADR-0002-localization.md) Localization
+- [ADR-0003](adr/ADR-0003-architecture.md) Software architecture
+- [ADR-0004](adr/ADR-0004-languages.md) Languages
+- [ADR-0005](adr/ADR-0005-validation.md) Validation
+- [ADR-0006](adr/ADR-0006-commits.md) Commits
+- [ADR-0007](adr/ADR-0007-tests.md) Tests
+- [ADR-0008](adr/ADR-0008-documentation.md) Documentation
+- [ADR-0009](adr/ADR-0009-branching.md) Branching
+- [ADR-0010](adr/ADR-0010-architecture-documentation.md) Architecture documentation
+- [ADR-0011](adr/ADR-0011-forge-and-ci.md) Forge and continuous integration
+- [ADR-0012](adr/ADR-0012-delivery.md) Delivery
+- [ADR-0013](adr/ADR-0013-frontend.md) Frontend
+- [ADR-0014](adr/ADR-0014-work-tracking.md) Work tracking
+- [ADR-0015](adr/ADR-0015-secrets.md) Secrets
+- [ADR-0016](adr/ADR-0016-changes.md) Changes
+- [ADR-0017](adr/ADR-0017-agent-tooling.md) Agent tooling
+- [ADR-0018](adr/ADR-0018-dependencies.md) Dependencies
+- [ADR-0019](adr/ADR-0019-vulnerabilities.md) Vulnerabilities
+- [ADR-0020](adr/ADR-0020-adding-dependencies.md) Adding a dependency
+- [ADR-0021](adr/ADR-0021-build-provenance.md) Build provenance
+
+### Not covered
+
+governance decides nothing about:
+
+- static analysis of your own code (SAST) and licence compliance
+  ([ADR-0019](adr/ADR-0019-vulnerabilities.md) says so);
+- which linter, formatter or test runner you use
+  ([ADR-0004](adr/ADR-0004-languages.md)); the pipeline runs the lint
+  command your repository already has
+  ([ADR-0011](adr/ADR-0011-forge-and-ci.md));
+- forges other than GitHub ([ADR-0011](adr/ADR-0011-forge-and-ci.md));
+- the workflow files themselves: none ship, your agent writes them from the
+  rules;
+- infrastructure as code, hosting and operations (logging, monitoring,
+  incidents);
+- code review rules and ownership (`CODEOWNERS`), beyond a person's review
+  of new dependencies ([ADR-0020](adr/ADR-0020-adding-dependencies.md)) and
+  of vulnerability ignore rules
+  ([ADR-0019](adr/ADR-0019-vulnerabilities.md)).
+
+## What an ADR looks like
+
+Each ADR asks a question, recommends an answer and gives the reasons. You
+rule on it by filling its `traits:`. From
+[ADR-0009](adr/ADR-0009-branching.md), abridged:
+
+> While these keys are empty, an agent starting a piece of work does not
+> know how to name its branch, whether it may push to the default branch,
+> or whether its eight commits will land as eight or as one.
+>
+> | Key | Recommended value | Reason |
+> | --- | --- | --- |
+> | `branching.model` | `github-flow` | one change, one branch, one pull request, one review |
+> | `branching.merge` | `squash` | a change becomes one commit on the default branch |
+> | `branching.prefixes` | `[feat, fix, docs]` | these are already commit types |
+
+Accepted, its traits read:
+
+```yaml
+traits:
+  branching:
+    model: github-flow
+    merge: squash
+    prefixes: [feat, fix, docs]
+```
 
 ## Use it
 
+With [ontrack installed](https://trivoallan.github.io/ontrack/), add the
+source:
+
 ```bash
-npm i -D ontrack@git+https://github.com/trivoallan/ontrack.git
 npm i -D trivoallan@npm:@trivoallan/ontrack-governance
-npx ontrack plan
 ```
 
-From Git instead, pin a released tag:
-`npm i -D trivoallan@git+https://github.com/trivoallan/governance.git#vX.Y.Z`.
-Check the npm package was built by this repository's release workflow with
+Check the package was built by this repository's release workflow with
 `npm audit signatures`.
 
-Install ontrack first: without it, `npx ontrack` fetches and runs an
-unrelated package of the same name from the npm registry.
+Everything after that (`ontrack plan`, `ontrack apply`, what a new
+`revision` means, `ontrack check`) is ontrack's, and
+[its documentation](https://trivoallan.github.io/ontrack/) explains it.
 
-The alias (`trivoallan` here) is yours: it becomes the namespace, and the
-ADRs land in `docs/adr/<alias>/`. Rename it if you like.
+## See it in use
 
-## Work on it
+[ontrack](https://github.com/trivoallan/ontrack) imports this source: its
+answers are in
+[`docs/adr/trivoallan/`](https://github.com/trivoallan/ontrack/tree/main/docs/adr/trivoallan),
+the rules they produce in its
+[`AGENTS.md`](https://github.com/trivoallan/ontrack/blob/main/AGENTS.md),
+and its architecture in arc42 and LikeC4 under
+[`docs/architecture/`](https://github.com/trivoallan/ontrack/tree/main/docs/architecture).
 
-This repository is worked on with Claude Code
-([ADR-0017](docs/adr/trivoallan/ADR-0017-agent-tooling.md)). Its plugins
-come from its own marketplace, `marketplace/`, each pinned to a commit.
-Accept the workspace trust dialog, then install each plugin once:
+## Contributing
 
-```bash
-claude plugin install source-control@ontrack-trivoallan-tools --scope project
-claude plugin install superpowers@ontrack-trivoallan-tools --scope project
-claude plugin install claude-security@claude-plugins-official --scope project
-```
-
-`claude-security` comes from Anthropic's marketplace, unpinned: a departure
-recorded in ADR-0017.
-
-If you already have one of them from its upstream marketplace, turn that
-copy off in your untracked `.claude/settings.local.json`
-(`"superpowers@superpowers-marketplace": false`, say).
-
-### Secret guard
-
-Commits go through a pre-commit hook, `.githooks/pre-commit`, that runs
-`gitleaks git --pre-commit --staged --redact`
-([ADR-0015](docs/adr/trivoallan/ADR-0015-secrets.md)). It needs
-[gitleaks](https://github.com/gitleaks/gitleaks) on your `PATH`
-(`brew install gitleaks`, or a release binary); without it, the hook refuses
-every commit.
-
-`npm install` installs the hook, by setting `core.hooksPath` to `.githooks`
-for the clone and all its worktrees. Without `npm install`, run:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-This local setting overrides a `core.hooksPath` you may have set globally.
-
-A refused commit means a secret is staged: remove it from the change, and
-if it was ever pushed, revoke it at its provider. Never get past the hook
-with `git commit --no-verify`.
+Setting up a clone (Claude Code plugins, the secret guard) is in
+[CONTRIBUTING.md](CONTRIBUTING.md).

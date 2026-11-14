@@ -242,6 +242,7 @@ where diagram-by-diagram tools repeat each element in each picture.
 - Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; governance does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
 - [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
+- [C4 model](https://c4model.com/): the context, container and component levels LikeC4 views draw.
 - [Mermaid](https://mermaid.js.org/): diagrams as text, rendered by GitHub and in the browser by the documentation site.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 
