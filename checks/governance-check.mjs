@@ -118,15 +118,11 @@ function tracked(root) {
 
 const esc = (s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
 
-// `*` matches within one path segment, a leading `**/` any directory or none.
+// `*` matches within one path segment, `**/` any folders or none.
 // ponytail: only the two forms the table uses, not full glob syntax.
 function pattern(p) {
-  const any = p.startsWith('**/');
-  const body = (any ? p.slice(3) : p)
-    .split('*')
-    .map(esc)
-    .join('[^/]*');
-  return new RegExp(`^${any ? '(?:.*/)?' : ''}${body}$`);
+  const segment = (part) => part.split('*').map(esc).join('[^/]*');
+  return new RegExp(`^${p.split('**/').map(segment).join('(?:.*/)?')}$`);
 }
 
 const matching = (files, alts) => {
@@ -175,7 +171,7 @@ const WORKFLOWS = ['.github/workflows/*.yml', '.github/workflows/*.yaml'];
 const inWorkflow = (...any) => ({ contains: { in: WORKFLOWS, any } });
 const byValue = (rows) => (value) => rows[value] ?? null;
 
-// ADR-0010's arc42 files live under ADR-0008's docs.root, `docs/` by default.
+// ADR-0010's arc42 files live in architecture/arc42/ under ADR-0008's docs.root, `docs/` by default.
 function docsRoot(root) {
   try {
     const value = readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root;
@@ -193,15 +189,18 @@ const gate = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline r
 const WIRING = {
   'ADR-0008': [
     { group: 'docs', key: 'tool', row: byValue({
-      starlight: { contains: { in: ['package.json'], any: ['@astrojs/starlight'] } },
-      docusaurus: { exists: [['docusaurus.config.js', 'docusaurus.config.mjs', 'docusaurus.config.ts']] },
-      mkdocs: { exists: [['mkdocs.yml']] },
+      starlight: { contains: { in: ['**/package.json'], any: ['@astrojs/starlight'] } },
+      docusaurus: { exists: [['**/docusaurus.config.js', '**/docusaurus.config.mjs', '**/docusaurus.config.ts']] },
+      mkdocs: { exists: [['**/mkdocs.yml']] },
     }) },
     { group: 'docs', key: 'root', row: (v) => ({ path: v }) },
   ],
   'ADR-0010': [
     { group: 'architecture', key: 'document', row: (v, { root }) => v === 'arc42'
-      ? { exists: Array.from({ length: 12 }, (_, i) => [`${docsRoot(root)}architecture/${String(i + 1).padStart(2, '0')}-*.md`]) }
+      ? { exists: Array.from({ length: 12 }, (_, i) => {
+        const section = `${docsRoot(root)}architecture/arc42/${String(i + 1).padStart(2, '0')}-*`;
+        return [`${section}.md`, `${section}.mdx`];
+      }) }
       : null },
     { group: 'architecture', key: 'model', row: byValue({ likec4: { exists: [['**/*.c4', '**/*.likec4']] } }) },
   ],

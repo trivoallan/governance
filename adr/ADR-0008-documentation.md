@@ -148,9 +148,10 @@ traits:
 runs it from your repository's root. It reads the keys you ruled and checks
 only that the files they imply are committed, not what those files say:
 
-- `docs.tool`: with `starlight`, `package.json` names `@astrojs/starlight`;
-  with `docusaurus`, a `docusaurus.config.js`, `.mjs` or `.ts`; with
-  `mkdocs`, `mkdocs.yml`;
+- `docs.tool`: with `starlight`, a `package.json` names
+  `@astrojs/starlight`; with `docusaurus`, a `docusaurus.config.js`, `.mjs`
+  or `.ts`; with `mkdocs`, a `mkdocs.yml`. Each may sit in any folder, so a
+  site kept in its own directory (`site/`) counts;
 - `docs.root`: at least one committed file under that path.
 
 Any other value has nothing to check, and passes.
