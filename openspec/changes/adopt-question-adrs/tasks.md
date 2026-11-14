@@ -23,18 +23,19 @@ its row in the `adr-catalog` spec.
 
 ## 3. Batch 2: questions carried over (new branch and PR)
 
-- [ ] 3.1 Write `adr/ADR-0003-architecture.md` from SDR-0003; verify its two traits are empty
-- [ ] 3.2 Write `adr/ADR-0004-languages.md` from SDR-0004 without team-skills reasoning; verify `grep -i skill` finds no such argument
-- [ ] 3.3 Write `adr/ADR-0005-validation.md` from SDR-0005; verify its two traits are empty
-- [ ] 3.4 Write `adr/ADR-0007-tests.md` from SDR-0007; verify `tests.coverage_target` is empty
-- [ ] 3.5 Write `adr/ADR-0008-documentation.md` from SDR-0008 with the `single-user` / `team` / `public` audience scale; verify the schema enum matches
-- [ ] 3.6 Open the batch 2 PR; verify the numbering has no gap from 0001 to 0009
+- [x] 3.1 Write `adr/ADR-0003-architecture.md` from SDR-0003, recommending `hexagonal`; verify `architecture.pattern` is its only trait and is empty
+- [x] 3.2 Write `adr/ADR-0004-languages.md` from SDR-0004 recommending Python or TypeScript, without team-skills reasoning; verify `grep -i skill` finds no such argument
+- [x] 3.3 Write `adr/ADR-0005-validation.md` from SDR-0005; verify its two traits are empty
+- [x] 3.4 Write `adr/ADR-0007-tests.md` from SDR-0007; verify `tests.coverage_target` is empty
+- [x] 3.5 Write `adr/ADR-0008-documentation.md` from SDR-0008 with the `single-user` / `team` / `public` audience scale, recommending `public`; verify the schema enum matches
+- [x] 3.6 Write `adr/ADR-0010-architecture-documentation.md` from the `architecture.document` part of SDR-0003, recommending `arc42`, with no template link; verify `architecture.document` is its only trait
+- [x] 3.7 Open the batch 2 PR; verify the numbering has no gap from 0001 to 0010
 
 ## 4. Batch 3: adapted questions (new branch and PR)
 
-- [ ] 4.1 Settle with the user what replaces `hosting.offer` in ADR-0011 and the enums for ADR-0012 and ADR-0013; record the answers in design.md
-- [ ] 4.2 Write `adr/ADR-0010-forge-and-ci.md` from SDR-0010 revision 2, GitHub assumed; verify it has `forge.gate`, no `forge.vendor`, and no GitLab mention
-- [ ] 4.3 Write `adr/ADR-0011-delivery.md` from SDR-0011 with the replacement settled in 4.1; verify no `caas` or `paas` remains
-- [ ] 4.4 Write `adr/ADR-0012-frontend.md` from SDR-0013; verify no WCS theme trait and no Angular-only enum
-- [ ] 4.5 Write `adr/ADR-0013-work-tracking.md` from SDR-0014; verify it asks for a tracker, not a Jira project
-- [ ] 4.6 Update the schema enums for batch 3 and open the batch 3 PR; verify `grep -riE 'gitlab|aresis|wcs|caas|paas' adr/` finds no trait key or enum value and the thirteen files match the catalog
+- [ ] 4.1 Settle with the user what replaces `hosting.offer` in ADR-0012 and the enums for ADR-0013 and ADR-0014; record the answers in design.md
+- [ ] 4.2 Write `adr/ADR-0011-forge-and-ci.md` from SDR-0010 revision 2, GitHub assumed; verify it has `forge.gate`, no `forge.vendor`, and no GitLab mention
+- [ ] 4.3 Write `adr/ADR-0012-delivery.md` from SDR-0011 with the replacement settled in 4.1; verify no `caas` or `paas` remains
+- [ ] 4.4 Write `adr/ADR-0013-frontend.md` from SDR-0013; verify no WCS theme trait and no Angular-only enum
+- [ ] 4.5 Write `adr/ADR-0014-work-tracking.md` from SDR-0014; verify it asks for a tracker, not a Jira project
+- [ ] 4.6 Update the schema enums for batch 3 and open the batch 3 PR; verify `grep -riE 'gitlab|aresis|wcs|caas|paas' adr/` finds no trait key or enum value and the fourteen files match the catalog

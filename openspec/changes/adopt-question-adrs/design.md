@@ -15,7 +15,7 @@ satisfy.
 
 **Goals:**
 - A repeatable way to turn one SDR into one governance ADR, so the three
-  batches are the same job done thirteen times.
+  batches are the same job done fourteen times.
 - A consuming repository can rule on each ADR without reading anything but
   the file itself.
 
@@ -108,6 +108,17 @@ PR #1 was squash-merged before batch 1 landed, so batch 1 was rebased onto
 `main` and opened as its own PR instead.
 Batches 2 and 3 each get their own branch and PR.
 
+### arc42 gets its own ADR
+
+SDR-0003 asks two things at once: the code's pattern and where the
+architecture document lives. governance splits them: ADR-0003 asks the
+pattern, ADR-0010 asks for the document. They are ruled at different times
+(a pattern is chosen before the code, a document once there is something to
+describe) and a repository can answer one without the other. ADR-0010 takes
+the next free number; batch 3 moves to 0011-0014, which no repository has
+seen yet. governance ships no arc42 template for now: ADR-0010 lists the
+twelve arc42 sections and links to arc42 itself.
+
 ## Risks / Trade-offs
 
 - [ontrack may not import `.mdschema.yml`, or may list it as `unreadable`
@@ -146,5 +157,5 @@ the consuming repository to copy the schema from
 - The answer governance recommends for each trait. Settled one ADR at a
   time while writing it with `/pm-skills:develop-adr`; it changes the ADR's
   text, not the task list.
-- What replaces `hosting.offer` in ADR-0011, and the enum for ADR-0012's
-  framework and ADR-0013's tracker. Settled when batch 3 starts.
+- What replaces `hosting.offer` in ADR-0012, and the enum for ADR-0013's
+  framework and ADR-0014's tracker. Settled when batch 3 starts.
