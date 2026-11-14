@@ -3,11 +3,26 @@
   "version": "0.1.0",
   "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
   "private": true,
+  "type": "module",
   "files": [
-    "adr/"
+    "adr/",
+    "checks/governance-check.mjs"
   ],
+  "bin": {
+    "governance-check": "checks/governance-check.mjs"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test checks/*.test.mjs"
+  },
   "ontrack": {
     "adr": "adr",
     "namespace": "trivoallan"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4"
   }
 }
