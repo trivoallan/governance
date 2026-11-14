@@ -91,6 +91,9 @@ frontmatter:
     - { name: "traits.vulnerabilities.sbom", enum: [cyclonedx, spdx, none], optional: true }
     - { name: "traits.vulnerabilities.scanner", type: string, optional: true }
     - { name: "traits.vulnerabilities.fail_on", enum: [critical, high, medium, low, none], optional: true }
+    # ADR-0020
+    - { name: "traits.admission.approver", enum: [person, agent], optional: true }
+    - { name: "traits.admission.install_scripts", enum: [ignored, allowed], optional: true }
 structure:
   - heading:
       pattern: "^# .+"
