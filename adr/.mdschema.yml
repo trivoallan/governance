@@ -79,6 +79,9 @@ frontmatter:
     # ADR-0015
     - { name: "traits.secrets.storage", type: string, optional: true }
     - { name: "traits.secrets.guard", type: string, optional: true }
+    # ADR-0016
+    - { name: "traits.changes.framework", enum: [openspec, none], optional: true }
+    - { name: "traits.changes.schema", type: string, optional: true }
 structure:
   - heading:
       pattern: "^# .+"
