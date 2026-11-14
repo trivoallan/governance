@@ -129,6 +129,29 @@ Docusaurus by default, and it embeds LikeC4 views through LikeC4's Vite
 plugin with no generation step. governance ships no arc42 template for now:
 ADR-0010 lists the twelve files.
 
+### Batch 3 choices (settled 2026-11-14)
+
+- ADR-0011 forge and CI: GitHub assumed, so `forge.vendor` is gone and
+  `forge.gate` (`blocking`, `informative`, `none`) is the only trait,
+  recommended `blocking`. The five portable pipeline rules (SHA-pinned
+  actions, protected secrets, deploy only from the default branch, no secret
+  in logs, no secrets for untrusted contributions), the six-stage derivation
+  and the actionlint + act local loop are kept; everything GitLab is dropped.
+- ADR-0012 delivery: `hosting.offer` becomes `delivery.target` (`container`,
+  `platform`, `package`, `none`), which keeps "nothing deploys" distinct from
+  "deploys without a cluster". `delivery.release_tool` is recommended at
+  `release-please`, since governance assumes GitHub. `delivery.environments`,
+  `delivery.registry` and `deployment.manifests` keep their SDR-0011 meaning.
+- ADR-0013 frontend: `frontend.framework` is a free string, recommended
+  `astro` (same Vite toolchain as Starlight, static HTML by default, islands
+  for interactivity). No theme trait. Only SDR-0013's framework-agnostic
+  rules are kept.
+- ADR-0014 work tracking: `tracking.tool` (`github-issues`, `linear`,
+  `jira`, `none`), recommended `github-issues`, and `tracking.project`. The
+  one-line link in each OpenSpec `proposal.md` stays, as
+  `Issue served: <ref> | none | pending`, with the four agent rules on
+  tracker access.
+
 ## Risks / Trade-offs
 
 - [ontrack may not import `.mdschema.yml`, or may list it as `unreadable`

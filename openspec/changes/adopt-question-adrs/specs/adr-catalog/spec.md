@@ -88,12 +88,15 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
   scale translated, without the enterprise-only steps `LS` and `groupe`.
 - ADR-0011 SHALL assume GitHub as the forge, SHALL NOT ask `forge.vendor`,
   and SHALL ask `forge.gate`.
-- ADR-0012 SHALL ask the delivery traits of SDR-0011 except
-  `hosting.offer`, which SHALL be replaced or removed.
-- ADR-0013 SHALL ask which frontend framework the repository uses, with no
-  enum limited to Angular and no WCS theme trait.
-- ADR-0014 SHALL ask which work tracker the repository uses, not which Jira
-  project.
+- ADR-0012 SHALL ask `delivery.target` (`container`, `platform`, `package`,
+  `none`) in place of SDR-0011's `hosting.offer`, plus `delivery.environments`,
+  `delivery.release_tool` (recommended `release-please`), `delivery.registry`
+  and `deployment.manifests`.
+- ADR-0013 SHALL ask `frontend.framework` as a free string, recommending
+  `astro`, with no WCS theme trait.
+- ADR-0014 SHALL ask `tracking.tool` (`github-issues`, `linear`, `jira`,
+  `none`), recommending `github-issues`, and `tracking.project`, not a Jira
+  project key.
 
 #### Scenario: Architecture split in two
 - **WHEN** the `traits:` blocks of ADR-0003 and ADR-0010 are read
