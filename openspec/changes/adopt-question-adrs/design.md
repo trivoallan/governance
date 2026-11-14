@@ -116,8 +116,12 @@ pattern, ADR-0010 asks for the document. They are ruled at different times
 (a pattern is chosen before the code, a document once there is something to
 describe) and a repository can answer one without the other. ADR-0010 takes
 the next free number; batch 3 moves to 0011-0014, which no repository has
-seen yet. governance ships no arc42 template for now: ADR-0010 lists the
-twelve arc42 sections and links to arc42 itself.
+seen yet. ADR-0010 recommends arc42 as one file per section under
+`docs/architecture/arc42/`, so a change touches only its section, and a
+LikeC4 model under `docs/architecture/model/` (trait `architecture.model`)
+so the context, building-block and deployment views are generated from one
+source instead of drawn by hand. governance ships no arc42 template for now:
+ADR-0010 lists the twelve files.
 
 ## Risks / Trade-offs
 

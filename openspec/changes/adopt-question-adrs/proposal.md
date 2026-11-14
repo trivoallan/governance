@@ -46,7 +46,7 @@ of it, imported *instead of* surdesrails, not alongside it.
   | 2 | ADR-0005 validation | SDR-0005 | none |
   | 2 | ADR-0007 tests | SDR-0007 | none |
   | 2 | ADR-0008 documentation | SDR-0008 | narrow the `audience` enum |
-  | 2 | ADR-0010 architecture documentation | SDR-0003 (`architecture.document`) | split out of ADR-0003; no template shipped yet |
+  | 2 | ADR-0010 architecture documentation | SDR-0003 (`architecture.document`) | split out of ADR-0003; one file per arc42 section, LikeC4 model; no template shipped yet |
   | 3 | ADR-0011 forge and CI | SDR-0010 | GitHub assumed; only `gate` stays a question |
   | 3 | ADR-0012 delivery | SDR-0011 | replace the `offer: caas\|paas` hosting trait |
   | 3 | ADR-0013 frontend | SDR-0013 | no Angular-only enum, no WCS themes |

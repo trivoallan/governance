@@ -41,7 +41,9 @@ frontmatter:
     - { name: "traits.localization.language.comments", enum: [french, english, null], optional: true }
     # ADR-0003
     - { name: "traits.architecture.pattern", enum: [event-driven, hexagonal, layered, microservices, monolithic, soa], optional: true }
+    # ADR-0010
     - { name: "traits.architecture.document", enum: [arc42, elsewhere, none], optional: true }
+    - { name: "traits.architecture.model", type: string, optional: true }
     # ADR-0004
     - { name: "traits.languages.main.name", type: string, optional: true }
     # ADR-0005

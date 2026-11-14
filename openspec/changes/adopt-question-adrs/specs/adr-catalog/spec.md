@@ -73,8 +73,10 @@ translated to English (for example `français` becomes `french`):
 The remaining ADRs SHALL adapt their SDR's traits as follows:
 - ADR-0003 SHALL ask `architecture.pattern` only, recommending `hexagonal`.
 - ADR-0010 SHALL ask `architecture.document` (`arc42`, `elsewhere`, `none`),
-  recommending `arc42` at `docs/architecture/arc42.md`. It SHALL NOT point to
-  a template, since governance ships none.
+  recommending `arc42` as a `docs/architecture/arc42/` directory with one
+  file per section, and `architecture.model` (a named architecture-as-code
+  tool or `none`), recommending `likec4` in `docs/architecture/model/`. It
+  SHALL NOT point to a template, since governance ships none.
 - ADR-0004 SHALL ask `languages.main.name`, recommending Python or
   TypeScript, without reasoning that relies on a team's existing skills.
 - ADR-0008 SHALL ask `docs.tool`, `docs.root` and `docs.audience`,
@@ -92,7 +94,7 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 
 #### Scenario: Architecture split in two
 - **WHEN** the `traits:` blocks of ADR-0003 and ADR-0010 are read
-- **THEN** ADR-0003 has only `architecture.pattern` and ADR-0010 has only `architecture.document`
+- **THEN** ADR-0003 has only `architecture.pattern` and ADR-0010 has `architecture.document` and `architecture.model`
 
 #### Scenario: No enterprise vocabulary
 - **WHEN** the shipped ADRs are searched for `gitlab`, `aresis`, `wcs`, `caas` or `paas` as trait keys or enum values

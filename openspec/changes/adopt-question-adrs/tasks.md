@@ -28,7 +28,7 @@ its row in the `adr-catalog` spec.
 - [x] 3.3 Write `adr/ADR-0005-validation.md` from SDR-0005; verify its two traits are empty
 - [x] 3.4 Write `adr/ADR-0007-tests.md` from SDR-0007; verify `tests.coverage_target` is empty
 - [x] 3.5 Write `adr/ADR-0008-documentation.md` from SDR-0008 with the `single-user` / `team` / `public` audience scale, recommending `public`; verify the schema enum matches
-- [x] 3.6 Write `adr/ADR-0010-architecture-documentation.md` from the `architecture.document` part of SDR-0003, recommending `arc42`, with no template link; verify `architecture.document` is its only trait
+- [x] 3.6 Write `adr/ADR-0010-architecture-documentation.md` from the `architecture.document` part of SDR-0003, recommending `arc42` as one file per section and `likec4` for `architecture.model`, with no template link; verify `architecture.document` and `architecture.model` are its only traits
 - [x] 3.7 Open the batch 2 PR; verify the numbering has no gap from 0001 to 0010
 
 ## 4. Batch 3: adapted questions (new branch and PR)

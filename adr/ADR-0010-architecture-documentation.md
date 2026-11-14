@@ -10,6 +10,7 @@ supersedes: []
 traits:
   architecture:
     document:
+    model:
 ---
 
 # Architecture documentation
@@ -33,8 +34,9 @@ While this key is empty, an agent that needs to understand the system as a
 whole (its context, its building blocks, how it is deployed) has nowhere to
 look, so it rebuilds that picture from the code each time, and rebuilds it
 differently. An agent that changes the architecture does not know whether a
-document should change with it. Once the value is written, it knows where
-the document is, or that there is none.
+document or a diagram should change with it. Once these values are written,
+it knows where the document is, whether the diagrams are code it can edit,
+or that there is neither.
 
 This question is asked separately from the code's pattern
 ([ADR-0003](ADR-0003-architecture.md)) because the two are ruled at
@@ -48,37 +50,51 @@ answer one without the other.
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `architecture.document` | `arc42` | its twelve sections give every architecture fact one fixed place, so an agent and a reader know where to look and where to write, and a missing section is visible as a missing section |
+| `architecture.document` | `arc42` | its twelve sections give every architecture fact one fixed place, so an agent and a reader know where to look and where to write, and a missing section is visible as a missing file |
+| `architecture.model` | `likec4` | the diagrams become code: one model in text files, several views generated from it, reviewed in a diff like the rest of the repository. An agent can read and change it, which it cannot do with an image |
 
-**The document lives at `docs/architecture/arc42.md`.** One file, under the
-documentation root of [ADR-0008](ADR-0008-documentation.md). If `docs.root`
-is not `docs/`, the path moves with it.
+**The document is a directory, `docs/architecture/arc42/`, with one file
+per section.** One file per section keeps each change small, lets a pull
+request touch only the section it changes, and gives an agent a precise
+file to open. It lives under the documentation root of
+[ADR-0008](ADR-0008-documentation.md); if `docs.root` is not `docs/`, the
+path moves with it.
 
-**governance ships no template for now.** Start the file with the twelve
-arc42 sections as headings, in this order, and fill only those you have
-something to say in; an empty section is better left with one line saying
-so than removed:
+**governance ships no template for now.** Create the twelve files below.
+Fill only those you have something to say in; a section with nothing to say
+yet keeps its file with one line saying so, rather than disappearing:
 
-1. Introduction and Goals
-2. Constraints
-3. Context and Scope
-4. Solution Strategy
-5. Building Block View
-6. Runtime View
-7. Deployment View
-8. Cross-cutting Concepts
-9. Architecture Decisions
-10. Quality Requirements
-11. Risks and Technical Debt
-12. Glossary
+| File | arc42 section |
+| --- | --- |
+| `01-introduction-and-goals.md` | Introduction and Goals |
+| `02-constraints.md` | Constraints |
+| `03-context-and-scope.md` | Context and Scope |
+| `04-solution-strategy.md` | Solution Strategy |
+| `05-building-block-view.md` | Building Block View |
+| `06-runtime-view.md` | Runtime View |
+| `07-deployment-view.md` | Deployment View |
+| `08-cross-cutting-concepts.md` | Cross-cutting Concepts |
+| `09-architecture-decisions.md` | Architecture Decisions |
+| `10-quality-requirements.md` | Quality Requirements |
+| `11-risks-and-technical-debt.md` | Risks and Technical Debt |
+| `12-glossary.md` | Glossary |
 
 **Section 9 does not repeat the ADRs.** It links to `docs/adr/`, where the
 decisions live; copying them would give two places to keep in step.
 
+**The model lives in `docs/architecture/model/`**, as LikeC4 `.c4` files:
+one model of the system's elements and relationships, from which the views
+are generated. The sections that show structure use views of that model
+rather than hand-drawn diagrams: Context and Scope (3), Building Block View
+(5) and Deployment View (7). A diagram drawn by hand next to the model would
+be a second source, and it would drift.
+
 **This recommendation does not bind your repository.** If your architecture
 already lives in a mature document elsewhere, say `elsewhere` and name the
 path in this ADR's body. If you keep no architecture document, say `none`:
-that is an honest answer for a small repository.
+that is an honest answer for a small repository. For `architecture.model`,
+another architecture-as-code tool is a valid answer when named, and `none`
+means the diagrams, if any, are drawn by hand.
 
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
@@ -118,6 +134,7 @@ supersedes: []
 traits:
   architecture:
     document: arc42
+    model: likec4
 ---
 ```
 
@@ -131,15 +148,19 @@ what makes a decision different from an accepted default.
 
 - An agent finds the system's context, building blocks and deployment in
   one known file instead of rebuilding them from the code.
-- Fixed section names make a gap visible: an empty Deployment View is a
+- Fixed section files make a gap visible: an empty Deployment View is a
   question someone has to answer.
+- With LikeC4, a change to the architecture and to its diagrams lands in the
+  same diff, and the views cannot disagree with each other.
 
 ### Negative
 
 - The document has to be kept up to date by hand; nothing flags it when the
   code moves away from it.
-- Without a shipped template, each repository starts the file by hand from
-  the list above.
+- Without a shipped template, each repository creates the twelve files by
+  hand from the table above.
+- LikeC4 is one more tool and one more language to learn, and its views need
+  a build step to be seen as images.
 
 ### Neutral
 
@@ -148,10 +169,15 @@ what makes a decision different from an accepted default.
 
 ## Alternatives Considered
 
-### `arc42`
+### `arc42` in one directory, one file per section
 
-A fixed set of twelve sections in `docs/architecture/arc42.md`.
-Recommended.
+`docs/architecture/arc42/`, twelve files. Recommended.
+
+### `arc42` in a single file
+
+One `arc42.md`, as surdesrails does. Simpler to start, but every change
+touches the same file, and the file grows long enough that an agent reads
+far more than it needs.
 
 ### `elsewhere`
 
@@ -163,18 +189,36 @@ its path in this ADR.
 No architecture document. Honest for a small repository whose structure is
 read from the code and ADR-0003.
 
+### Diagrams drawn by hand
+
+Images or drawing-tool files next to the document. No tool to learn, but an
+agent cannot change them, review cannot diff them, and each view drifts from
+the others on its own.
+
+### Another architecture-as-code tool
+
+Structurizr DSL or diagrams as code in Mermaid or PlantUML. Valid answers
+when named; governance recommends LikeC4 because one model feeds every view,
+where diagram-by-diagram tools repeat each element in each picture.
+
 ## References
 
 - Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; governance does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
+- [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 
-**The key.**
+**The keys.**
 
 | Key | What it holds | Allowed values |
 | --- | --- | --- |
-| `architecture.document` | where this repository's architecture document lives | `arc42` (`docs/architecture/arc42.md`), `elsewhere`, `none` |
+| `architecture.document` | where this repository's architecture document lives | `arc42` (`docs/architecture/arc42/`, one file per section), `elsewhere`, `none` |
+| `architecture.model` | what the architecture diagrams are made from | `likec4` (`docs/architecture/model/`), another named tool, or `none` |
 
-**An empty key is not an answer**: this one is required. The value is
+**`architecture.model` is not checked against a list**: architecture-as-code
+tools are not a closed set. The schema checks that you answered, never that
+the answer is right.
+
+**Both keys are required**: an empty key is not an answer. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
