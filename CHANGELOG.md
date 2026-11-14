@@ -1,0 +1,24 @@
+# Changelog
+
+## [0.2.0](https://github.com/trivoallan/governance/compare/v0.1.0...v0.2.0) (2026-11-14)
+
+
+### Features
+
+* **adr:** add ADR-0015 secrets question ([#6](https://github.com/trivoallan/governance/issues/6)) ([b179a85](https://github.com/trivoallan/governance/commit/b179a85979a2b107a31523073352e119cf8e61d5))
+* **adr:** add ADR-0016, the change framework question ([#7](https://github.com/trivoallan/governance/issues/7)) ([7d121bd](https://github.com/trivoallan/governance/commit/7d121bd0fd99d9a92b8dea411f28d0547e7496e1))
+* **adr:** add ADR-0017 agent tooling and revise ADR-0001 ([#8](https://github.com/trivoallan/governance/issues/8)) ([a6bc67a](https://github.com/trivoallan/governance/commit/a6bc67a3738e889baac620cb1b8940b468b0229e))
+* **adr:** add ADR-0018 dependencies ([#11](https://github.com/trivoallan/governance/issues/11)) ([24d141b](https://github.com/trivoallan/governance/commit/24d141bfe666f23f131a532d05c8679d648d5586))
+* **adr:** add ADR-0021 build provenance ([#21](https://github.com/trivoallan/governance/issues/21)) ([c65d3b1](https://github.com/trivoallan/governance/commit/c65d3b126ce7f4077b5354df8c2406a60eef0967))
+* **adr:** add batch 2 questions and split out arc42 ([#3](https://github.com/trivoallan/governance/issues/3)) ([bd3b133](https://github.com/trivoallan/governance/commit/bd3b133522f123398853823e323d08d46ab2a88b))
+* **adr:** add batch 3 questions (forge, delivery, frontend, tracking) ([#4](https://github.com/trivoallan/governance/issues/4)) ([eb19263](https://github.com/trivoallan/governance/commit/eb19263cedc439e66e1358dab9e1dcdf5601552d))
+* **adr:** ask about SBOMs and vulnerability scanning in ADR-0019 ([#18](https://github.com/trivoallan/governance/issues/18)) ([61f1981](https://github.com/trivoallan/governance/commit/61f1981eafaaa27ba7fdec0220951eba7d8d152b))
+* **adr:** check branch names, secrets and changes on the branch ([#27](https://github.com/trivoallan/governance/issues/27)) ([ced28d8](https://github.com/trivoallan/governance/commit/ced28d87e642f5f19de0e6ce5b45556c5d8df143))
+* **adr:** check the wiring of seven ADRs ([#25](https://github.com/trivoallan/governance/issues/25)) ([67ed204](https://github.com/trivoallan/governance/commit/67ed204082f212b9e3b89fcfca03ab6cbd7e0ee6))
+* **adr:** ship ADRs as questions, adapted from surdesrails ([#2](https://github.com/trivoallan/governance/issues/2)) ([007529a](https://github.com/trivoallan/governance/commit/007529a5adae2a4ca754f4b8a75b3dd2d17d149f))
+* **checks:** ship governance-check and the ADR-0006 check ([#14](https://github.com/trivoallan/governance/issues/14)) ([3128bb6](https://github.com/trivoallan/governance/commit/3128bb695a617a23e9c6c36fa02b6a996b3363bc))
+
+
+### Bug Fixes
+
+* **adr:** find Starlight and arc42 where repositories put them ([#29](https://github.com/trivoallan/governance/issues/29)) ([c392470](https://github.com/trivoallan/governance/commit/c39247011fc3425fdc51cf0bc88f6f69694a619e))
