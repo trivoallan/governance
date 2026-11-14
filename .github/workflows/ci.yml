@@ -30,10 +30,11 @@ jobs:
       # lockfile out of date with package.json fails here. The tests spawn
       # commitlint, a devDependency.
       - run: npm ci
-      # package.json "test": node --test on checks/*.test.mjs.
+      # package.json "test": tsc --noEmit, then node --test on checks/*.test.ts.
       - run: npm test
       # ADR-0006: the pull request's commits are Conventional Commits with a
       # scope from commits.scopes. Runs the checkout's script, not the copy
       # under node_modules, so a pull request changing the check is checked
-      # by its own version. GitHub's merge commit is ignored by commitlint.
-      - run: node checks/governance-check.mjs ADR-0006 --from "origin/${{ github.base_ref }}"
+      # by its own version; Node strips its types. GitHub's merge commit is
+      # ignored by commitlint.
+      - run: node checks/governance-check.ts ADR-0006 --from "origin/${{ github.base_ref }}"
