@@ -1,0 +1,67 @@
+name: scan
+
+# Vulnerability scan of ADR-0019: Grype reads the dependencies package-lock.json
+# records and fails on a critical vulnerability that has a fixed version.
+# Every finding, whatever its severity, goes to code scanning as SARIF.
+# The job is named `scan`: that is the check the main ruleset requires.
+on:
+  # No paths: filter. A required check that a pull request never triggers
+  # stays pending and blocks it.
+  pull_request:
+    branches: [main]
+  # ADR-0019 rule 2: the database learns of vulnerabilities in code nobody
+  # changed, so main is rescanned weekly (Monday 06:00 UTC).
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+# Nothing beyond reading the code and writing code scanning results; no secret.
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No Node and no install: Grype reads package-lock.json as it is, so no
+      # install script runs (ADR-0020). devDependencies are scanned too: they
+      # run in CI and on contributors' machines.
+      #
+      # Report: every finding, with or without a fix, to SARIF. This step never
+      # fails; --only-fixed would drop the findings that have no fix, and
+      # ADR-0019 rule 3 wants those reported all the same.
+      - id: report
+        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          path: .
+          # Marks critical findings as errors in SARIF, the rest as warnings.
+          severity-cutoff: critical
+          fail-build: false
+          output-format: sarif
+      # Gate: fails on a critical vulnerability with a fixed version, nothing
+      # else (vulnerabilities.fail_on, rule 3). The table lands in the job log,
+      # which is where a pull request from a fork shows its findings.
+      # Never turn this green by lowering the cutoff or removing the step
+      # (rule 4): update the dependency, or have a person merge an ignore rule
+      # naming one vulnerability in .grype.yaml (rule 5).
+      - uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
+        with:
+          path: .
+          severity-cutoff: critical
+          only-fixed: true
+          fail-build: true
+          output-format: table
+      # Uploaded even when the gate failed. Skipped on a pull request from a
+      # fork: its token cannot write security events, and the upload would fail
+      # the job for a reason unrelated to the change.
+      - if: >-
+          always() && steps.report.outputs.sarif != '' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: ${{ steps.report.outputs.sarif }}
