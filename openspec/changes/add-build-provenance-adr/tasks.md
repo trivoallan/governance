@@ -22,4 +22,4 @@ Nygard sections and frontmatter of the `adr-format` spec.
 
 ## 4. Delivery
 
-- [ ] 4.1 Commit, push and open the pull request; verify its diff holds ADR-0021, the schema lines and this change, and nothing else
+- [x] 4.1 Commit, push and open the pull request; verify its diff holds ADR-0021, the schema lines and this change, and nothing else
