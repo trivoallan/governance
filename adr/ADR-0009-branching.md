@@ -124,7 +124,8 @@ runs it from your repository's root, and it reads the keys you ruled:
   (`release-please--`, `releaser-pleaser--`) or the updater ruled in
   ADR-0018 (`dependabot/`, `renovate/`), whose name is the tool's, it has
   nothing to check either, and passes. A branch that no ruled answer names
-  must follow the prefixes.
+  must follow the prefixes. Rule ADR-0012 and ADR-0018 with (or before) this
+  ADR, or your bots' pull requests fail this check.
 
 It does not check `branching.model` or `branching.merge`: those live in
 your forge's settings, outside the repository.

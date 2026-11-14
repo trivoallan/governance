@@ -340,19 +340,16 @@ const TOOLS: [adr: string, group: string, key: string, prefixes: Record<string, 
   ['ADR-0018', 'dependencies', 'updater', { dependabot: 'dependabot/', renovate: 'renovate/' }],
 ];
 
-function toolBranches(root: string): { prefix: string; source: string }[] {
-  return TOOLS.flatMap(([adr, group, key, prefixes]) => {
-    let file: string;
-    try {
-      file = findAdr(root, adr);
-    } catch (e) {
-      if (e instanceof CheckError && /no file matches/.test(e.message)) return [];
-      throw e;
-    }
-    const value = readTraits(readFileSync(file, 'utf8'), group)?.[key];
-    const prefix = typeof value === 'string' ? prefixes[value] : undefined;
-    return prefix ? [{ prefix, source: `${adr} ${group}.${key}: ${value}` }] : [];
-  });
+// What ADR `adr` answers for `key`; `found` is false when no file matches (several files still throw).
+function toolAnswer(root: string, adr: string, group: string, key: string): { found: boolean; value?: unknown } {
+  let file: string;
+  try {
+    file = findAdr(root, adr);
+  } catch (e) {
+    if (e instanceof CheckError && /no file matches/.test(e.message)) return { found: false };
+    throw e;
+  }
+  return { found: true, value: readTraits(readFileSync(file, 'utf8'), group)?.[key] };
 }
 
 function branching(root: string, file: string, { branch }: Options): number {
@@ -370,18 +367,26 @@ function branching(root: string, file: string, { branch }: Options): number {
     console.log(`ADR-0009: ${name} is the default branch, nothing to check`);
     return 0;
   }
-  const tool = toolBranches(root).find(({ prefix }) => name.startsWith(prefix));
-  if (tool) {
-    console.log(`ADR-0009: ${name} is a tool branch (${tool.source}), nothing to check`);
-    return 0;
+  // Only a name opened by a known tool reads ADR-0012 and ADR-0018.
+  const row = TOOLS.find(([, , , prefixes]) => Object.values(prefixes).some((p) => name.startsWith(p)));
+  let hint = '';
+  if (row) {
+    const [adr, group, key, toolPrefixes] = row;
+    const [tool, prefix] = Object.entries(toolPrefixes).find(([, p]) => name.startsWith(p)) ?? [];
+    const { found, value } = toolAnswer(root, adr, group, key);
+    if (typeof value === 'string' && Object.hasOwn(toolPrefixes, value) && toolPrefixes[value] === prefix) {
+      console.log(`ADR-0009: ${name} is a tool branch (${adr} ${group}.${key}: ${value}), nothing to check`);
+      return 0;
+    }
+    hint = found
+      ? ` (not exempt: ${adr} ${group}.${key} is not ${tool})`
+      : ` (not exempt: no ${adr} in docs/adr/*/ rules ${group}.${key})`;
   }
   const form = new RegExp(`^(?:${prefixes.map(esc).join('|')})/[a-z0-9]+(?:-[a-z0-9]+)*$`);
   if (form.test(name)) {
     console.log(`ADR-0009: branch ${name} matches branching.prefixes`);
     return 0;
   }
-  const named = TOOLS.find(([, , , prefixes]) => Object.values(prefixes).some((p) => name.startsWith(p)));
-  const hint = named ? ` (not exempt: ${named[0]} ${named[1]}.${named[2]} is not ${Object.entries(named[3]).find(([, p]) => name.startsWith(p))![0]})` : '';
   console.error(`ADR-0009: branch ${name} is not <prefix>/<kebab-case-description> with a prefix in branching.prefixes: ${prefixes.join(', ')}${hint}`);
   return 1;
 }

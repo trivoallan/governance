@@ -504,23 +504,52 @@ test('ADR-0009: tool branch refused without its ADR', () => {
   const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'dependabot/npm_and_yarn/zod-4.1.0']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /dependabot\/npm_and_yarn\/zod-4\.1\.0 is not <prefix>/);
-  assert.match(r.stderr, /ADR-0018 dependencies\.updater/);
+  assert.match(r.stderr, /no ADR-0018 in docs\/adr\/\*\/ rules dependencies\.updater/);
 });
 
 test('ADR-0009: tool branch refused when another tool is ruled', () => {
   let r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('renovate') } }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
   r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('none') } }), ['ADR-0009', '--branch', 'release-please--branches--main']);
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /ADR-0012 delivery\.release_tool/);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not release-please/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('release-please') } }), ['ADR-0009', '--branch', 'releaser-pleaser--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /releaser-pleaser--branches--main is not <prefix>/);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not releaser-pleaser/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('none') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+});
+
+test('ADR-0009: ADR present with an empty key exempts nothing', () => {
+  let r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...releaseAdr('') } }), ['ADR-0009', '--branch', 'release-please--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /release-please--branches--main is not <prefix>/);
+  assert.match(r.stderr, /ADR-0012 delivery\.release_tool is not release-please/);
+  r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+});
+
+test('ADR-0009: inherited object members are not tools', () => {
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('constructor') } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
 });
 
 test('ADR-0009: rejected ADR exempts nothing', () => {
-  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), 'ADR-0018-dependencies.md': '' } }), ['ADR-0009', '--branch', 'dependabot/x']);
+  const files = { 'docs/adr/trivoallan/ADR-0018-dependencies.md': '---\nadr: ADR-0018\nstatus: rejected\n---\n\n# ADR\n' };
+  const r = runWith(branched({ adrs: branchingAdr('[feat]'), files }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot\/x is not <prefix>/);
+  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
 });
 
-test('ADR-0009: duplicate tool ADR fails', () => {
+test('ADR-0009: duplicate tool ADR fails a tool branch only', () => {
   const dir = branched({
     adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') },
     files: { 'docs/adr/other/ADR-0018-x.md': '---\nstatus: accepted\n---\n' },
@@ -528,6 +557,8 @@ test('ADR-0009: duplicate tool ADR fails', () => {
   const r = runWith(dir, ['ADR-0009', '--branch', 'dependabot/x']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /several files match/);
+  const ok = runWith(dir, ['ADR-0009', '--branch', 'feat/x']);
+  assert.equal(ok.status, 0, ok.stderr);
 });
 
 test('ADR-0009: tool prefix needs its separator', () => {
