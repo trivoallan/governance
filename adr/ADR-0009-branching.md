@@ -39,7 +39,8 @@ get guessed, badly, and differently each time. Once the three values are
 written, it has nothing left to guess.
 
 The three models below work the same on any forge. What a pipeline runs on
-a branch is a separate question, asked by ADR-0010 (forge and CI).
+a branch is a separate question, asked by
+[ADR-0011](ADR-0011-forge-and-ci.md) (forge and CI).
 
 ## Decision
 
