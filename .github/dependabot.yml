@@ -1,0 +1,31 @@
+# ADR-0018 (dependencies.updater: dependabot): version updates for the
+# ecosystems the tracked files justify, and no other (rule 5). Security
+# alerts are ADR-0019's, not configured here.
+version: 2
+updates:
+  # Rule 5: package.json and package-lock.json at the root add npm.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Rule 2: nothing is proposed until three days after its release, the
+    # only defence an automerged patch has against a compromised release.
+    cooldown:
+      default-days: 3
+    # ADR-0006: titles read `chore: bump <name> from <a> to <b>`, a type of
+    # the eleven with no scope, instead of `chore(deps-dev): Bump ...`.
+    # release-please cuts no release for `chore`.
+    commit-message:
+      prefix: chore
+  # Rule 5: .github/workflows/ adds github-actions. Rule 3: these updates
+  # move the SHA pins of ADR-0011 and are never merged automatically.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Rule 2, as above.
+    cooldown:
+      default-days: 3
+    # ADR-0006, as above.
+    commit-message:
+      prefix: chore

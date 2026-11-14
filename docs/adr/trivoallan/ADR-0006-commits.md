@@ -73,6 +73,17 @@ The scopes are the ones the history already uses: `adr` for the shipped
 questions, `checks` for the check scripts, `openspec` for change proposals,
 and `readme` for the README.
 
+**Departure: the CI commit check skips Dependabot's pull requests.** The
+ADR-0006 step of `.github/workflows/ci.yml` does not run on a pull request
+authored by `dependabot[bot]` (ADR-0018). Dependabot's commit bodies start
+with a `Bumps [name](url) from a to b.` line that passes commitlint's
+100-character body limit for most packages, and Dependabot has no setting
+for the body. Its titles, which the squash merge of ADR-0009 keeps, are
+`chore: bump …`, a type with no scope, set by `.github/dependabot.yml`.
+Installs and tests still run on those pull requests and the required `test`
+check still reports. Every other pull request is checked as before; a
+commit a person pushes to a Dependabot branch is not, and review catches it.
+
 ## Consequences
 
 ### Positive
