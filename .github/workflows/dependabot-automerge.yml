@@ -1,0 +1,42 @@
+name: dependabot-automerge
+
+# ADR-0018 (dependencies.automerge: patch): arms GitHub's auto-merge on
+# Dependabot's npm patch pull requests. `--auto` merges only once the checks
+# the `main requires test` ruleset requires have passed (rule 1, allowed by
+# ADR-0011's forge.gate: blocking); "Allow auto-merge" must be on in the
+# repository settings. Everything else, action updates (rule 3), minors and
+# majors (rule 4) included, waits for a person.
+# pull_request only, never its privileged `_target` variant (ADR-0011 rule
+# 5): no checkout, no secret, nothing from the pull request runs here.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  automerge:
+    # The pull request's author, not the actor: a person pushing to a
+    # Dependabot branch does not arm it, and a person's pull request never
+    # runs this job.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # Reads the ecosystem and update type from Dependabot's commit message.
+      # Pinned by SHA (ADR-0011 rule 3).
+      - id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      # An allow-list: npm (Dependabot's `npm_and_yarn`) and a semver patch
+      # only, so an ecosystem added later is not merged before someone
+      # decides it. --squash is ADR-0009's merge method. The URL goes
+      # through env:, never interpolated into the script.
+      - if: >-
+          steps.metadata.outputs.package-ecosystem == 'npm_and_yarn' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
