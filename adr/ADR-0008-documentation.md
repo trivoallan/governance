@@ -278,3 +278,8 @@ differently.
 **All three keys are required**: an empty key is not an answer. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: the ADR governs the user documentation only; the architecture document and the ADRs are ADR-0010's, and no path moves with `docs.root` any more. Keys and values are unchanged, but the scope of `docs.root` and `docs.audience` narrowed: check that your answers still hold for the user documentation alone.

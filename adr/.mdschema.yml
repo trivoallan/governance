@@ -69,6 +69,7 @@ frontmatter:
     - { name: "traits.delivery.target", enum: [container, platform, package, none], optional: true }
     - { name: "traits.delivery.environments", type: array, optional: true }
     - { name: "traits.delivery.release_tool", type: string, optional: true }
+    - { name: "traits.delivery.release_notes", enum: [changelog, highlights, none], optional: true }
     - { name: "traits.delivery.registry", type: string, optional: true }
     - { name: "traits.deployment.manifests", type: string, optional: true }
     # ADR-0013

@@ -270,3 +270,8 @@ the answer is right.
 **All three keys are required**: an empty key is not an answer. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: arc42 and the model live at fixed paths under `docs/architecture/`, not under `docs.root`, and their audience is the repository's visibility. Keys and values are unchanged: if your arc42 sections sit under another `docs.root`, move them to `docs/architecture/arc42/`.

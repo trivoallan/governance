@@ -272,3 +272,8 @@ three rules still apply to any agent that installs a schema.
 **Both keys are required**: an empty key is not an answer. The value is
 written in this file and nowhere else, `openspec/config.yaml` applies it;
 whoever needs it links here. See ADR-0001 for the check command.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: a change is also opened on explicit request (in the session, or by a tracker gesture the repository declares), even when no behaviour moves. No key changed: check that your reason still fits the recommendation.
