@@ -608,3 +608,15 @@ test('tool checks leave the repository untouched', () => {
     assert.equal(git(dir, 'status', '--porcelain', '--ignored'), before, number);
   }
 });
+
+// ADR-0007 holds the coverage threshold; the `test` script has to carry it too.
+test('coverage threshold in npm test is the one ADR-0007 rules', () => {
+  const root = join(here, '..');
+  const { scripts } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { scripts: { test: string } };
+  const adr = readFileSync(join(root, 'docs', 'adr', 'trivoallan', 'ADR-0007-tests.md'), 'utf8');
+  const applied = scripts.test.match(/--test-coverage-lines=(\S+)/)?.[1];
+  const ruled = adr.match(/^\s*coverage_target:\s*(\S+)\s*$/m)?.[1];
+  assert.ok(applied, 'package.json: the test script has no --test-coverage-lines=<n>');
+  assert.ok(ruled, 'ADR-0007: no tests.coverage_target');
+  assert.equal(applied, ruled, `ADR-0007 rules coverage_target: ${ruled}, but the test script applies --test-coverage-lines=${applied}`);
+});
