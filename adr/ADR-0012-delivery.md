@@ -3,7 +3,7 @@ adr: ADR-0012
 slug: delivery
 title: Delivery
 status: proposed
-revision: 1
+revision: 2
 date:
 authors: []
 supersedes: []
@@ -100,6 +100,14 @@ that publishes a package answers `manual`, never `none`. A tool that does
 only half the job (publishes without a changelog) still counts: say
 "changelog by hand" under Consequences.
 
+**Before 1.0.0, a breaking change gives a minor version.** With
+`release-please`, a repository whose current version is below 1.0.0 sets
+`"bump-minor-pre-major": true` in `release-please-config.json`. Without it,
+the first breaking change in a 0.x repository releases 1.0.0, a promise of
+stability nobody decided. Going to 1.0.0 stays a deliberate act
+(a `Release-As: 1.0.0` footer), after which the option no longer applies. A
+repository already at 1.0.0 or above does not set it.
+
 **Once a pipeline file exists**, the last task of any change checks that it
 passes on the pull request, even when there is no deploy job.
 
@@ -134,7 +142,7 @@ adr: ADR-0012
 slug: delivery
 title: Delivery
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
