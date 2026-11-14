@@ -51,6 +51,11 @@ covers, or published by someone who took over the package. Waiting a few
 days before proposing it lets others find out first; it proves nothing
 about the code.
 
+**Automerge is the exception
+[ADR-0022](ADR-0022-review-and-merge.md) allows** to its rule that a
+person merges: a workflow the repository ruled merges the update, not an
+agent.
+
 **Not concerned:** security alerts that report a vulnerable dependency
 without proposing an update. They inform, under
 [ADR-0019](ADR-0019-vulnerabilities.md); this ADR is about what keeps the

@@ -76,7 +76,8 @@ licences too.
    adding an ignore rule, not by lowering `fail_on`, not by removing the
    job. It fixes by updating the dependency, through ADR-0018's updater
    when one is ruled. When no fixed version exists, or the vulnerable code
-   is not reachable, it proposes an ignore rule and a person merges it.
+   is not reachable, it proposes an ignore rule and a person merges it
+   ([ADR-0022](ADR-0022-review-and-merge.md)).
 5. **Every ignore rule names one vulnerability and says why**: in
    `.grype.yaml`, an entry under `ignore:` with `vulnerability:` and
    `reason:`. An ignore by severity, by package alone or without a reason
