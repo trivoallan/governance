@@ -4,8 +4,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, readFileSync } from
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { privateKey, keyLine, onPath, barePath } from './test-helpers.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const script = join(here, 'governance-check.ts');
@@ -397,9 +397,6 @@ function stub(dir: string, name: string) {
 // GITHUB_HEAD_REF cleared so a CI run of these tests does not leak into them.
 const runWith = (cwd: string, args: string[], env: Record<string, string> = {}) =>
   spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '', ...env } });
-const onPath = (name: string) => spawnSync('sh', ['-c', `command -v ${name}`]).status === 0;
-// A PATH with git and node but neither gitleaks nor openspec.
-const barePath = [dirname(process.execPath), '/usr/bin', '/bin'].join(':');
 
 const branchingAdr = (prefixes: string) => ({ 'ADR-0009-branching.md': `  branching:\n    model: github-flow\n    merge: squash\n    prefixes: ${prefixes}` });
 const secretsAdr = (guard: string) => ({ 'ADR-0015-secrets.md': `  secrets:\n    storage: keychain\n    guard: ${guard}` });
@@ -527,8 +524,6 @@ test('ADR-0009: one value where a list is expected', () => {
   assert.match(r.stderr, /ADR-0009: branching\.prefixes is not a list/);
 });
 
-// A private key that gitleaks' private-key rule finds; random, so it is no real key.
-const privateKey = () => `-----BEGIN RSA PRIVATE KEY-----\n${randomBytes(600).toString('base64').match(/.{1,64}/g)!.join('\n')}\n-----END RSA PRIVATE KEY-----\n`; // gitleaks:allow
 const realGitleaks = { skip: !onPath('gitleaks') && 'gitleaks not on PATH' };
 
 test('ADR-0015 with gitleaks: no leak', realGitleaks, () => {
@@ -540,7 +535,7 @@ test('ADR-0015 with gitleaks: leak in a branch commit, redacted', realGitleaks, 
   const key = privateKey();
   const r = runWith(branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x', commits: [{ id_rsa: key }] }), ['ADR-0015']);
   assert.notEqual(r.status, 0);
-  assert.doesNotMatch(r.stdout + r.stderr, new RegExp(key.split('\n')[1].replace(/[+/]/g, '\\$&')));
+  assert.doesNotMatch(r.stdout + r.stderr, keyLine(key));
 });
 
 test('ADR-0015 with gitleaks: leak before the base', realGitleaks, () => {
