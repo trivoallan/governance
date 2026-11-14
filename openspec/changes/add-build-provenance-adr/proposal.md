@@ -18,17 +18,18 @@ answer to "do I attach a provenance, and of what strength?".
     track level the repository's published artifacts reach, recommending
     **`2`**: a provenance signed by the hosted build platform, through
     `actions/attest-build-provenance`, `npm publish --provenance`, or PyPI
-    Trusted Publishing with PEP 740 attestations for Python. On
-    GitHub-hosted runners this costs a few workflow lines and no key to
-    manage.
+    Trusted Publishing with PEP 740 attestations for Python. No key
+    to manage, but a precondition: npm provenance needs a public source
+    repository, and GitHub attestations on a private repository need
+    GitHub Enterprise Cloud.
 - Its Decision fixes, whatever the repository rules:
-  1. **The key applies only to a repository that publishes.** It is ruled
-     only when ADR-0012's `delivery.release_tool` is neither `manual` nor
-     `none`, the condition ADR-0011's stage table uses for `release`. A
-     repository that publishes nothing produces no provenance and rules
-     ADR-0021 `rejected`.
+  1. **The key applies to every repository whose artifacts leave it**:
+     ADR-0012's `delivery.target` is `package` or `container`, whatever
+     `release_tool` says, hand releases included. A repository that
+     publishes nothing rules ADR-0021 `rejected`.
   2. **An unverified provenance proves nothing.** The ADR points to the
-     consumer side (`npm audit signatures`, `gh attestation verify`) and to
+     consumer side (`npm audit signatures`, `gh attestation verify`, and for Python the
+     manual `pypi-attestations verify pypi`) and to
      ADR-0020's admission rule, which reports it when a dependency is
      added.
   3. **The provenance is produced by the workflow that publishes**, under

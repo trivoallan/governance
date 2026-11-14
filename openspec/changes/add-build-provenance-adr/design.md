@@ -5,9 +5,9 @@
 `main` holds ADR-0001 to ADR-0019 (ADR-0019 "Vulnerabilities"); ADR-0020
 "Adding a dependency" is in open PR trivoallan/governance#17
 (`adr/ADR-0020-adding-dependencies.md`, traits `admission.approver` and
-`admission.install_scripts`) and must land first. ADR-0011's
-stage table runs `release` when `delivery.release_tool` (ADR-0012) is
-neither `manual` nor `none`. See proposal.md for why.
+`admission.install_scripts`) and must land first. ADR-0012's
+`delivery.target` says whether a repository publishes (`package`,
+`container`) or not (`platform`, `none`). See proposal.md for why.
 
 Facts this design relies on, read on 2026-11-14 (task 1.1 re-checks each):
 
@@ -29,6 +29,14 @@ Facts this design relies on, read on 2026-11-14 (task 1.1 re-checks each):
 - **Verification**: `gh attestation verify <artifact> -R <owner/repo>`
   (or `oci://` for images); `npm audit signatures` checks registry
   signatures and npm provenance attestations of installed packages.
+- **Plan limits**: npm provenance needs a public `repository` matching the
+  source it is published from; GitHub artifact attestations on private or
+  internal repositories need GitHub Enterprise Cloud, and are public-only
+  on Free, Pro and Team (actions/attest-build-provenance README). PyPI's
+  pages do not say whether Trusted Publishing works from a private
+  repository, so the ADR says nothing about it.
+- **Python verification**: no installer verifies PEP 740 attestations;
+  `pypi-attestations verify pypi` is a separate step (ADR-0020).
 - **npm provenance**: `npm publish --provenance` from a supported CI
   (GitHub Actions with `id-token: write`) publishes a Sigstore-signed SLSA
   provenance linked to the commit and workflow; trusted publishing (OIDC,
@@ -73,11 +81,14 @@ cadence, and buys protection against a compromised step inside the build,
 a threat most small repositories do not model. Stated under Alternatives
 with that cost.
 
-### Applicability follows ADR-0012, as ADR-0011 does
+### Applicability follows what leaves the repository
 
-Reusing ADR-0011's exact condition keeps the two stage tables from
-diverging. A repository with `manual` or `none` rules ADR-0021 `rejected`,
-the full answer ADR-0001 already defines.
+`delivery.target` (`package` or `container`), not `release_tool`. ADR-0012
+rules that a repository publishing a package answers `manual`, never
+`none`; conditioning on `release_tool` would exempt the hand release, the
+workstation-token case this ADR targets and rule 3 forbids. A repository
+with `platform` or `none` rules ADR-0021 `rejected`, the full answer
+ADR-0001 already defines.
 
 ### Verification is pointed to, not ruled
 

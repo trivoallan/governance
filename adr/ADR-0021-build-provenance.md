@@ -61,16 +61,18 @@ reproducible builds.
 
 **What governance fixes, whatever you rule:**
 
-1. **The key applies only to a repository that publishes.** It is ruled
-   only when ADR-0012's `delivery.release_tool` is neither `manual` nor
-   `none`, the condition under which
-   [ADR-0011](ADR-0011-forge-and-ci.md)'s stage table runs `release`. A
-   repository that publishes nothing produces no provenance: it rules this
-   ADR `rejected`.
+1. **The key applies to every repository whose artifacts leave it**: when
+   ADR-0012's `delivery.target` is `package` or `container`, whatever
+   `delivery.release_tool` says. A repository that releases by hand
+   (`manual`) is the case this ADR exists for, not an exception to it. A
+   repository that publishes nothing (`platform` or `none`) produces no
+   provenance: it rules this ADR `rejected`.
 2. **An unverified provenance proves nothing.** Whoever consumes the
    artifact verifies it: `npm audit signatures` for npm packages,
    `gh attestation verify <file> -R <owner>/<repo>` for an artifact
-   attested on GitHub (`oci://<image>` for a container image). ADR-0020's
+   attested on GitHub (`oci://<image>` for a container image). For
+   Python, no installer verifies PEP 740 attestations:
+   `pypi-attestations verify pypi` is a separate, manual step. ADR-0020's
    admission rule reports a dependency's provenance when it is added.
 3. **The provenance is produced by the workflow that publishes**, under
    ADR-0011's rules: actions pinned by SHA (rule 3), `permissions:`
@@ -83,7 +85,7 @@ What is yours to decide is the level.
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `supply_chain.build_level` | `2` | on GitHub-hosted runners it costs a few workflow lines and no key to manage: the platform signs with a short-lived certificate bound to the workflow's identity |
+| `supply_chain.build_level` | `2` | on GitHub-hosted runners the platform signs with a short-lived certificate bound to the workflow's identity, with no key to manage. It has a precondition: npm provenance needs a public source repository, and GitHub artifact attestations on a private or internal repository need GitHub Enterprise Cloud (on Free, Pro and Team, public repositories only). A private repository on those plans cannot reach `2` through them |
 
 **What `2` looks like in practice.** The mechanism follows from where you
 publish:
@@ -172,6 +174,9 @@ what makes a decision different from an accepted default.
 - Level 2 does not protect against a step that tampers with the build
   from inside the workflow.
 - The protection exists only where someone verifies.
+- A private repository on GitHub Free, Pro or Team cannot use npm
+  provenance or GitHub artifact attestations: level `2` there takes a
+  public repository or GitHub Enterprise Cloud.
 
 ### Neutral
 
@@ -211,9 +216,9 @@ consumers model a compromised build step as a threat.
 - Original to governance; no surdesrails SDR asks this question.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the `release` stage condition, and the rules every workflow obeys, the publishing one included.
-- [ADR-0012](ADR-0012-delivery.md): `delivery.release_tool`, which decides whether this ADR applies.
+- [ADR-0012](ADR-0012-delivery.md): `delivery.target`, which decides whether this ADR applies.
 - [ADR-0020](ADR-0020-adding-dependencies.md): the admission rule that reports a dependency's provenance.
-- SLSA: [v1.1 security levels](https://slsa.dev/spec/v1.1/levels), [v1.2 Build track basics](https://slsa.dev/spec/v1.2/build-track-basics). GitHub: [using artifact attestations](https://docs.github.com/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds), [actions/attest-build-provenance](https://github.com/actions/attest-build-provenance), [reaching SLSA L3](https://github.blog/enterprise-software/devsecops/enhance-build-security-and-reach-slsa-level-3-with-github-artifact-attestations/), [slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). npm: [generating provenance statements](https://docs.npmjs.com/generating-provenance-statements). PyPI: [attestations](https://docs.pypi.org/attestations/). Read on 2026-11-14.
+- SLSA: [v1.1 security levels](https://slsa.dev/spec/v1.1/levels), [v1.2 Build track basics](https://slsa.dev/spec/v1.2/build-track-basics). GitHub: [using artifact attestations](https://docs.github.com/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds), [actions/attest-build-provenance](https://github.com/actions/attest-build-provenance) (plan limits in its README), [reaching SLSA L3](https://github.blog/enterprise-software/devsecops/enhance-build-security-and-reach-slsa-level-3-with-github-artifact-attestations/), [slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator). npm: [generating provenance statements](https://docs.npmjs.com/generating-provenance-statements). PyPI: [attestations](https://docs.pypi.org/attestations/). Read on 2026-11-14.
 
 **The key.**
 
