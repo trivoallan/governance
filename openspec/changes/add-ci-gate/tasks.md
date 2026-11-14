@@ -14,7 +14,7 @@
 
 ## 3. Land and gate
 
-- [ ] 3.1 Open the pull request with 1.1 and 2.1 (`ci:` type, no scope); verify the `test` check runs on it and succeeds, and that its name on the pull request is exactly `test`
+- [x] 3.1 Open the pull request with 1.1 and 2.1 (`ci:` type, no scope); verify the `test` check runs on it and succeeds, and that its name on the pull request is exactly `test`
 - [ ] 3.2 After the merge, create the ruleset with `gh api --method POST repos/trivoallan/governance/rulesets --input .github/rulesets/main.json`; verify `gh api repos/trivoallan/governance/rulesets` lists one active ruleset and `gh api repos/trivoallan/governance/rulesets/<id>` matches the file
 - [ ] 3.3 Open a throwaway pull request with a commit `fix(backend): y`; verify `test` fails and `gh pr merge --squash` is refused, then close it and delete its branch
 - [x] 3.4 Run `openspec validate add-ci-gate --strict`; verify it passes
