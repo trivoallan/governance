@@ -9,8 +9,9 @@ set and not empty, else the repository's current branch. When there is no
 name, or the name is the default branch (the branch `origin/HEAD` points to,
 or `main` or `master` when `origin/HEAD` is not set), the check SHALL print
 that there is nothing to check and exit `0`. When the name starts with
-`release-please--`, `dependabot/` or `renovate/`, the branches opened by the
-release and update tools governance's ADRs recommend, the check SHALL print
+`release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/`, the
+branches opened by the release and update tools governance's ADRs recommend
+or offer, the check SHALL print
 that it is a tool branch with nothing to check and exit `0`. Otherwise the
 name SHALL be `<prefix>/<description>`, where `<prefix>` is one of
 `branching.prefixes` and `<description>` is lower-case words of letters and
