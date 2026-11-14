@@ -2,7 +2,7 @@ name: release
 
 # Keeps a release pull request open; merging it tags vX.Y.Z and creates the
 # GitHub release, then publishes that version to npm as
-# @trivoallan/ontrack-source: the two environments of ADR-0012, both on tag.
+# @trivoallan/ontrack-governance: the two environments of ADR-0012, both on tag.
 # Configuration: release-please-config.json.
 on:
   push:
@@ -48,5 +48,5 @@ jobs:
           package-manager-cache: false
       # No install: the package ships adr/ and a stdlib-only script, nothing built.
       # Trusted publishing (npm 11.5.1+, shipped with Node 24) authenticates by
-      # OIDC and adds the provenance: no token, no flag.
-      - run: npm publish --access public
+      # OIDC: no token. --provenance is implied; kept explicit for ADR-0021's check.
+      - run: npm publish --provenance --access public

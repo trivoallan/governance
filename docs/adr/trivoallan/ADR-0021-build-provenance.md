@@ -104,15 +104,15 @@ steps:
 ```
 
 Adopted as recommended. The package is published to npm (ADR-0012) from
-a public repository, so the release job publishes with
-`npm publish --provenance` (or npm trusted publishing), and consumers check
+a public repository, so the release job publishes by npm trusted
+publishing, which adds the provenance, and consumers check
 it with `npm audit signatures`.
 
 ## Consequences
 
 ### Positive
 
-- A consumer of `@trivoallan/ontrack-source` can tell which commit and
+- A consumer of `@trivoallan/ontrack-governance` can tell which commit and
   which workflow produced the version they install.
 - A leaked npm token can no longer publish a version that passes for a
   release.
@@ -120,8 +120,6 @@ it with `npm audit signatures`.
 ### Negative
 
 - The publishing job gains `id-token: write`, to keep confined to it.
-- The release workflow that would produce the provenance does not exist
-  yet.
 - Level 2 does not protect against a step tampering with the build.
 
 ### Neutral

@@ -19,7 +19,7 @@ It is real, not a demo. A new `revision:` means the question itself moved.
 
 ```bash
 npm i -D ontrack@git+https://github.com/trivoallan/ontrack.git
-npm i -D trivoallan@npm:@trivoallan/ontrack-source
+npm i -D trivoallan@npm:@trivoallan/ontrack-governance
 npx ontrack plan
 ```
 
