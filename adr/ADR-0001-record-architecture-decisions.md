@@ -149,9 +149,11 @@ it runs governance's code in your repository.
 
 Those scripts follow the version of governance's package, not `revision`:
 an `npm update` can change what a check does, and `ontrack plan` does not
-report it. A `check:` line added to an ADR you have already ruled does not
-reach your frozen copy either: copy the line into it by hand, as rule 4
-allows.
+report it. A `check:` line governance adds, changes or removes in an ADR
+you have already ruled does reach your copy, as rule 4 allows: `ontrack
+plan` reports the ADR `check` and shows the line that would go and the one
+that would come, and `ontrack apply` reports it `synced` and writes that
+line, nothing else. Read the line at `plan`, before `apply` writes it.
 
 **9. If governance asks the wrong question,** write your own ADR in
 `docs/adr/`, cite the governance ADR you depart from, and say how. It does
