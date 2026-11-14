@@ -205,6 +205,7 @@ with no outside readers; write `docs.tool: none`.
 
 ## References
 
+- Suggested skills: `write-for-humans` from `docs-hygiene@melodic-software`.
 - Adapted from surdesrails [SDR-0008](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0008-documentation.md), revision 1 (audience scale reduced to three steps; recommends `public` rather than the team step, and `starlight` rather than `docusaurus`).
 - Build times measured on 2026-11-14, Apple M1 Pro, Node 22, three cold
   builds each (outputs and caches removed), on 302 Markdown pages of which 30

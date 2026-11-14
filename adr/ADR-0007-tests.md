@@ -144,6 +144,7 @@ like any other.
 
 ## References
 
+- Suggested skills: `test-driven-development` from `superpowers@superpowers-marketplace`.
 - Adapted from surdesrails [SDR-0007](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0007-tests.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): the main language the threshold applies to.
