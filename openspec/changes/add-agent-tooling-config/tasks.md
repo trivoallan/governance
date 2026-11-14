@@ -14,10 +14,10 @@
 
 ## 3. Marketplace and settings
 
-- [ ] 3.1 Propose the plugin list to the maintainer, one ADR-0020 declaration per entry (source, tagged commit, why), and resolve each approved commit with `gh api repos/<owner>/<repo>/commits/<tag> -q .sha`; verify every approval is in the conversation before writing an entry
-  - Approved: `superpowers`, `claude-security`, `source-control`. `claude-security` is not written: `claude plugin validate` rejects it, a third-party marketplace may not list a plugin whose name starts with `claude-`. Waits on the maintainer.
+- [x] 3.1 Propose the plugin list to the maintainer, one ADR-0020 declaration per entry (source, tagged commit, why), and resolve each approved commit with `gh api repos/<owner>/<repo>/commits/<tag> -q .sha`; verify every approval is in the conversation before writing an entry
+  - Approved: `superpowers` (tag `v7.0.2`), `source-control` (no tags: last `main` commit at least three days old), `claude-security`. `claude plugin validate` rejects `claude-security` in a third-party marketplace (reserved `claude-` prefix); the maintainer chose to enable it from `claude-plugins-official` directly, recorded as a departure in ADR-0017.
 - [x] 3.2 Write `marketplace/.claude-plugin/marketplace.json` (name `ontrack-trivoallan-tools`, owner, approved entries each with a `sha`); verify `claude plugin validate marketplace` reports no error and every `sha` matches `^[0-9a-f]{40}$`
-- [x] 3.3 Write `.claude/settings.json` with `extraKnownMarketplaces.ontrack-trivoallan-tools` as a `directory` source `./marketplace` and one `enabledPlugins` entry per marketplace plugin; verify the two plugin sets are equal and `npx --no-install governance-check ADR-0017` exits `0`
+- [x] 3.3 Write `.claude/settings.json` with `extraKnownMarketplaces.ontrack-trivoallan-tools` as a `directory` source `./marketplace` and one `enabledPlugins` entry per marketplace plugin, plus `claude-security@claude-plugins-official`; verify the marketplace's plugin set equals the `@ontrack-trivoallan-tools` entries and `npx --no-install governance-check ADR-0017` exits `0`
 - [ ] 3.4 Run `claude plugin install <plugin>@ontrack-trivoallan-tools --scope project` for each plugin, then `/plugin`; verify each is reported installed
   - Left to the maintainer: installing fetches and runs third-party plugin code, after the pins are reviewed.
 
