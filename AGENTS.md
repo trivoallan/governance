@@ -170,3 +170,19 @@ supply_chain:
 ```
 
 <!-- ontrack:end -->
+
+## Branches
+
+A branch name is `<prefix>/<description-in-kebab-case>`, with a prefix from
+`branching.prefixes` (ADR-0009), and the pull request gate checks it. Tooling
+may create a branch with another name (the Claude Code desktop app names a
+session branch `<branch prefix>/<name>`, for example `tritri/…`). Before its
+first push, rename such a branch, taking the prefix from the commit type of
+the work:
+
+```sh
+git branch -m fix/dead-glossary-link
+```
+
+Branches opened by release and update tools (`release-please--…`,
+`releaser-pleaser--…`, `dependabot/…`, `renovate/…`) keep their names.

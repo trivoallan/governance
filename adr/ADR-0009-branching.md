@@ -119,7 +119,10 @@ runs it from your repository's root, and it reads the keys you ruled:
   The name must be `<prefix>/<description-in-kebab-case>` with a prefix from
   `branching.prefixes`;
 - on the default branch, or a checkout with no branch name, it has nothing
-  to check, and passes.
+  to check, and passes;
+- on a branch opened by a release or update tool (one starting with
+  `release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/`),
+  whose name is the tool's, it has nothing to check either, and passes.
 
 It does not check `branching.model` or `branching.merge`: those live in
 your forge's settings, outside the repository.

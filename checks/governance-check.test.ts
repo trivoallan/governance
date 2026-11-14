@@ -476,6 +476,34 @@ test('ADR-0009: default branch without origin/HEAD', () => {
   assert.match(r.stdout, /master is the default branch/);
 });
 
+test('ADR-0009: release tool branch', () => {
+  const dir = branched({ adrs: branchingAdr('[feat]') });
+  git(dir, 'switch', '-q', '--detach');
+  const r = runWith(dir, ['ADR-0009'], { GITHUB_HEAD_REF: 'release-please--branches--main--components--ontrack-governance' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, 'ADR-0009: release-please--branches--main--components--ontrack-governance is a tool branch, nothing to check\n');
+});
+
+test('ADR-0009: releaser-pleaser branch', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'releaser-pleaser--branches--main']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /tool branch/);
+});
+
+test('ADR-0009: update tool branch', () => {
+  for (const name of ['dependabot/npm_and_yarn/zod-4.1.0', 'renovate/zod-4.x']) {
+    const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', name]);
+    assert.equal(r.status, 0, `${name}: ${r.stderr}`);
+    assert.match(r.stdout, /tool branch/);
+  }
+});
+
+test('ADR-0009: tool prefix needs its separator', () => {
+  const r = runWith(branched({ adrs: branchingAdr('[feat]') }), ['ADR-0009', '--branch', 'dependabot-tweaks']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /dependabot-tweaks is not <prefix>/);
+});
+
 test('ADR-0009: prefixes not set', () => {
   const r = runWith(branched({ adrs: branchingAdr(''), branch: 'feat/x' }), ['ADR-0009']);
   assert.notEqual(r.status, 0);
