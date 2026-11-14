@@ -19,5 +19,5 @@
 ## 4. End to end
 
 - [x] 4.1 Run `npx governance-check ADR-0009 --branch tritri/x`, `--branch fix/x` and `--branch release-please--branches--main--components--ontrack-governance`; verify exit codes `1`, `0`, `0`
-- [ ] 4.2 With `add-ci-gate` merged, add to the `test` job of `.github/workflows/ci.yml` a step `node checks/governance-check.mjs ADR-0009` with a comment citing ADR-0009; verify `actionlint` reports no error, the step passes on this change's own pull request (branch `feat/enforce-branch-prefixes`), and fails on a throwaway pull request from a `tritri/…` branch, which is then closed and deleted
+- [x] 4.2 With `add-ci-gate` merged, add to the `test` job of `.github/workflows/ci.yml` a step `node checks/governance-check.mjs ADR-0009` with a comment citing ADR-0009; verify `actionlint` reports no error, the step passes on this change's own pull request (branch `feat/enforce-branch-prefixes`), and fails on a throwaway pull request from a `tritri/…` branch, which is then closed and deleted
 - [x] 4.3 Run `openspec validate enforce-branch-prefixes --strict`; verify it passes

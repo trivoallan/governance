@@ -381,10 +381,12 @@ ADR-0009, ADR-0015 and ADR-0016 SHALL each ship with
 `revision`. Each how-to-rule block SHALL say that the line runs once the ADR
 is `accepted`, what the check runs for each value, which tool it needs
 installed, and what it does not check: for ADR-0009, `branching.model` and
-`branching.merge`, and that `--branch <name>` may be appended; for ADR-0015,
-`secrets.storage`, that `--from <ref>` may be appended, and that a local
-hook skipped with `--no-verify` is what this check catches in CI; for
-ADR-0016, that it also runs `openspec validate --all`.
+`branching.merge`, the branches of release and update tools
+(`release-please--…`, `releaser-pleaser--…`, `dependabot/…`, `renovate/…`), and that
+`--branch <name>` may be appended; for ADR-0015, `secrets.storage`, that
+`--from <ref>` may be appended, and that a local hook skipped with
+`--no-verify` is what this check catches in CI; for ADR-0016, that it also
+runs `openspec validate --all`.
 
 #### Scenario: Check line without a revision bump
 - **WHEN** ADR-0015 is read straight from governance after this change
@@ -397,3 +399,7 @@ ADR-0016, that it also runs `openspec validate --all`.
 #### Scenario: Unchecked keys named
 - **WHEN** ADR-0009's how-to-rule block is read
 - **THEN** it says `branching.model` and `branching.merge` are not checked
+
+#### Scenario: Tool branches named
+- **WHEN** ADR-0009's how-to-rule block is read
+- **THEN** it says branches starting with `release-please--`, `releaser-pleaser--`, `dependabot/` or `renovate/` have nothing to check, and its `revision` is unchanged
