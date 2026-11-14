@@ -52,7 +52,7 @@ answer one without the other.
 | Key | Recommended value | Reason |
 | --- | --- | --- |
 | `architecture.document` | `arc42` | its twelve sections give every architecture fact one fixed place, so an agent and a reader know where to look and where to write, and a missing section is visible as a missing file |
-| `architecture.diagrams` | `mermaid` | GitHub and Docusaurus render it from a fenced code block, so a diagram is text in the page that needs no build step and no image file |
+| `architecture.diagrams` | `mermaid` | GitHub renders it from a fenced code block, and the recommended site (ADR-0008) renders it in the browser, so a diagram is text in the page that needs no build step and no image file |
 | `architecture.model` | `likec4` | the diagrams become code: one model in text files, several views generated from it, reviewed in a diff like the rest of the repository. An agent can read and change it, which it cannot do with an image |
 
 **The document is a directory, `docs/architecture/arc42/`, with one file
@@ -213,8 +213,8 @@ the others on its own.
 ### PlantUML for diagrams outside the model
 
 Richer sequence and state notation than Mermaid, but it needs a renderer:
-neither GitHub nor Docusaurus displays it from a code block without a
-plugin or a server.
+GitHub does not display it from a code block, and a documentation site
+needs a plugin or a rendering server.
 
 ### Another architecture-as-code tool
 
@@ -227,7 +227,7 @@ where diagram-by-diagram tools repeat each element in each picture.
 - Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; governance does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
 - [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
-- [Mermaid](https://mermaid.js.org/): diagrams as text, rendered by GitHub and Docusaurus.
+- [Mermaid](https://mermaid.js.org/): diagrams as text, rendered by GitHub and in the browser by the documentation site.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 
 **The keys.**

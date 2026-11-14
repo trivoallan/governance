@@ -48,9 +48,30 @@ yours is the **tooling**, the **location** and the **audience**.
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `docs.tool` | `docusaurus` | its navigation **is generated from the directory tree**: adding a page touches no table of contents, so nothing goes stale behind you |
-| `docs.root` | `docs/` | the tool expects it there, and an agent looking for where to put a page has nothing to guess |
+| `docs.tool` | `starlight` | the fastest build measured (see References), navigation **generated from the directory tree** so adding a page touches no table of contents, built-in search, and LikeC4 views (ADR-0010) embedded through its Vite plugin with no generation step |
+| `docs.root` | `docs/` | where governance's other paths already live (`docs/adr/`, `docs/architecture/`), and an agent looking for where to put a page has nothing to guess |
 | `docs.audience` | `public` | governance's repositories are public on GitHub, so their documentation is read by anyone whether or not that was intended; writing for that audience from the start is the honest default |
+
+**Starlight does not read `docs/` by default**: it expects
+`src/content/docs/`. Point its `docs` collection at `docs/` with Astro's
+`glob` loader, in `src/content.config.ts`:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { docsSchema } from '@astrojs/starlight/schema';
+
+export const collections = {
+  docs: defineCollection({
+    loader: glob({ pattern: '**/*.{md,mdx}', base: './docs' }),
+    schema: docsSchema(),
+  }),
+};
+```
+
+Each page then needs a `title:` in its frontmatter. Mermaid diagrams
+(ADR-0010) need the `astro-mermaid` integration, which renders them in the
+browser and adds nothing to the build.
 
 **`public` is the strict end of the scale, and that is the point.** A page
 read more widely than it was written for cannot be unpublished, while a
@@ -115,7 +136,7 @@ authors: [Your Name]
 supersedes: []
 traits:
   docs:
-    tool: docusaurus
+    tool: starlight
     root: docs/
     audience: public
 ---
@@ -131,13 +152,18 @@ what makes a decision different from an accepted default.
 
 - An agent knows where a page goes and never has to edit a table of
   contents.
+- A full build stays in seconds, and search works without an external
+  service.
 - With `public`, an agent never writes an internal URL, a customer name or
   an infrastructure detail into a page.
 
 ### Negative
 
-- `docusaurus` is a Node.js site to install, build and keep up to date,
+- `starlight` is a Node.js site to install, build and keep up to date,
   even in a repository that has no other JavaScript.
+- Reading `docs/` and rendering Mermaid both take configuration Starlight
+  does not ship by default, and Mermaid goes through a third-party
+  integration.
 - `public` forbids the raw notes and internal details that a private
   repository's documentation could usefully hold.
 
@@ -148,9 +174,25 @@ what makes a decision different from an accepted default.
 
 ## Alternatives Considered
 
-### A generated site, automatic navigation
+### Starlight
 
-The page is enough; the tool does the rest. Recommended, with `docusaurus`.
+A generated site on Astro, automatic navigation. Recommended, for the
+reasons above.
+
+### Docusaurus
+
+A generated site on React, automatic navigation. It reads `docs/` by
+default, renders Mermaid through an official theme (which also needs
+`@mermaid-js/layout-elk` installed), and versions documentation, which only
+a library shipped in several versions needs. Its default build was the
+slowest measured, about seven times Starlight's; with `future.faster` and
+`future.v4` turned on it comes within about 25 % of Starlight. LikeC4 views
+need `likec4 codegen webcomponent` before every build. A sound answer:
+turn `future.faster` on if you choose it.
+
+### MkDocs
+
+A generated site in Python, for a repository with no Node.js at all.
 
 ### A generated site, hand-kept navigation
 
@@ -163,7 +205,14 @@ with no outside readers; write `docs.tool: none`.
 
 ## References
 
-- Adapted from surdesrails [SDR-0008](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0008-documentation.md), revision 1 (audience scale reduced to three steps; recommends `public` rather than the team step).
+- Adapted from surdesrails [SDR-0008](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0008-documentation.md), revision 1 (audience scale reduced to three steps; recommends `public` rather than the team step, and `starlight` rather than `docusaurus`).
+- Build times measured on 2026-11-14, Apple M1 Pro, Node 22, three cold
+  builds each (outputs and caches removed), on 302 Markdown pages of which 30
+  hold a Mermaid diagram, plus one page with a LikeC4 view. Medians:
+  Docusaurus 3.10.2 default, 57.6 s (including 1.5 s of LikeC4 code
+  generation); Docusaurus 3.10.2 with `future.faster`, 10.4 s (including
+  1.6 s); Starlight 0.43.1 on Astro 7.4, 7.6 s (including the Pagefind
+  index). The development server was not measured.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [Diátaxis](https://diataxis.fr/) and the [Google developer documentation style guide](https://developers.google.com/style).
 
@@ -171,7 +220,7 @@ with no outside readers; write `docs.tool: none`.
 
 | Key | What it holds | Allowed values |
 | --- | --- | --- |
-| `docs.tool` | what generates the site, if there is one | `docusaurus`, `mkdocs`, `none` |
+| `docs.tool` | what generates the site, if there is one | `starlight`, `docusaurus`, `mkdocs`, `none` |
 | `docs.root` | the directory the pages live in | a path, for example `docs/` |
 | `docs.audience` | how far this documentation reaches | `single-user`, `team`, `public`, as described above |
 

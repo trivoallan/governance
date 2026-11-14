@@ -122,8 +122,11 @@ LikeC4 model under `docs/architecture/model/` (trait `architecture.model`)
 so the context, building-block and deployment views are generated from one
 source instead of drawn by hand. Diagrams the model does not cover
 (sequences, states, flows) are Mermaid code blocks (trait
-`architecture.diagrams`), which GitHub and Docusaurus render without a build
-step. governance ships no arc42 template for now:
+`architecture.diagrams`), which GitHub and the documentation site render without
+a build step. ADR-0008 recommends Starlight: measured on 302 pages it built
+in 7.6 s against 10.4 s for Docusaurus with `future.faster` and 57.6 s for
+Docusaurus by default, and it embeds LikeC4 views through LikeC4's Vite
+plugin with no generation step. governance ships no arc42 template for now:
 ADR-0010 lists the twelve files.
 
 ## Risks / Trade-offs

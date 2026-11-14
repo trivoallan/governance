@@ -81,7 +81,9 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 - ADR-0004 SHALL ask `languages.main.name`, recommending Python or
   TypeScript, without reasoning that relies on a team's existing skills.
 - ADR-0008 SHALL ask `docs.tool`, `docs.root` and `docs.audience`,
-  recommending `public`, with an
+  recommending `starlight` (with its `docs` collection pointed at `docs/`)
+  and `public`, with a `docs.tool` enum of `starlight`, `docusaurus`,
+  `mkdocs` and `none`, and an
   `audience` enum of `single-user`, `team` and `public`: SDR-0008's
   scale translated, without the enterprise-only steps `LS` and `groupe`.
 - ADR-0011 SHALL assume GitHub as the forge, SHALL NOT ask `forge.vendor`,
