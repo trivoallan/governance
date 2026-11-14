@@ -6,13 +6,13 @@
 
 ## 2. Arguments
 
-- [ ] 2.1 Replace the `argv` loop in `main` with `util.parseArgs` (strict, positionals) and a zod schema giving the ADR number and the `from`/`branch` defaults; verify in `checks/governance-check.test.ts` the "Option without its value" and "Unknown option" scenarios, and that the existing `--from` and `--branch` tests still pass
+- [x] 2.1 Replace the `argv` loop in `main` with `util.parseArgs` (strict, positionals) and a zod schema giving the ADR number and the `from`/`branch` defaults; verify in `checks/governance-check.test.ts` the "Option without its value" and "Unknown option" scenarios, and that the existing `--from` and `--branch` tests still pass
 
 ## 3. Traits
 
-- [ ] 3.1 Add the one-value and list field builders and the `traitsOf` helper mapping zod issues to the spec's messages; declare the schemas of ADR-0006, ADR-0009, ADR-0015 and ADR-0016 next to their checks, derive their types with `z.infer`, and remove the hand-written `if` checks; verify the "A list where one value is expected" and "One value where a list is expected" scenarios and that every existing ADR-0006/0009/0015/0016 test still passes unchanged
-- [ ] 3.2 Validate each wiring entry with the one-value field, reporting every failing entry; keep `docsRoot`'s fallback; verify the "Unforeseen wiring value still passes" scenario, a wiring key given as a list failing with its `<group>.<key>`, and every existing wiring test passing unchanged
-- [ ] 3.3 Run `npm test`; verify every test passes and that, outside `readTraits`, no trait key is tested by hand any more (`git diff` review)
+- [x] 3.1 Add the one-value and list field builders and the `traitsOf` helper mapping zod issues to the spec's messages; declare the schemas of ADR-0006, ADR-0009, ADR-0015 and ADR-0016 next to their checks, derive their types with `z.infer`, and remove the hand-written `if` checks; verify the "A list where one value is expected" and "One value where a list is expected" scenarios and that every existing ADR-0006/0009/0015/0016 test still passes unchanged
+- [x] 3.2 Validate each wiring entry with the one-value field, reporting every failing entry; keep `docsRoot`'s fallback; verify the "Unforeseen wiring value still passes" scenario, a wiring key given as a list failing with its `<group>.<key>`, and every existing wiring test passing unchanged
+- [x] 3.3 Run `npm test`; verify every test passes and that, outside `readTraits`, no trait key is tested by hand any more (`git diff` review)
 
 ## 4. End to end
 

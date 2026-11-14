@@ -7,13 +7,14 @@ import { join, dirname, delimiter } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
+import { parseArgs } from 'node:util';
+import { z } from 'zod';
 
 class CheckError extends Error {}
 
-// A trait value as readTraits returns it; #32 derives these types from schemas.
+// A trait value as readTraits returns it, before a schema has looked at it.
 type Trait = string | string[];
 type Traits = Record<string, Trait>;
-type Options = { from: string; branch: string };
 type Check = (root: string, file: string, opts: Options) => number;
 
 // The single repository copy of an ADR, under a namespace directory.
@@ -73,6 +74,31 @@ function readTraits(text: string, group: string): Traits | null {
   return traits;
 }
 
+// --- Trait schemas (ADR-0005): each check declares the shape of the keys it reads.
+
+// One value: a non-empty string, never a list. A list: strings, possibly none.
+const one = () => z.string().min(1);
+const list = () => z.array(z.string());
+
+// The keys of `traits.<group>` validated against `schema`, or a CheckError whose
+// message the adr-checks spec fixes for that kind of issue, naming <group>.<key>.
+function traitsOf<S extends z.ZodObject>(schema: S, number: string, group: string, file: string, text: string): z.infer<S> {
+  const raw: Traits = readTraits(text, group) ?? {};
+  const parsed = schema.safeParse(raw);
+  if (parsed.success) return parsed.data;
+  const issue = parsed.error.issues[0];
+  const key = String(issue.path[0]);
+  const name = `${number}: ${group}.${key}`;
+  const value = raw[key];
+  if (value === undefined || value === '' || issue.code === 'too_small') {
+    throw new CheckError(`${name} is not set in ${file}; the ADR is not ruled`);
+  }
+  if (issue.code === 'invalid_value') throw new CheckError(`${name} has an unknown value: ${value}`);
+  if (issue.code === 'invalid_type' && issue.expected === 'array') throw new CheckError(`${name} is not a list in ${file}`);
+  const expected = issue.code === 'invalid_type' && issue.expected === 'string' ? 'one value' : issue.message;
+  throw new CheckError(`${name} is not ${expected} in ${file}`);
+}
+
 function resolveFrom(root: string, id: string): string {
   try {
     return createRequire(join(root, 'package.json')).resolve(id);
@@ -81,17 +107,18 @@ function resolveFrom(root: string, id: string): string {
   }
 }
 
+// `scopes` is read only when commitlint runs.
+const CommitsTool = z.object({ tool: z.enum(['commitlint', 'hook', 'none']) });
+const CommitsScopes = z.object({ scopes: list() });
+
 function commits(root: string, file: string, { from }: Options): number {
-  const traits: Traits = readTraits(readFileSync(file, 'utf8'), 'commits') ?? {};
-  const tool = traits.tool;
-  if (!tool) throw new CheckError(`ADR-0006: commits.tool is not set in ${file}; the ADR is not ruled`);
+  const text = readFileSync(file, 'utf8');
+  const { tool } = traitsOf(CommitsTool, 'ADR-0006', 'commits', file, text);
   if (tool === 'hook' || tool === 'none') {
     console.log(`ADR-0006: commits.tool is ${tool}, nothing to check`);
     return 0;
   }
-  if (tool !== 'commitlint') throw new CheckError(`ADR-0006: commits.tool has an unknown value: ${tool}`);
-  const scopes = Array.isArray(traits.scopes) ? traits.scopes : null;
-  if (!scopes) throw new CheckError(`ADR-0006: commits.scopes is not a list in ${file}`);
+  const { scopes } = traitsOf(CommitsScopes, 'ADR-0006', 'commits', file, text);
 
   const conventional = resolveFrom(root, '@commitlint/config-conventional');
   const cli = join(dirname(resolveFrom(root, '@commitlint/cli/package.json')), 'cli.js');
@@ -158,7 +185,8 @@ type Row = { note?: string } & (
   | { contains: { in: string[]; any: string[] } }
   | { path: string }
 );
-type Entry = { group: string; key: string; row: (value: string, ctx: { root: string; traits: Record<string, Traits> }) => Row | null };
+// ctx.traits holds the entries of the ADR validated so far: { <group>: { <key>: value } }.
+type Entry = { group: string; key: string; row: (value: string, ctx: { root: string; traits: Record<string, Record<string, string>> }) => Row | null };
 
 // { found } or { fail }, for one row against the tracked files.
 function evaluate(row: Row, files: string[], root: string): { found?: string; fail?: string } {
@@ -187,10 +215,11 @@ const inWorkflow = (...any: string[]): Row => ({ contains: { in: WORKFLOWS, any 
 const byValue = (rows: Record<string, Row>) => (value: string) => rows[value] ?? null;
 
 // ADR-0010's arc42 files live in architecture/arc42/ under ADR-0008's docs.root, `docs/` by default.
+// Absent, empty or not one value, it falls back: ADR-0010's check does not rule on ADR-0008.
 function docsRoot(root: string): string {
   try {
-    const value = readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root;
-    return typeof value === 'string' && value ? prefix(value) : 'docs/';
+    const value = one().safeParse(readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root);
+    return value.success ? prefix(value.data) : 'docs/';
   } catch (e) {
     if (e instanceof CheckError) return 'docs/';
     throw e;
@@ -200,7 +229,7 @@ function docsRoot(root: string): string {
 const gate: Row = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
 
 // ADR number -> traits it wires. `row(value, ctx)` returns a row, or null for
-// "nothing to check". ctx: { root, traits: { <group>: { <key>: value } } }.
+// "nothing to check". ctx: { root, traits: { <group>: { <key>: validated value } } }.
 const WIRING: Record<string, Entry[]> = {
   'ADR-0008': [
     { group: 'docs', key: 'tool', row: byValue({
@@ -237,7 +266,7 @@ const WIRING: Record<string, Entry[]> = {
     }) },
     // ponytail: no row with renovate, whose automerge lives in its own config.
     { group: 'dependencies', key: 'automerge', row: (v, { traits }) =>
-      (v === 'patch' || v === 'minor') && traits.dependencies.updater === 'dependabot'
+      (v === 'patch' || v === 'minor') && traits.dependencies?.updater === 'dependabot'
         ? inWorkflow('dependabot/fetch-metadata')
         : null },
   ],
@@ -251,19 +280,23 @@ const WIRING: Record<string, Entry[]> = {
 function wiring(number: string, entries: Entry[]): Check {
   return (root, file) => {
     const text = readFileSync(file, 'utf8');
-    const traits: Record<string, Traits> = {};
-    for (const { group } of entries) traits[group] ??= readTraits(text, group) ?? {};
+    const traits: Record<string, Record<string, string>> = {};
     let files: string[] | undefined;
     let failed = false;
     for (const { group, key, row } of entries) {
       const name = `${number}: ${group}.${key}`;
-      const value = traits[group][key];
-      if (!value) {
-        console.error(`${name} is not set in ${file}; the ADR is not ruled`);
+      // Every entry is validated, so one run reports every key at fault.
+      let value: string;
+      try {
+        value = traitsOf(z.object({ [key]: one() }), number, group, file, text)[key];
+      } catch (e) {
+        if (!(e instanceof CheckError)) throw e;
+        console.error(e.message);
         failed = true;
         continue;
       }
-      const r = row(String(value), { root, traits });
+      (traits[group] ??= {})[key] = value;
+      const r = row(value, { root, traits });
       if (!r) {
         console.log(`${name} is ${value}, nothing to check`);
         continue;
@@ -297,11 +330,10 @@ const gitOut = (root: string, ...args: string[]) => {
   return r.status === 0 ? r.stdout.trim() : '';
 };
 
+const Branching = z.object({ prefixes: list().min(1) });
+
 function branching(root: string, file: string, { branch }: Options): number {
-  const { prefixes }: Traits = readTraits(readFileSync(file, 'utf8'), 'branching') ?? {};
-  if (!Array.isArray(prefixes) || prefixes.length === 0) {
-    throw new CheckError(`ADR-0009: branching.prefixes is not set in ${file}; the ADR is not ruled`);
-  }
+  const { prefixes } = traitsOf(Branching, 'ADR-0009', 'branching', file, readFileSync(file, 'utf8'));
   // A pull request in GitHub Actions checks out a detached HEAD; its branch is in GITHUB_HEAD_REF.
   const name = branch || process.env.GITHUB_HEAD_REF || gitOut(root, 'branch', '--show-current');
   if (!name) {
@@ -324,9 +356,11 @@ function branching(root: string, file: string, { branch }: Options): number {
   return 1;
 }
 
+// An open value: an unforeseen guard has nothing to check.
+const Secrets = z.object({ guard: one() });
+
 function secrets(root: string, file: string, { from }: Options): number {
-  const { guard }: Traits = readTraits(readFileSync(file, 'utf8'), 'secrets') ?? {};
-  if (!guard) throw new CheckError(`ADR-0015: secrets.guard is not set in ${file}; the ADR is not ruled`);
+  const { guard } = traitsOf(Secrets, 'ADR-0015', 'secrets', file, readFileSync(file, 'utf8'));
   if (guard !== 'gitleaks') {
     console.log(`ADR-0015: secrets.guard is ${guard}, nothing to check`);
     return 0;
@@ -334,14 +368,18 @@ function secrets(root: string, file: string, { from }: Options): number {
   return runTool(root, 'gitleaks', ['git', `--log-opts=${from}..HEAD`, '--redact', '--verbose', '--no-banner'], 'ADR-0015: secrets.guard is gitleaks');
 }
 
+// Open values; `schema` is read only when the framework is openspec.
+const ChangesFramework = z.object({ framework: one() });
+const ChangesSchema = z.object({ schema: one() });
+
 function changes(root: string, file: string): number {
-  const { framework, schema }: Traits = readTraits(readFileSync(file, 'utf8'), 'changes') ?? {};
-  if (!framework) throw new CheckError(`ADR-0016: changes.framework is not set in ${file}; the ADR is not ruled`);
+  const text = readFileSync(file, 'utf8');
+  const { framework } = traitsOf(ChangesFramework, 'ADR-0016', 'changes', file, text);
   if (framework !== 'openspec') {
     console.log(`ADR-0016: changes.framework is ${framework}, nothing to check`);
     return 0;
   }
-  if (!schema) throw new CheckError(`ADR-0016: changes.schema is not set in ${file}; the ADR is not ruled`);
+  const { schema } = traitsOf(ChangesSchema, 'ADR-0016', 'changes', file, text);
   if (schema === 'none') throw new CheckError('ADR-0016: changes.schema is none, which goes with changes.framework: none, not openspec');
 
   let failed = false;
@@ -358,7 +396,7 @@ function changes(root: string, file: string): number {
   }
   // Both commands run whatever the config says, so one run shows every problem.
   const trait = 'ADR-0016: changes.framework is openspec';
-  if (runTool(root, 'openspec', ['schema', 'validate', schema as string], trait) !== 0) failed = true;
+  if (runTool(root, 'openspec', ['schema', 'validate', schema], trait) !== 0) failed = true;
   if (runTool(root, 'openspec', ['validate', '--all', '--no-interactive'], trait) !== 0) failed = true;
   return failed ? 1 : 0;
 }
@@ -371,16 +409,38 @@ const CHECKS: Record<string, Check> = {
   ...Object.fromEntries(Object.entries(WIRING).map(([n, entries]) => [n, wiring(n, entries)])),
 };
 
+// --- Arguments (ADR-0005): parseArgs tokenizes, the schema validates and defaults.
+
+const USAGE = 'usage: governance-check <ADR number> [--from <ref>] [--branch <name>]';
+const Args = z.object({
+  positionals: z.tuple([z.string().min(1)]),
+  values: z.object({
+    from: z.string().min(1).default('origin/HEAD'),
+    branch: z.string().default(''),
+  }),
+});
+type Options = z.infer<typeof Args>['values'];
+
+function args(argv: string[]): { number: string; opts: Options } {
+  let tokens;
+  try {
+    tokens = parseArgs({ args: argv, strict: true, allowPositionals: true, options: { from: { type: 'string' }, branch: { type: 'string' } } });
+  } catch (e) {
+    // An unknown option, or one without its value: Node's message names it.
+    if ((e as NodeJS.ErrnoException).code?.startsWith('ERR_PARSE_ARGS')) throw new CheckError(`${(e as Error).message}\n${USAGE}`);
+    throw e;
+  }
+  const parsed = Args.safeParse(tokens);
+  if (!parsed.success) {
+    const [where, option] = parsed.error.issues[0].path;
+    throw new CheckError(where === 'values' ? `option '--${String(option)}' needs a value\n${USAGE}` : USAGE);
+  }
+  return { number: parsed.data.positionals[0], opts: parsed.data.values };
+}
+
 function main(argv: string[], root = process.cwd()): number {
   try {
-    const [number, ...rest] = argv;
-    const opts: Options = { from: 'origin/HEAD', branch: '' };
-    for (let i = 0; i < rest.length; i++) {
-      if (rest[i] === '--from' && rest[i + 1]) opts.from = rest[++i];
-      else if (rest[i] === '--branch' && rest[i + 1]) opts.branch = rest[++i];
-      else throw new CheckError(`unknown argument: ${rest[i]}`);
-    }
-    if (!number) throw new CheckError('usage: governance-check <ADR number> [--from <ref>] [--branch <name>]');
+    const { number, opts } = args(argv);
     const check = CHECKS[number];
     if (!check) throw new CheckError(`governance ships no check for ${number}`);
     return check(root, findAdr(root, number), opts);

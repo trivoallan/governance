@@ -112,6 +112,46 @@ test('commitlint not installed', () => {
   assert.match(r.stderr, /@commitlint\/(cli|config-conventional) is not installed/);
 });
 
+test('unknown tool', () => {
+  const r = check(repo({ traits: '    scopes: []\n    tool: husky', withCommitlint: false }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0006: commits\.tool has an unknown value: husky/);
+});
+
+test('one value where a list is expected', () => {
+  const r = check(repo({ traits: commitlint('api'), withCommitlint: false }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0006: commits\.scopes is not a list/);
+});
+
+// --- Arguments
+
+test('arguments: option without its value', () => {
+  const r = check(repo({ traits: '    tool: none' }), '--from');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /--from/);
+  assert.equal(r.stdout, '');
+});
+
+test('arguments: unknown option', () => {
+  const r = check(repo({ traits: '    tool: none' }), '--form', 'develop');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /--form/);
+  assert.equal(r.stdout, '');
+});
+
+test('arguments: no ADR number gives the usage line', () => {
+  const r = spawnSync(process.execPath, [script], { cwd: repo({ traits: '    tool: none' }), encoding: 'utf8' });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^usage: governance-check <ADR number>/m);
+});
+
+test('arguments: two ADR numbers give the usage line', () => {
+  const r = check(repo({ traits: '    tool: none' }), 'ADR-0009');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^usage: governance-check <ADR number>/m);
+});
+
 test('repository left untouched', () => {
   const dir = repo({ traits: commitlint('[api]'), messages: ['fix(backend): x'] });
   const before = git(dir, 'status', '--porcelain', '--ignored');
@@ -191,6 +231,32 @@ test('wiring: unforeseen value passes', () => {
   const r = run(wired({ adrs: deps('foo') }), 'ADR-0018');
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /^ADR-0018: dependencies\.updater is foo, nothing to check$/m);
+});
+
+test('wiring: unforeseen value of the spec scenario passes', () => {
+  const r = run(wired({ adrs: deps('something-else') }), 'ADR-0018');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0018: dependencies\.updater is something-else, nothing to check$/m);
+});
+
+test('wiring: a list where one value is expected fails, every entry reported', () => {
+  const r = run(wired({ adrs: { 'ADR-0012-delivery.md': '  delivery:\n    target: [container]\n    release_tool: none\n  deployment:\n    manifests:' } }), 'ADR-0012');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^ADR-0012: delivery\.target is not one value in /m);
+  assert.match(r.stderr, /^ADR-0012: deployment\.manifests is not set/m);
+  assert.match(r.stdout, /delivery\.release_tool is none, nothing to check/);
+});
+
+test('wiring: arc42 with a list as docs.root falls back to docs/', () => {
+  const r = run(wired({
+    adrs: {
+      'ADR-0008-documentation.md': '  docs:\n    tool: none\n    root: [site/]\n    audience: public',
+      'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: none\n    diagrams: mermaid',
+    },
+    files: arc42('docs/'),
+  }), 'ADR-0010');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /docs\/architecture\/arc42\/01-x\.md/);
 });
 
 test('wiring: trait not set', () => {
@@ -439,6 +505,26 @@ test('ADR-0015: guard not set', () => {
   const r = runWith(branched({ adrs: secretsAdr('') }), ['ADR-0015']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /secrets\.guard is not set/);
+});
+
+test('ADR-0015: a list where one value is expected', () => {
+  const dir = branched({ adrs: secretsAdr('[gitleaks]') });
+  const r = runWith(dir, ['ADR-0015'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^ADR-0015: secrets\.guard is not one value in /m);
+  assert.doesNotMatch(r.stdout + r.stderr, /nothing to check|not installed/);
+});
+
+test('ADR-0016: a list where one value is expected', () => {
+  const r = runWith(branched({ adrs: changesAdr('openspec', '[spec-driven]') }), ['ADR-0016'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^ADR-0016: changes\.schema is not one value in /m);
+});
+
+test('ADR-0009: one value where a list is expected', () => {
+  const r = runWith(branched({ adrs: branchingAdr('feat'), branch: 'feat/x' }), ['ADR-0009']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0009: branching\.prefixes is not a list/);
 });
 
 // A private key that gitleaks' private-key rule finds; random, so it is no real key.
