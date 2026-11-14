@@ -214,18 +214,6 @@ const WORKFLOWS = ['.github/workflows/*.yml', '.github/workflows/*.yaml'];
 const inWorkflow = (...any: string[]): Row => ({ contains: { in: WORKFLOWS, any } });
 const byValue = (rows: Record<string, Row>) => (value: string) => rows[value] ?? null;
 
-// ADR-0010's arc42 files live in architecture/arc42/ under ADR-0008's docs.root, `docs/` by default.
-// Absent, empty or not one value, it falls back: ADR-0010's check does not rule on ADR-0008.
-function docsRoot(root: string): string {
-  try {
-    const value = one().safeParse(readTraits(readFileSync(findAdr(root, 'ADR-0008'), 'utf8'), 'docs')?.root);
-    return value.success ? prefix(value.data) : 'docs/';
-  } catch (e) {
-    if (e instanceof CheckError) return 'docs/';
-    throw e;
-  }
-}
-
 const gate: Row = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
 
 // ADR number -> traits it wires. `row(value, ctx)` returns a row, or null for
@@ -240,9 +228,10 @@ const WIRING: Record<string, Entry[]> = {
     { group: 'docs', key: 'root', row: (v) => ({ path: v }) },
   ],
   'ADR-0010': [
-    { group: 'architecture', key: 'document', row: (v, { root }) => v === 'arc42'
+    // Fixed path: ADR-0010 revision 2, the architecture document does not move with docs.root.
+    { group: 'architecture', key: 'document', row: (v) => v === 'arc42'
       ? { exists: Array.from({ length: 12 }, (_, i) => {
-        const section = `${docsRoot(root)}architecture/arc42/${String(i + 1).padStart(2, '0')}-*`;
+        const section = `docs/architecture/arc42/${String(i + 1).padStart(2, '0')}-*`;
         return [`${section}.md`, `${section}.mdx`];
       }) }
       : null },
