@@ -37,4 +37,11 @@ jobs:
       # under node_modules, so a pull request changing the check is checked
       # by its own version; Node strips its types. GitHub's merge commit is
       # ignored by commitlint.
-      - run: node checks/governance-check.ts ADR-0006 --from "origin/${{ github.base_ref }}"
+      # Skipped on pull requests authored by Dependabot (a departure declared
+      # in ADR-0006): its commit bodies start with a `Bumps [name](url)` line
+      # past commitlint's 100-character limit, while its titles, which the
+      # squash keeps, are `chore: bump ...` (.github/dependabot.yml). The
+      # author, not the actor, so a person's pull request is always checked.
+      # Install and tests above still run and `test` still reports.
+      - if: github.event.pull_request.user.login != 'dependabot[bot]'
+        run: node checks/governance-check.ts ADR-0006 --from "origin/${{ github.base_ref }}"

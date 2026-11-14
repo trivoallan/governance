@@ -1,0 +1,24 @@
+{
+  "name": "ontrack-trivoallan-tools",
+  "description": "Plugins this repository is worked with, each pinned to a reviewed commit (ADR-0017).",
+  "owner": { "name": "Tristan Rivoallan" },
+  "plugins": [
+    {
+      "name": "source-control",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/melodic-software/claude-code-plugins.git",
+        "path": "plugins/source-control",
+        "sha": "c546665517e9a7955dfe8c4dc2749c28afa2d249"
+      }
+    },
+    {
+      "name": "superpowers",
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers",
+        "sha": "22f0b463e7a5e579904dd6211a520321035526f7"
+      }
+    }
+  ]
+}

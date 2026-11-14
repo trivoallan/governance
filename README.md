@@ -33,3 +33,23 @@ unrelated package of the same name from the npm registry.
 
 The alias (`trivoallan` here) is yours: it becomes the namespace, and the
 ADRs land in `docs/adr/<alias>/`. Rename it if you like.
+
+## Work on it
+
+This repository is worked on with Claude Code
+([ADR-0017](docs/adr/trivoallan/ADR-0017-agent-tooling.md)). Its plugins
+come from its own marketplace, `marketplace/`, each pinned to a commit.
+Accept the workspace trust dialog, then install each plugin once:
+
+```bash
+claude plugin install source-control@ontrack-trivoallan-tools --scope project
+claude plugin install superpowers@ontrack-trivoallan-tools --scope project
+claude plugin install claude-security@claude-plugins-official --scope project
+```
+
+`claude-security` comes from Anthropic's marketplace, unpinned: a departure
+recorded in ADR-0017.
+
+If you already have one of them from its upstream marketplace, turn that
+copy off in your untracked `.claude/settings.local.json`
+(`"superpowers@superpowers-marketplace": false`, say).

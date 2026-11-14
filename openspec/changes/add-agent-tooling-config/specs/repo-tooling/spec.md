@@ -11,8 +11,9 @@ checks, hooks, settings and instructions its contributors and agents work with.
 The repository SHALL track `.claude/settings.json`. It SHALL declare exactly
 one marketplace in `extraKnownMarketplaces`, the repository's own, as a
 `directory` source with path `./marketplace`, and SHALL list in
-`enabledPlugins` only `<plugin>@<that marketplace>` entries, one per plugin
-of that marketplace.
+`enabledPlugins` one `<plugin>@<that marketplace>` entry per plugin of that
+marketplace, plus only the `claude-security@claude-plugins-official` entry
+the departure in ADR-0017 declares.
 
 #### Scenario: ADR-0017 check passes
 - **WHEN** `npx --no-install governance-check ADR-0017` runs on the default branch
@@ -23,8 +24,12 @@ of that marketplace.
 - **THEN** every key of `extraKnownMarketplaces` is the name in `marketplace/.claude-plugin/marketplace.json`, and its source is `{ "source": "directory", "path": "./marketplace" }`
 
 #### Scenario: Enabled plugins match the marketplace
-- **WHEN** the plugin names in `enabledPlugins` and in the marketplace are compared
+- **WHEN** the plugin names of the `@ontrack-trivoallan-tools` entries in `enabledPlugins` and in the marketplace are compared
 - **THEN** they are the same set
+
+#### Scenario: Only the declared departure
+- **WHEN** the `enabledPlugins` entries not ending in `@ontrack-trivoallan-tools` are listed
+- **THEN** the list is exactly `claude-security@claude-plugins-official`, and ADR-0017 holds a `**Departure:` paragraph naming it
 
 ### Requirement: Repository marketplace pinned by commit
 The repository SHALL track `marketplace/.claude-plugin/marketplace.json`.
