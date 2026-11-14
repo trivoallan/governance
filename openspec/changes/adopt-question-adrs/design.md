@@ -120,7 +120,10 @@ seen yet. ADR-0010 recommends arc42 as one file per section under
 `docs/architecture/arc42/`, so a change touches only its section, and a
 LikeC4 model under `docs/architecture/model/` (trait `architecture.model`)
 so the context, building-block and deployment views are generated from one
-source instead of drawn by hand. governance ships no arc42 template for now:
+source instead of drawn by hand. Diagrams the model does not cover
+(sequences, states, flows) are Mermaid code blocks (trait
+`architecture.diagrams`), which GitHub and Docusaurus render without a build
+step. governance ships no arc42 template for now:
 ADR-0010 lists the twelve files.
 
 ## Risks / Trade-offs

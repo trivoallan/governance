@@ -11,6 +11,7 @@ traits:
   architecture:
     document:
     model:
+    diagrams:
 ---
 
 # Architecture documentation
@@ -51,6 +52,7 @@ answer one without the other.
 | Key | Recommended value | Reason |
 | --- | --- | --- |
 | `architecture.document` | `arc42` | its twelve sections give every architecture fact one fixed place, so an agent and a reader know where to look and where to write, and a missing section is visible as a missing file |
+| `architecture.diagrams` | `mermaid` | GitHub and Docusaurus render it from a fenced code block, so a diagram is text in the page that needs no build step and no image file |
 | `architecture.model` | `likec4` | the diagrams become code: one model in text files, several views generated from it, reviewed in a diff like the rest of the repository. An agent can read and change it, which it cannot do with an image |
 
 **The document is a directory, `docs/architecture/arc42/`, with one file
@@ -89,12 +91,21 @@ rather than hand-drawn diagrams: Context and Scope (3), Building Block View
 (5) and Deployment View (7). A diagram drawn by hand next to the model would
 be a second source, and it would drift.
 
+**What the model does not show is drawn in `mermaid`.** Sequences, state
+machines and flows (mostly in the Runtime View, section 6, and in
+Cross-cutting Concepts, section 8) are not structure, so they do not belong
+in the model. They are written as Mermaid code blocks in the section file
+itself. Never redraw in Mermaid an element the model already holds: that is
+the second source the model exists to avoid.
+
 **This recommendation does not bind your repository.** If your architecture
 already lives in a mature document elsewhere, say `elsewhere` and name the
 path in this ADR's body. If you keep no architecture document, say `none`:
 that is an honest answer for a small repository. For `architecture.model`,
 another architecture-as-code tool is a valid answer when named, and `none`
-means the diagrams, if any, are drawn by hand.
+means the diagrams, if any, are drawn by hand. For
+`architecture.diagrams`, `plantuml` is the other text format, and `none`
+means the section files hold no diagram outside the model's views.
 
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
@@ -135,6 +146,7 @@ traits:
   architecture:
     document: arc42
     model: likec4
+    diagrams: mermaid
 ---
 ```
 
@@ -152,6 +164,7 @@ what makes a decision different from an accepted default.
   question someone has to answer.
 - With LikeC4, a change to the architecture and to its diagrams lands in the
   same diff, and the views cannot disagree with each other.
+- Every diagram is text, so an agent can read and change all of them.
 
 ### Negative
 
@@ -161,6 +174,8 @@ what makes a decision different from an accepted default.
   hand from the table above.
 - LikeC4 is one more tool and one more language to learn, and its views need
   a build step to be seen as images.
+- Two diagram languages, LikeC4 for structure and Mermaid for behaviour, and
+  a rule to keep them from overlapping that only review enforces.
 
 ### Neutral
 
@@ -195,6 +210,12 @@ Images or drawing-tool files next to the document. No tool to learn, but an
 agent cannot change them, review cannot diff them, and each view drifts from
 the others on its own.
 
+### PlantUML for diagrams outside the model
+
+Richer sequence and state notation than Mermaid, but it needs a renderer:
+neither GitHub nor Docusaurus displays it from a code block without a
+plugin or a server.
+
 ### Another architecture-as-code tool
 
 Structurizr DSL or diagrams as code in Mermaid or PlantUML. Valid answers
@@ -206,6 +227,7 @@ where diagram-by-diagram tools repeat each element in each picture.
 - Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; governance does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
 - [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
+- [Mermaid](https://mermaid.js.org/): diagrams as text, rendered by GitHub and Docusaurus.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 
 **The keys.**
@@ -214,11 +236,12 @@ where diagram-by-diagram tools repeat each element in each picture.
 | --- | --- | --- |
 | `architecture.document` | where this repository's architecture document lives | `arc42` (`docs/architecture/arc42/`, one file per section), `elsewhere`, `none` |
 | `architecture.model` | what the architecture diagrams are made from | `likec4` (`docs/architecture/model/`), another named tool, or `none` |
+| `architecture.diagrams` | the text format of diagrams the model does not cover | `mermaid`, `plantuml`, `none` |
 
 **`architecture.model` is not checked against a list**: architecture-as-code
 tools are not a closed set. The schema checks that you answered, never that
 the answer is right.
 
-**Both keys are required**: an empty key is not an answer. The value is
+**All three keys are required**: an empty key is not an answer. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
