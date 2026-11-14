@@ -94,9 +94,10 @@ silent bypass is not a departure.
 | --- | --- | --- |
 | `lint` | a tracked file (a `package.json` script, a Makefile target, a `pyproject.toml` section) carries a lint command | that command; the workflow cites the file |
 | `test` | the same, for a test command | that command; the failing threshold is `tests.coverage_target` (ADR-0007) |
+| `scan` | `vulnerabilities.scanner` is not `none` (ADR-0019), on pull requests and on a schedule | that scanner; the failing threshold is `vulnerabilities.fail_on` (ADR-0019) |
 | `build` | always | `languages.main.name` (ADR-0004), plus the frontend (ADR-0013) if ruled |
 | `image` | `delivery.target: container` (ADR-0012) | the registry in `delivery.registry` |
-| `release` | `delivery.release_tool` is neither `manual` nor `none` | that tool (ADR-0012) |
+| `release` | `delivery.release_tool` is neither `manual` nor `none` | that tool (ADR-0012), plus the SBOM when `vulnerabilities.sbom` is not `none` (ADR-0019) |
 | `deploy` | `deployment.manifests` is a relative path; one job per entry of `delivery.environments`, in order, each with its own trigger | the manifests in that path |
 | propose elsewhere | `deployment.manifests` is a URL; this replaces `deploy` | that address |
 
