@@ -46,7 +46,9 @@ jobs:
           # No cache in a job that publishes: nothing from an earlier run
           # ends up in the package.
           package-manager-cache: false
-      # No install: the package ships adr/ and a stdlib-only script, nothing built.
+      # Installs typescript from the lockfile (ADR-0020): npm publish runs the
+      # prepare script, which compiles the check to dist/governance-check.js.
+      - run: npm ci
       # Trusted publishing (npm 11.5.1+, shipped with Node 24) authenticates by
       # OIDC: no token. --provenance is implied; kept explicit for ADR-0021's check.
       - run: npm publish --provenance --access public
