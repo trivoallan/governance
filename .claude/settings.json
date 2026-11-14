@@ -1,0 +1,11 @@
+{
+  "extraKnownMarketplaces": {
+    "ontrack-trivoallan-tools": {
+      "source": { "source": "directory", "path": "./marketplace" }
+    }
+  },
+  "enabledPlugins": {
+    "source-control@ontrack-trivoallan-tools": true,
+    "superpowers@ontrack-trivoallan-tools": true
+  }
+}
