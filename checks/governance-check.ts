@@ -332,6 +332,11 @@ const gitOut = (root: string, ...args: string[]) => {
 
 const Branching = z.object({ prefixes: list().min(1) });
 
+// Branches opened by the release and update tools governance's ADRs recommend or
+// offer (ADR-0012, ADR-0018): their names are the tool's, not the repository's.
+// Not a trait: the list follows from those ADRs' answers.
+const TOOL_BRANCHES = ['release-please--', 'releaser-pleaser--', 'dependabot/', 'renovate/'];
+
 function branching(root: string, file: string, { branch }: Options): number {
   const { prefixes } = traitsOf(Branching, 'ADR-0009', 'branching', file, readFileSync(file, 'utf8'));
   // A pull request in GitHub Actions checks out a detached HEAD; its branch is in GITHUB_HEAD_REF.
@@ -345,6 +350,10 @@ function branching(root: string, file: string, { branch }: Options): number {
   const defaults = head ? [head.slice(head.indexOf('/') + 1)] : ['main', 'master'];
   if (defaults.includes(name)) {
     console.log(`ADR-0009: ${name} is the default branch, nothing to check`);
+    return 0;
+  }
+  if (TOOL_BRANCHES.some((p) => name.startsWith(p))) {
+    console.log(`ADR-0009: ${name} is a tool branch, nothing to check`);
     return 0;
   }
   const form = new RegExp(`^(?:${prefixes.map(esc).join('|')})/[a-z0-9]+(?:-[a-z0-9]+)*$`);
