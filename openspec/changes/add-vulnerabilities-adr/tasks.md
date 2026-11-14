@@ -18,4 +18,4 @@
 
 ## 4. Delivery
 
-- [ ] 4.1 Commit, push and open the pull request; verify its diff holds only the files listed in proposal.md's Impact and this change
+- [x] 4.1 Commit, push and open the pull request; verify its diff holds only the files listed in proposal.md's Impact and this change
