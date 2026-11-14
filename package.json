@@ -24,7 +24,7 @@
     "build": "tsc",
     "hooks": "[ \"$(git rev-parse --show-toplevel 2>/dev/null)\" = \"$(pwd -P)\" ] && git config core.hooksPath .githooks || true",
     "prepare": "npm run build && npm run hooks",
-    "test": "tsc --noEmit && node --test checks/*.test.ts"
+    "test": "tsc --noEmit && node --test --experimental-test-coverage --test-coverage-include='checks/*.ts' --test-coverage-exclude='checks/*.test.ts' --test-coverage-exclude='checks/test-helpers.ts' --test-coverage-lines=90 checks/*.test.ts"
   },
   "ontrack": {
     "adr": "adr",

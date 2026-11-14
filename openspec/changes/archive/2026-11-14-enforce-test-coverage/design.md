@@ -31,9 +31,16 @@ unchanged on top of #31 alone.
 **Node's built-in coverage flags.** The `test` script becomes
 `tsc --noEmit && node --test --experimental-test-coverage
 --test-coverage-include='checks/*.ts' --test-coverage-exclude='checks/*.test.ts'
+--test-coverage-exclude='checks/test-helpers.ts'
 --test-coverage-lines=90 checks/*.test.ts`. The include keeps `node_modules`
-(commitlint, run by the ADR-0006 tests) and `dist/` out; the exclude keeps
-the test out. Below the threshold the runner prints that line coverage does
+(commitlint, run by the ADR-0006 tests) and `dist/` out; the excludes keep
+the tests out, `checks/test-helpers.ts` included.
+
+*Adaptation at apply time:* #31 also landed `checks/test-helpers.ts`, test
+support that the `*.test.ts` glob does not match. It is not shipped source,
+so a second `--test-coverage-exclude` (the flag repeats) keeps it out; the
+report then lists `checks/governance-check.ts` alone, at 98.73 % lines
+(Node 22.23). Below the threshold the runner prints that line coverage does
 not meet it and exits `1`. *Alternative:* `c8`, one dev dependency for what
 Node does itself.
 
