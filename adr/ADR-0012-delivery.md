@@ -3,7 +3,7 @@ adr: ADR-0012
 slug: delivery
 title: Delivery
 status: proposed
-revision: 1
+revision: 2
 date:
 authors: []
 supersedes: []
@@ -142,7 +142,7 @@ adr: ADR-0012
 slug: delivery
 title: Delivery
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
