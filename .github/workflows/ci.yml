@@ -1,0 +1,39 @@
+name: ci
+
+# The pull request gate of ADR-0011 (forge.gate: blocking): one job, `test`,
+# that the ruleset in .github/rulesets/main.json makes required on main.
+# Adding a step to the job changes no GitHub setting; adding a job would.
+# pull_request only, never pull_request_target (ADR-0011): forks and
+# Dependabot run it with a read-only token and no secret. No push trigger:
+# the ruleset makes every commit on main arrive through a pull request.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The ADR-0006 step lints every commit after origin/<base>, so the
+          # base branch and the whole history down to it must be present.
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # Node 24, as release.yml. setup-node's default npm cache is kept:
+          # this job publishes nothing.
+          node-version: 24
+      # ADR-0020: install from package-lock.json without resolving again; a
+      # lockfile out of date with package.json fails here. The tests spawn
+      # commitlint, a devDependency.
+      - run: npm ci
+      # package.json "test": node --test on checks/*.test.mjs.
+      - run: npm test
+      # ADR-0006: the pull request's commits are Conventional Commits with a
+      # scope from commits.scopes. Runs the checkout's script, not the copy
+      # under node_modules, so a pull request changing the check is checked
+      # by its own version. GitHub's merge commit is ignored by commitlint.
+      - run: node checks/governance-check.mjs ADR-0006 --from "origin/${{ github.base_ref }}"
