@@ -25,5 +25,5 @@ ontrack reads the ADRs from the `trivoallan` dependency, which points at `main`,
 
 ## 5. Verification
 
-- [ ] 5.1 Run `npm test` (coverage at or above ADR-0007's target) and `openspec validate revise-delivery-release-notes --strict`, and verify both pass, then that CI passes on the pull request.
+- [x] 5.1 Run `npm test` (coverage at or above ADR-0007's target) and `openspec validate revise-delivery-release-notes --strict`, and verify both pass, then that CI passes on the pull request.
 - [ ] 5.2 After the release that ships this change is tagged, write its highlights with `/pm-skills:deliver-release-notes`, prepend them to the GitHub release, and verify the release page shows them above the generated changelog.
