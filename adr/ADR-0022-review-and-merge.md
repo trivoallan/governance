@@ -3,14 +3,15 @@ adr: ADR-0022
 slug: review-and-merge
 title: Review and merge
 status: proposed
-revision: 1
+revision: 2
 date:
 authors: []
 supersedes: []
 check: npx --no-install governance-check ADR-0022
 traits:
   review:
-    merge_by:
+    by:
+    approvals:
 ---
 
 # Review and merge
@@ -30,31 +31,32 @@ Proposed
 
 ## Context
 
-This ADR is written for a repository kept by **one person**, who works
-with a coding agent. The agent branches, commits and opens the pull
-request ([ADR-0009](ADR-0009-branching.md)). While this key is empty, it
-does not know **whether it may merge that pull request itself** once the
-checks are green. It either waits without saying so, or merges what
-nobody read.
+A coding agent branches, commits and opens the pull request
+([ADR-0009](ADR-0009-branching.md)). While these keys are empty, it does
+not know **whether it may approve a pull request, or merge one** once the
+checks are green. It either waits without saying so, or merges what nobody
+read.
 
-**An agent's merge cannot be told apart afterwards.** The agent works with
-the maintainer's `gh` session or token, so GitHub records its merge under
-the maintainer's name. The history shows a merge, never who decided it.
-The rule can only be enforced **before** the merge, not audited after it.
+**An agent's act cannot be told apart afterwards.** The agent works with a
+person's `gh` session or token, so GitHub records its merge, and its
+approval, under that person's name. The history shows a merge or an
+approval, never who decided it. The rule can only be enforced **before**
+the act, not audited after it.
 
-**For one person, the merge is the review.** GitHub does not let the author
-of a pull request approve it. A repository with one maintainer that
-required an approval would block every merge, or bypass the rule on each
-one. What remains is the moment a person reads the diff and merges it.
+**Where the review happens depends on who else can approve.** GitHub does
+not let the author of a pull request approve it. In a repository kept by
+one person, no approval is possible, so the moment that person reads the
+diff and merges it is the review. Once another account can approve, the
+review moves to that approval, and the merge can follow from it.
 
 Two ADRs already settle a case: [ADR-0018](ADR-0018-dependencies.md) lets
 some updates merge without a person, and
-[ADR-0019](ADR-0019-vulnerabilities.md) has a person merge every
-vulnerability ignore rule. This ADR states the rule they are cases of.
+[ADR-0019](ADR-0019-vulnerabilities.md) has a person approve or merge
+every vulnerability ignore rule. This ADR states the rule they are cases
+of.
 
-**Not concerned:** how many approvals a pull request needs, and who owns
-which path (`CODEOWNERS`). Both matter once several people review, which
-this ADR does not address.
+**Not concerned:** who owns which path (`CODEOWNERS`). It routes a review;
+it does not change what the agent may do.
 
 ## Decision
 
@@ -62,45 +64,80 @@ this ADR does not address.
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `review.merge_by` | `person` | the agent proposes, reviews and fixes; a person reading the diff and merging it is the review, and the only one a repository with one maintainer can have |
+| `review.by` | `maintainer` | a person reads every change before it lands, and in a repository kept by one person, their merge is the only review GitHub allows. Rule `peer` once another account can approve |
+| `review.approvals` | `0` with `maintainer`, `1` with `peer` | the number of approvals the ruleset requires, written where an agent and the check can read it |
 
-`agent` is an acceptable answer for a repository nobody depends on, such as
-a demo or a throwaway, and it is justified here when you rule it.
+`review.by` says where the review a person does happens:
 
-**What governance fixes when you rule `person`:**
+- `maintainer`: the merge of the one person who keeps the repository;
+- `peer`: the approval of the latest push by an account other than the one
+  that opened the pull request;
+- `agent`: nowhere. Acceptable for a repository nobody depends on, such as
+  a demo or a throwaway, and justified here when you rule it.
+
+`review.approvals` follows from it: `0` with `maintainer` and `agent`,
+because a maintainer cannot approve their own pull request and the agent
+never approves; `1` or more with `peer`. The number is your own choice,
+and it changes nothing the agent does.
+
+**What governance fixes, whatever you rule:**
 
 1. **The agent opens the pull request ready for review, says when its
-   checks are green, and stops.** Not as a draft: a draft adds a click and
+   checks are green, and never approves a pull request**, its own or
+   another's, under any account. Not as a draft: a draft adds a click and
    no review.
-2. **The agent merges nothing.** Not with `gh pr merge`, not by enabling
-   auto-merge (`--auto`), not through the API, not by pushing to the
-   default branch.
-3. **A bot that a workflow runs under another ADR's ruling is not an
+2. **With `maintainer`, the agent merges nothing.** Not with
+   `gh pr merge`, not by enabling auto-merge (`--auto`), not through the
+   API, not by pushing to the default branch.
+3. **With `peer`, the agent may merge once GitHub accepts the merge**, and
+   never by working around the ruleset. The ruleset below refuses the
+   merge until another account approved the latest push.
+4. **With `agent`, the agent merges once the checks are green.**
+5. **A bot that a workflow runs under another ADR's ruling is not an
    agent session.** ADR-0018's automerge is that exception: Dependabot's
    pull request is merged by a workflow the repository ruled, not by the
    agent.
-4. **A review the agent runs on its own work is advice.** It can find
-   faults and fix them. The person's merge remains the review.
+6. **A review the agent runs is advice.** It can find faults and fix them.
+   It never stands in for the person's merge or approval.
 
-**On GitHub, a ruleset backs the rule.** On the default branch: require a
-pull request before merging, with zero required approvals, and leave the
-bypass list empty. Pushing to the default branch then fails for everyone,
-the agent included. That setting lives on GitHub, not in a file of the
-repository, and the check does not verify it.
+**On GitHub, a ruleset backs the rule.** On the default branch:
+
+| `review.by` | Ruleset |
+| --- | --- |
+| `maintainer` | require a pull request before merging, with zero approvals |
+| `peer` | require a pull request with `review.approvals` approvals, dismiss stale approvals when new commits are pushed, and require approval of the most recent push |
+| `agent` | require a pull request before merging, with zero approvals |
+
+Leave the bypass list empty, except Dependabot under `peer`, which
+ADR-0018 names. Pushing to the default branch then fails for everyone, the
+agent included. The approval of the most recent push is what makes `peer`
+safe: an agent that pushes a fix after the approval needs a new one.
+
+**What `maintainer` leaves, beside each value of
+[ADR-0011](ADR-0011-forge-and-ci.md)'s `forge.gate`.** With `none`, no
+control but the maintainer's reading. With `blocking`, the pipeline and
+that reading. With `informative`, the pipeline reports and the maintainer
+alone decides what to do with a red.
 
 **With `agent.host: claude-code`** ([ADR-0017](ADR-0017-agent-tooling.md)),
-`.claude/settings.json` denies the merge:
+`.claude/settings.json` denies what the agent may not do. With
+`maintainer`:
 
 ```json
 {
   "permissions": {
-    "deny": ["Bash(gh pr merge:*)"]
+    "deny": ["Bash(gh pr merge:*)", "Bash(gh pr review:*)"]
   }
 }
 ```
 
-If the GitHub MCP server is installed, deny its merge tool as well, under
-the name your configuration gives the server (for example
+With `peer`, only `"Bash(gh pr review:*)"`: denying the merge would block
+the merge rule 3 allows. The agent comments on its own pull request with
+`gh pr comment`, which the deny leaves open.
+
+If the GitHub MCP server is installed, deny its review and merge tools as
+well, under the names your configuration gives the server (for example
+`mcp__github__create_pull_request_review` and
 `mcp__github__merge_pull_request`).
 
 Everything below disappears when you rule, from this sentence up to the
@@ -110,7 +147,7 @@ Consequences heading, which stays.
 doing any, because the last one deletes the other four, and do them in one
 commit.
 
-1. **Write the value of the key** under `traits:` in the frontmatter, or,
+1. **Write the value of each key** under `traits:` in the frontmatter, or,
    if you rule `rejected`, **remove the whole `traits:` block**.
 2. **Change `status:`** from `proposed` to `accepted` or `rejected`.
 3. **Fill `date:` and `authors:`**: `date:` as `YYYY-MM-DD`, the day you
@@ -134,36 +171,49 @@ adr: ADR-0022
 slug: review-and-merge
 title: Review and merge
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
 check: npx --no-install governance-check ADR-0022
 traits:
   review:
-    merge_by: person
+    by: maintainer
+    approvals: 0
 ---
 ```
 
 **The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
-runs it from your repository's root. With `merge_by: person`, it reads
-ADR-0017's `agent.host`:
+runs it from your repository's root:
 
-- with `claude-code`, the committed `.claude/settings.json` holds, under
-  `permissions.deny`, an entry that starts with `Bash(gh pr merge`. The
-  same entry under `allow` or `ask` fails, and
-  `.claude/settings.local.json` is not read;
-- with any other host, or no ADR-0017, there is nothing to check.
-
-`merge_by: agent` has nothing to check, and passes.
+- It fails when the two keys disagree: `maintainer` or `agent` with
+  `approvals` other than `0`, `peer` with `0`. With `agent`, there is
+  nothing else to check.
+- With `maintainer` or `peer`, and ADR-0017's `agent.host: claude-code`,
+  the committed `.claude/settings.json` holds, under `permissions.deny`, an
+  entry that starts with `Bash(gh pr review`, and with `maintainer` one
+  that starts with `Bash(gh pr merge`. The same entry under `allow` or
+  `ask` fails, and `.claude/settings.local.json` is not read. With any
+  other host, or no ADR-0017, there is no deny to check.
+- In GitHub Actions only, it reads the rules active on the default branch
+  through `gh api`, and fails unless they require a pull request with
+  exactly `review.approvals` approvals and, with `peer`, dismiss stale
+  approvals and require approval of the most recent push. Pass the job's
+  token as `GH_TOKEN`. Outside CI it says it did not read the ruleset.
+  It reads rulesets, not classic branch protection.
+- **It cannot see the bypass list**: reading it needs admin rights. Its
+  output says the bypass list is not verified.
+- `review.merge_by`, left from revision 1, fails and names `review.by`.
 
 **The check denies nothing itself, and the deny has a ceiling.** It
-protects against an agent that merges by mistake, not against one working
-around the rule. Claude Code matches the entry inside a compound command
-(`cd x && gh pr merge 1`), but a rule matches command text, and its
-documentation says deny rules are not a security boundary: `gh api` on the
-merge endpoint, `/usr/bin/gh pr merge` and a push to the default branch do
-not match. The ruleset above closes those.
+protects against an agent that approves or merges by mistake, not against
+one working around the rule. Claude Code matches the entry inside a
+compound command (`cd x && gh pr merge 1`), but a rule matches command
+text, and its documentation says deny rules are not a security boundary:
+`gh api` on the review or merge endpoint, `/usr/bin/gh pr merge` and a
+push to the default branch do not match. The ruleset above closes the
+merge; nothing closes an approval made under a teammate's token except the
+deny.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
@@ -173,31 +223,47 @@ what makes a decision different from an accepted default.
 
 ### Positive
 
-- An agent at a green pull request knows what to do: say so and stop.
+- An agent at a green pull request knows what to do: say so and stop, or,
+  with `peer`, merge once GitHub accepts it.
+- No approval in a person's name comes from an agent.
 - Nothing reaches the default branch without a person having read it,
   except the updates ADR-0018 lets merge.
 - ADR-0018 and ADR-0019 apply one rule instead of two separate ones.
 
 ### Negative
 
-- Every change waits for the maintainer, even a trivial one.
-- The deny entry protects against a mistake, not against a workaround;
-  without the ruleset, the rule is an intention.
+- With `maintainer`, every change waits for the maintainer, even a
+  trivial one.
+- The deny entries protect against a mistake, not against a workaround;
+  without the ruleset, the merge rule is an intention.
 
 ### Neutral
 
-- The ruleset lives on GitHub, outside the repository, and nothing in the
-  repository records it.
+- The ruleset lives on GitHub, outside the repository. The check reads it
+  in CI, but not its bypass list.
 
 ## Alternatives Considered
 
-### `merge_by: agent`
+### `review.by: agent`
 
 The agent merges once the checks are green. No wait, and no reader: a
 green check is not a review (ADR-0018 says why). Tenable for a repository
 nobody installs from or depends on.
 
-### One required approval
+### A person merges even under `peer`
+
+The approval and the merge both wait for a person. The second wait proves
+nothing the approval of the latest push does not already prove, once the
+ruleset requires it.
+
+### Two keys: who reviews, and whether the team is one person or several
+
+`review.by: person | agent` beside `review.team: solo | team`. One
+combination, `agent` with `team`, has no effect: the agent never approves,
+so it merges with zero approvals in either case. Two keys with a dead
+combination carry no more than one key with three values.
+
+### One required approval for a single maintainer
 
 The usual rule for a team. For one maintainer it cannot work: GitHub
 refuses the author's own approval, so every merge is blocked or bypassed,
@@ -205,9 +271,8 @@ and a rule bypassed on every merge is not a rule.
 
 ### `CODEOWNERS`
 
-Routes each path to its owners for review. With one maintainer every path
-has the same owner, so the file adds nothing. It belongs with required
-approvals, in a revision of this ADR that addresses several reviewers.
+Routes each path to its owners for review. It belongs with `peer`, and it
+changes who approves, not what the agent may do.
 
 ### Draft pull requests
 
@@ -222,14 +287,20 @@ extra step proves nothing the merge does not already prove.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the required checks a merge waits for.
 - [ADR-0017](ADR-0017-agent-tooling.md): `agent.host`, which decides what the check reads.
 - [ADR-0018](ADR-0018-dependencies.md) and [ADR-0019](ADR-0019-vulnerabilities.md): the two cases this ADR generalises.
-- Claude Code: [permissions](https://code.claude.com/docs/en/permissions). GitHub: [about rulesets](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets), [available rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [approving a pull request](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews). Read on 2026-11-15.
+- Claude Code: [permissions](https://code.claude.com/docs/en/permissions). GitHub: [about rulesets](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets), [available rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch), [approving a pull request](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews). Read on 2026-11-15.
 
-**The key.**
+**The keys.**
 
 | Key | What it holds | Allowed values |
 | --- | --- | --- |
-| `review.merge_by` | who merges a pull request into the default branch | `person`, `agent` |
+| `review.by` | where the review a person does happens | `maintainer` (the maintainer's merge), `peer` (another account's approval of the latest push), `agent` (no person) |
+| `review.approvals` | the approvals the default branch's ruleset requires | `0` with `maintainer` and `agent`; `1` or more with `peer` |
 
-**An empty key is not an answer.** The value is written in this file and
-nowhere else; whoever needs it links here. See ADR-0001 for the check
-command.
+**An empty key is not an answer**: both are required. The values are
+written in this file and nowhere else; whoever needs them links here. See
+ADR-0001 for the check command.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: `review.merge_by` is replaced by `review.by` and `review.approvals`, which also take over ADR-0011's `forge.review`. The agent never approves; with `peer` it may merge once GitHub accepts it. Re-answer both keys and delete `review.merge_by`: `forge.review: author` with `merge_by: person` becomes `maintainer` with `approvals: 0`; `forge.review: peer` becomes `peer` with the approvals your ruleset requires, at least `1`; `merge_by: agent` becomes `agent` with `approvals: 0`. Add the `Bash(gh pr review:*)` deny.
