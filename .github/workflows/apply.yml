@@ -1,0 +1,26 @@
+name: apply
+
+# A maintainer adds the `ontrack:apply` label to a pull request that carries a
+# change proposal, once a person with write access has approved its last
+# commit, and a Claude Code session starts to apply it with them. The workflow
+# lives in ontrack (its ADR-0004) and is called here by commit SHA.
+#
+# `pull_request_target` is safe here because ontrack's workflow checks out
+# nothing and runs nothing from the pull request: it reads the reviews, and
+# fires the routine only when the head commit is approved.
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  apply:
+    permissions:
+      pull-requests: write
+    uses: trivoallan/ontrack/.github/workflows/apply.yml@ef7a712178ec68f6f1c02db95e120439875a012c # main, after trivoallan/ontrack#165
+    with:
+      routine_id: ${{ vars.APPLY_ROUTINE_ID }}
+    secrets:
+      # Named, never `secrets: inherit`.
+      fire_token: ${{ secrets.APPLY_FIRE_TOKEN }}
