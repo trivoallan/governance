@@ -24,7 +24,7 @@
 
 ## 2. Check
 
-- [x] 2.1 In `checks/governance-check.ts`, replace the `'ADR-0008'` wiring entry with a `docs` check registered in `CHECKS`. It runs the existing `docs.tool` and `docs.root` rows through `wiring`, then the channels step, and returns non-zero when either fails. Verify that the existing ADR-0008 tests still pass unchanged once they hold `channels: [main]`, or `docs.tool: none` with no channels.
+- [x] 2.1 In `checks/ontrack-engineering-check.ts`, replace the `'ADR-0008'` wiring entry with a `docs` check registered in `CHECKS`. It runs the existing `docs.tool` and `docs.root` rows through `wiring`, then the channels step, and returns non-zero when either fails. Verify that the existing ADR-0008 tests still pass unchanged once they hold `channels: [main]`, or `docs.tool: none` with no channels.
 - [x] 2.2 Channels validation. Add a zod schema: a list of `release` and `main`, at least one, no duplicate. Implement the four outcomes for `docs.tool` / `docs.channels` presence. Add tests for:
   - "Channels without a site";
   - "Site without channels";

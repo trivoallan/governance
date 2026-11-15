@@ -49,7 +49,7 @@ setting up the site copies the one-branch workflow every template ships.
   - a single enum value, refused because a later value would break every
     answer. The Docusaurus entry stops presenting versioning as a reason to
     pick it.
-- `governance-check ADR-0008` reads `docs.channels` beside the existing
+- `ontrack-engineering-check ADR-0008` reads `docs.channels` beside the existing
   `docs.tool` and `docs.root` rows. When `docs.tool` is not `none`, it
   looks for the tracked workflows that hold `actions/deploy-pages`, and
   fails unless one of them is triggered:
@@ -81,7 +81,7 @@ None.
 ## Impact
 
 - `adr/ADR-0008-documentation.md`, `adr/.mdschema.yml`.
-- `checks/governance-check.ts` and its tests. The check gains no
+- `checks/ontrack-engineering-check.ts` and its tests. The check gains no
   dependency: it reads the workflow's triggers as text.
 - Repositories that inherit governance with `docs.tool` other than `none`
   must answer `docs.channels` at the next `ontrack plan`, or their ADR-0008

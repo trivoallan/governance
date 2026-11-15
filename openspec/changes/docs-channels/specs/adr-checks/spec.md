@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: ADR-0008 check reads the channels
-`governance-check ADR-0008` SHALL keep its `docs.tool` and `docs.root`
+`ontrack-engineering-check ADR-0008` SHALL keep its `docs.tool` and `docs.root`
 rows, and SHALL also read `docs.channels`. One run SHALL report every key
 at fault.
 - When `docs.tool` is `none` and `docs.channels` is absent, it SHALL print `ADR-0008: docs.tool is none, no channels to check`.

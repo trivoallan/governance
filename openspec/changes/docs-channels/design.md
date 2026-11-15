@@ -3,7 +3,7 @@
 ## Context
 
 ADR-0008 (revision 2) asks `docs.tool`, `docs.root` and `docs.audience`.
-Its check is a plain wiring entry in `checks/governance-check.ts`: one row
+Its check is a plain wiring entry in `checks/ontrack-engineering-check.ts`: one row
 per key, presence only. Nothing asks which version of the pages the site
 shows.
 
