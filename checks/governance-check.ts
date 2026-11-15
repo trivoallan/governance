@@ -237,9 +237,6 @@ const WIRING: Record<string, Entry[]> = {
       : null },
     { group: 'architecture', key: 'model', row: byValue({ likec4: { exists: [['**/*.c4', '**/*.likec4']] } }) },
   ],
-  'ADR-0011': [
-    { group: 'forge', key: 'gate', row: byValue({ blocking: gate, informative: gate }) },
-  ],
   'ADR-0012': [
     { group: 'delivery', key: 'release_tool', row: byValue({ 'release-please': inWorkflow('googleapis/release-please-action') }) },
     { group: 'delivery', key: 'target', row: byValue({ container: { exists: [['**/Dockerfile', '**/Containerfile']] } }) },
@@ -510,7 +507,42 @@ function license(root: string, file: string): number {
   return failed ? 1 : 0;
 }
 
+// ADR-0011: forge.gate is wiring; forge.audit runs zizmor on what the workflows say.
+// ponytail: an open value, as secrets.guard; only zizmor has something to run.
+const forgeGate = wiring('ADR-0011', [{ group: 'forge', key: 'gate', row: byValue({ blocking: gate, informative: gate }) }]);
+const ForgeAudit = z.object({ audit: one() });
+
+function forge(root: string, file: string, opts: Options): number {
+  let failed = forgeGate(root, file, opts) !== 0;
+  let audit: string;
+  try {
+    ({ audit } = traitsOf(ForgeAudit, 'ADR-0011', 'forge', file, readFileSync(file, 'utf8')));
+  } catch (e) {
+    if (!(e instanceof CheckError)) throw e;
+    console.error(e.message);
+    return 1;
+  }
+  const name = `ADR-0011: forge.audit is ${audit}`;
+  if (audit !== 'zizmor') {
+    console.log(`${name}, nothing to check`);
+    return failed ? 1 : 0;
+  }
+  const workflows = matching(tracked(root), WORKFLOWS);
+  if (!workflows.length) {
+    console.log(`${name}, but no workflow is committed, nothing to audit`);
+    return failed ? 1 : 0;
+  }
+  runTool(root, 'zizmor', ['--version'], name);
+  // --no-config: a repository's zizmor.yml cannot loosen the verdict; inline ignores still apply.
+  if (runTool(root, 'zizmor', ['--offline', '--no-config', '--no-progress', ...workflows], name) !== 0) {
+    console.error(`${name}, and zizmor reported findings no inline ignore covers`);
+    failed = true;
+  }
+  return failed ? 1 : 0;
+}
+
 const CHECKS: Record<string, Check> = {
+  'ADR-0011': forge,
   'ADR-0022': review,
   'ADR-0023': license,
   'ADR-0006': commits,
