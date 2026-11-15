@@ -65,14 +65,14 @@ jobs:
         # template expanded into the script (template injection).
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: node checks/governance-check.ts ADR-0006 --from "origin/$BASE_REF"
+        run: node checks/ontrack-engineering-check.ts ADR-0006 --from "origin/$BASE_REF"
       # ADR-0009: the pull request's head branch is <prefix>/<description> with
       # a prefix from branching.prefixes. The script reads it from
       # GITHUB_HEAD_REF, as the checkout is detached. The checkout's script, as
       # above, so the tool-branch exemption (release-please--, dependabot/, ...)
       # is the one in this pull request, not the older pinned copy. Not skipped
       # for Dependabot: its branches are exempt in the check itself.
-      - run: node checks/governance-check.ts ADR-0009
+      - run: node checks/ontrack-engineering-check.ts ADR-0009
       # For the reviewer (change add-pr-change-summary, #88): each active
       # OpenSpec change the pull request touches, with a per-requirement diff
       # of its deltas against the current specs, in this job's summary. A

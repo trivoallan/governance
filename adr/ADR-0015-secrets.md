@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0015
+check: npx --no-install ontrack-engineering-check ADR-0015
 traits:
   secrets:
     storage:
@@ -145,7 +145,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0015
+check: npx --no-install ontrack-engineering-check ADR-0015
 traits:
   secrets:
     storage: keychain
@@ -165,7 +165,7 @@ runs it from your repository's root, and it reads the keys you ruled:
   [ADR-0025](ADR-0025-tools.md) rules `tools.manager: mise`, and the one on
   the `PATH` otherwise. If your CI checkout has no
   `origin/HEAD`, append the base, as in
-  `check: npx --no-install governance-check ADR-0015 --from origin/main`;
+  `check: npx --no-install ontrack-engineering-check ADR-0015 --from origin/main`;
 - with `none` or another tool, it has nothing to check, and passes.
 
 It does not check `secrets.storage`.

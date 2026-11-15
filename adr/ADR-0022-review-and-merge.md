@@ -7,7 +7,7 @@ revision: 2
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0022
+check: npx --no-install ontrack-engineering-check ADR-0022
 traits:
   review:
     by:
@@ -41,7 +41,8 @@ read.
 person's `gh` session or token, so GitHub records its merge, and its
 approval, under that person's name. The history shows a merge or an
 approval, never who decided it. The rule can only be enforced **before**
-the act, not audited after it.
+the act, not audited after it, unless the agent acts under an identity of
+its own ([ADR-0026](ADR-0026-agent-identity.md)).
 
 **Where the review happens depends on who else can approve.** GitHub does
 not let the author of a pull request approve it. In a repository kept by
@@ -109,7 +110,8 @@ and it changes nothing the agent does.
 | `agent` | require a pull request before merging, with zero approvals |
 
 Leave the bypass list empty, except Dependabot under `peer`, which
-ADR-0018 names. Pushing to the default branch then fails for everyone, the
+ADR-0018 names, and, with [ADR-0026](ADR-0026-agent-identity.md)'s
+`agent.identity: own`, the repository admin role, for pull requests only. Pushing to the default branch then fails for everyone, the
 agent included. The approval of the most recent push is what makes `peer`
 safe: an agent that pushes a fix after the approval needs a new one.
 
@@ -175,7 +177,7 @@ revision: 2
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0022
+check: npx --no-install ontrack-engineering-check ADR-0022
 traits:
   review:
     by: maintainer
@@ -267,7 +269,9 @@ combination carry no more than one key with three values.
 
 The usual rule for a team. For one maintainer it cannot work: GitHub
 refuses the author's own approval, so every merge is blocked or bypassed,
-and a rule bypassed on every merge is not a rule.
+and a rule bypassed on every merge is not a rule. It becomes workable once
+the agent has an identity of its own: see
+[ADR-0026](ADR-0026-agent-identity.md).
 
 ### `CODEOWNERS`
 

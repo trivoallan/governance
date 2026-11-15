@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0018
+check: npx --no-install ontrack-engineering-check ADR-0018
 traits:
   dependencies:
     updater:
@@ -56,7 +56,9 @@ about the code.
 person reviews: a workflow the repository ruled merges the update, not an
 agent. With ADR-0022's `review.by: peer`, the ruleset requires an
 approval, so Dependabot is the one actor in its bypass list, and its
-automerge passes the approval rule; no other actor goes there.
+automerge passes the approval rule; no other actor goes there, except the
+repository admin role under
+[ADR-0026](ADR-0026-agent-identity.md)'s `agent.identity: own`.
 
 **Not concerned:** security alerts that report a vulnerable dependency
 without proposing an update. They inform, under
@@ -170,7 +172,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0018
+check: npx --no-install ontrack-engineering-check ADR-0018
 traits:
   dependencies:
     updater: dependabot

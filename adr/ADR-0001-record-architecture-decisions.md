@@ -7,7 +7,7 @@ revision: 4
 date: 2026-11-14
 authors: [Tristan Rivoallan]
 supersedes: []
-check: npx --no-install governance-check ADR-0001
+check: npx --no-install ontrack-engineering-check ADR-0001
 traits:
   record-architecture-decisions:
     format: nygard
@@ -75,7 +75,7 @@ revision: 1          # written by governance: it dates the question, not the fil
 date: 2026-11-14     # the day you ruled
 authors: [Your Name] # the people who decided, no email addresses
 supersedes: []       # the ADRs this one replaces
-check: npx --no-install governance-check ADR-0006  # optional, see rule 8
+check: npx --no-install ontrack-engineering-check ADR-0006  # optional, see rule 8
 traits: {...}        # the machine-readable part of the answer
 ```
 
@@ -91,7 +91,7 @@ which says how the decision is checked, not what it is. A superseded ADR stays i
 directory, marked: the directory is a log of decisions, not a list of what
 is in force.
 
-This freeze is about **your verdict**. The ADRs governance ships, this one
+This freeze is about **your verdict**. The ADRs this package ships, this one
 included, change only through `revision` (rule 6): governance edits the
 file and raises the number, and `ontrack plan` tells you. It does not write
 a superseding ADR for its own revisions.
@@ -102,7 +102,7 @@ empty. Its Decision section states what governance recommends and why, then
 a how-to-rule block, opened by a marker sentence, that lists the steps to
 rule. The schema recognises that sentence, so this ADR does not quote it. Staying `proposed` is a state, not an oversight.
 
-A **trait** is a key governance ships and whose value is yours: the question
+A **trait** is a key this package ships and whose value is yours: the question
 and its answer sit in the same place. The prose explains and justifies; the
 trait is read without interpretation.
 
@@ -126,8 +126,8 @@ read it before ruling again.
 next to these ADRs checks that a ruled ADR carries its verdict: status
 decided, date set, no trait key left empty, the sections above present, and
 the how-to-rule block gone. This ADR's own `check:` line runs it:
-`ontrack check` calls `governance-check ADR-0001`, which runs the mdschema
-governance depends on, with that schema, on every copy of these ADRs that
+`ontrack check` calls `ontrack-engineering-check ADR-0001`, which runs the mdschema
+this package depends on, with that schema, on every copy of these ADRs that
 is no longer `proposed`. It fails and names the file and the key. Nothing
 is copied into your repository and nothing is installed by hand.
 
@@ -135,13 +135,13 @@ is copied into your repository and nothing is installed by hand.
 may carry, in its frontmatter, a `check:` key holding one shell command.
 Once your repository rules the ADR `accepted`, `ontrack check` runs it from
 your repository's root and reports the ADR as `pass` or `fail`. A command
-governance ships calls `npx --no-install governance-check <ADR number>`: the
+this package ships calls `npx --no-install ontrack-engineering-check <ADR number>`: the
 script reads the traits you ruled, so the same line holds whatever you
 decide, and `--no-install` keeps `npx` from fetching anything from a
 registry. Read an imported `check:` line as you would an npm install script:
-it runs governance's code in your repository.
+it runs this package's code in your repository.
 
-Those scripts follow the version of governance's package, not `revision`:
+Those scripts follow the version of this package, not `revision`:
 an `npm update` can change what a check does, and `ontrack plan` does not
 report it. A `check:` line governance adds, changes or removes in an ADR
 you have already ruled does reach your copy, as rule 4 allows: `ontrack
@@ -175,7 +175,7 @@ not depend on any network: the record lives where the decision applies.
 - governance adapts surdesrails and will drift from it. Nothing detects
   when an SDR it adapts changes: the only link is the source line in each
   ADR's References, read by hand.
-- A question ADR as governance ships it fails the schema on purpose, so
+- A question ADR as this package ships it fails the schema on purpose, so
   governance's own questions are checked by review only.
 
 ### Neutral

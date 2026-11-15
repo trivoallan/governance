@@ -67,8 +67,8 @@ commit with `--no-verify`.
    at `head_commit` are what the maintainer approved; if a task asks for
    something the proposal does not explain, ask.
 7. Before each push, run what CI runs and say what passed and what did not:
-   `npm test`, `node checks/governance-check.ts ADR-0006 --from origin/main`
-   and `node checks/governance-check.ts ADR-0009`. Name every check that
+   `npm test`, `node checks/ontrack-engineering-check.ts ADR-0006 --from origin/main`
+   and `node checks/ontrack-engineering-check.ts ADR-0009`. Name every check that
    failed, with the line it printed. Do not cut that output short. Push only
    to the pull request's branch.
 8. Do not change whether the pull request is a draft or ready for review:

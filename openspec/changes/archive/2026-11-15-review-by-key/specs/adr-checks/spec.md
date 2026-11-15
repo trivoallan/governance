@@ -31,7 +31,7 @@ When `review.by` is `maintainer` or `peer`, it SHALL run two parts and
 report both. It SHALL exit `0` only when neither fails.
 
 **Deny part.**
-- When ADR-0017 is missing, or `agent.host` is empty, `none` or a value other than `claude-code`, the deny part SHALL print that it has nothing to check and give the reason.
+- When ADR-0017 is missing, not accepted, or superseded, or `agent.host` is empty, `none` or a value other than `claude-code`, the deny part SHALL print that it has nothing to check and give the reason.
 - Otherwise it SHALL read the tracked `.claude/settings.json`. That file's `permissions.deny` array SHALL hold an entry that starts with `Bash(gh pr review`, and, with `maintainer`, an entry that starts with `Bash(gh pr merge`.
 - It SHALL fail, naming the file, when that file is not tracked, is not valid JSON, or lacks a required entry.
 - An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy it, and `.claude/settings.local.json` SHALL NOT be read.
@@ -67,6 +67,10 @@ report both. It SHALL exit `0` only when neither fails.
 #### Scenario: No agent host
 - **WHEN** `review.by` is `maintainer`, ADR-0017 rules `agent.host: none`, and the check runs outside CI
 - **THEN** the check prints `ADR-0022: review.by is maintainer, but ADR-0017 agent.host is none, no deny to check` and exits `0`
+
+#### Scenario: Agent host not ruled yet
+- **WHEN** `review.by` is `maintainer` and ADR-0017 is `proposed` with `agent.host: claude-code` already written
+- **THEN** the deny part prints that ADR-0017 is not accepted, no deny to check
 
 #### Scenario: Agent merges
 - **WHEN** `review.by` is `agent` and `review.approvals` is `0`
