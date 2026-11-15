@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0](https://github.com/trivoallan/governance/compare/v0.4.0...v0.5.0) (2026-11-15)
+
+
+### Features
+
+* **adr:** ask under which licence others may use the repository in ADR-0023 ([#95](https://github.com/trivoallan/governance/issues/95)) ([bc9295f](https://github.com/trivoallan/governance/commit/bc9295ff2c8805575df4b43b333e97ec38d70d46))
+* **adr:** ask what analyses the repository's own code in ADR-0024 ([#97](https://github.com/trivoallan/governance/issues/97)) ([3449f94](https://github.com/trivoallan/governance/commit/3449f940385852b9a54e8bc88e682e4ade4651ae))
+* **adr:** ask what comes with a version in ADR-0012 ([#76](https://github.com/trivoallan/governance/issues/76)) ([7961a59](https://github.com/trivoallan/governance/commit/7961a591067b8e641e76586f6ffda9f6bdcab3cc))
+* **adr:** ask where tools outside the package manager are pinned in ADR-0025 ([c656baf](https://github.com/trivoallan/governance/commit/c656baf4b946612805a54deead41b07299ab6587))
+* **adr:** ask who can accept a change in ADR-0011 revision 3 ([3e92fa1](https://github.com/trivoallan/governance/commit/3e92fa17dcb09e1052601bea2fd9b16458cd8c86))
+* **adr:** ask who merges a pull request in ADR-0022 ([#87](https://github.com/trivoallan/governance/issues/87)) ([86bc387](https://github.com/trivoallan/governance/commit/86bc3871d251979e20c16fce7655c57eec356392))
+* **adr:** audit the workflows with zizmor in ADR-0011 revision 2 ([#96](https://github.com/trivoallan/governance/issues/96)) ([8121d7d](https://github.com/trivoallan/governance/commit/8121d7d647d0913a3000a51a904a9780651148f0))
+* **openspec:** summarise touched changes for the PR reviewer ([#90](https://github.com/trivoallan/governance/issues/90)) ([f829781](https://github.com/trivoallan/governance/commit/f829781b63823566b9e0a9153cf0950d65501285))
+
+
+### Bug Fixes
+
+* clear the zizmor findings on the repository's workflows ([#91](https://github.com/trivoallan/governance/issues/91)) ([a588569](https://github.com/trivoallan/governance/commit/a58856932eda3367f4b71d40e3f503ad9d8596a8))
+* license the package under MIT-0 ([#86](https://github.com/trivoallan/governance/issues/86)) ([1109191](https://github.com/trivoallan/governance/commit/11091918cb8097c2a5ad448ce228081a8ffe2441))
+* **openspec:** install the OpenSpec CLI so CI can summarise changes ([#99](https://github.com/trivoallan/governance/issues/99)) ([baf0674](https://github.com/trivoallan/governance/commit/baf06740787138090f6606691b2218bed10c6fe6))
+
 ## [0.4.0](https://github.com/trivoallan/governance/compare/v0.3.0...v0.4.0) (2026-11-14)
 
 
