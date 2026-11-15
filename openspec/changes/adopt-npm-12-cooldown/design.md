@@ -81,6 +81,21 @@ two repositories. Rejected: it reopens what npm 12 closes, and `.npmrc`
 keeps one key. Timing: 0.4.0 was published on 2026-11-14 21:06 UTC, so the
 cooldown admits it from 2026-11-17, the same day as `@trivoallan/ontrack`.
 
+**One install outside the cooldown, decided by the maintainer.** On
+2026-11-15 the maintainer chose not to wait for 2026-11-17. The two swaps
+were installed once with `npm install --min-release-age=0`: both packages
+are this owner's own releases, published from its own workflows with
+provenance. `.npmrc` is unchanged, and `package-lock.json` now pins
+`@trivoallan/ontrack` 0.3.0 and `@trivoallan/ontrack-governance` 0.4.0.
+`npm ci` installs them under the cooldown, because it does not resolve
+again. Any later addition waits three days.
+
+**`trivoallan` now follows governance's releases, not its default branch.**
+The Git dependency took `main`'s head on each install. The alias takes a
+published version, so `ontrack plan` here compares against 0.4.0. It
+reported 3 ADRs revised on 2026-11-15, and newer ADRs arrive with the next
+release.
+
 **Blocked scripts found on the move are admissions, not chores.** After
 `npm ci` on npm 12, `npm approve-scripts --allow-scripts-pending` lists
 what was blocked; after the swap the list is expected to be empty. Each package listed is

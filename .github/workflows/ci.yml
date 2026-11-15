@@ -28,10 +28,17 @@ jobs:
           # Node 24, as release.yml. setup-node's default npm cache is kept:
           # this job publishes nothing.
           node-version: 24
+      # ADR-0020: npm 12 blocks dependency install scripts, refuses Git
+      # dependencies and honours .npmrc's min-release-age; Node 24 ships npm
+      # 11, which runs scripts anyway. Exact version, and nothing updates it
+      # (Dependabot reads no run: line): drop this step once the Node version
+      # above ships npm 12.
+      - run: npm install --global npm@12.2.2 # zizmor: ignore[adhoc-packages] npm itself, exact version, no lockfile can hold it
       # ADR-0020: install from package-lock.json without resolving again; a
-      # lockfile out of date with package.json fails here. The tests spawn
-      # commitlint, a devDependency.
-      - run: npm ci
+      # lockfile out of date with package.json fails here, and so does any
+      # install script not named in package.json's allowScripts. The tests
+      # spawn commitlint, a devDependency.
+      - run: npm ci --strict-allow-scripts
       # package.json "test": tsc --noEmit, then node --test on checks/*.test.ts.
       - run: npm test
       # ADR-0006: the pull request's commits are Conventional Commits with a
