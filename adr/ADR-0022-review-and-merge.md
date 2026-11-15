@@ -154,6 +154,37 @@ matches, so the denies go **last** in `permissions`, after any broader
 
 With `peer`, only the `gh pr review *` rule.
 
+With `copilot`, `.claude/settings.json` again, but Copilot CLI ignores
+`permissions`, so the `claude-code` denies do not hold for it. A
+`PreToolUse` hook does: Copilot CLI and Claude Code both run it, and both
+block the call when it exits `2`. With `maintainer`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "grep -q 'gh pr review' && { echo 'the agent never approves a pull request (ADR-0022)' >&2; exit 2; } || exit 0"
+          },
+          {
+            "type": "command",
+            "command": "grep -q 'gh pr merge' && { echo 'a person merges this pull request (ADR-0022)' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+With `peer`, only the `gh pr review` hook. Each hook reads the tool call on
+its standard input. With `[claude-code, copilot]`, keep both the denies and
+the hooks.
+
 If the GitHub MCP server is installed, deny its review and merge tools as
 well, under the names your configuration gives the server (for example
 `mcp__github__create_pull_request_review` and
@@ -215,6 +246,12 @@ runs it from your repository's root:
     `permissions.deny`, an entry that starts with `Bash(` and the command.
     The same entry under `allow` or `ask` fails, and
     `.claude/settings.local.json` is not read;
+  - with `copilot`, the committed `.claude/settings.json` holds, under
+    `hooks.PreToolUse`, an entry whose `matcher` covers `Bash` (absent,
+    empty, `*`, or a pattern matching `Bash`) with a `command` hook that
+    contains the command. A `permissions` entry alone fails, and the check
+    does not run the hook: one that names the command without blocking it
+    passes;
   - with `opencode`, it reads the committed `opencode.json`, then
     `.opencode/opencode.json`, joins their `permissions` in that order, and
     replays them as opencode does: for the command alone and with an
@@ -239,12 +276,13 @@ runs it from your repository's root:
 **The check denies nothing itself, and the deny has a ceiling.** It
 protects against an agent that approves or merges by mistake, not against
 one working around the rule. Claude Code and opencode both match the entry
-inside a compound command (`cd x && gh pr merge 1`), but a rule matches
+inside a compound command (`cd x && gh pr merge 1`), and the `copilot` hook
+matches the command anywhere in the call, but each matches
 command text, and Claude Code's documentation says deny rules are not a security boundary:
-`gh api` on the review or merge endpoint, `/usr/bin/gh pr merge` and a
-push to the default branch do not match. The ruleset above closes the
-merge; nothing closes an approval made under a teammate's token except the
-deny.
+`gh api` on the review or merge endpoint and a push to the default branch
+match none of them, and `/usr/bin/gh pr merge` passes the denies though not
+the hook. The ruleset above closes the merge; nothing closes an approval
+made under a teammate's token except the deny or the hook.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is

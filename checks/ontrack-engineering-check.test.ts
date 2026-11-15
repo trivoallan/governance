@@ -1080,6 +1080,77 @@ test('ADR-0017: untracked opencode config', () => {
   assert.notEqual(r.status, 0);
 });
 
+test('ADR-0017: copilot wired', () => {
+  const r = run(wired({ adrs: agentAdr('[copilot]'), files: { '.claude/settings.json': '{}\n' } }), 'ADR-0017');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0017: agent\.hosts holds copilot, found \.claude\/settings\.json$/m);
+});
+
+test('ADR-0017: copilot without settings', () => {
+  const r = run(wired({ adrs: agentAdr('[copilot]') }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /agent\.hosts holds copilot, but no tracked file matching \.claude\/settings\.json/);
+});
+
+// --- ADR-0022 with copilot: PreToolUse hooks in .claude/settings.json, since Copilot CLI ignores permissions
+
+const block = (cmd: string) => ({ type: 'command', command: `grep -q '${cmd}' && { echo 'blocked (ADR-0022)' >&2; exit 2; } || exit 0` });
+const hooks = (cmds: string[], matcher: string | undefined = 'Bash') => ({
+  hooks: { PreToolUse: [{ ...(matcher === undefined ? {} : { matcher }), hooks: cmds.map(block) }] },
+});
+const claude = (obj: object) => ({ '.claude/settings.json': `${JSON.stringify(obj)}\n` });
+const bothHooks = claude(hooks(['gh pr review', 'gh pr merge']));
+
+test('ADR-0022: copilot hooks block review and merge', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), files: bothHooks }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\.claude\/settings\.json blocks gh pr review in a PreToolUse hook on Bash/);
+  assert.match(r.stdout, /\.claude\/settings\.json blocks gh pr merge in a PreToolUse hook on Bash/);
+});
+
+for (const matcher of [undefined, '', '*', '.*', 'Bash|Edit']) {
+  test(`ADR-0022: copilot matcher ${JSON.stringify(matcher)} covers Bash`, () => {
+    const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), files: claude(hooks(['gh pr review', 'gh pr merge'], matcher)) }));
+    assert.equal(r.status, 0, r.stderr);
+  });
+}
+
+test('ADR-0022: copilot with deny entries only', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), files: bothDenied }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /hooks\.PreToolUse has no gh pr review hook on Bash \(Copilot CLI ignores permissions\.deny\)/);
+  assert.match(r.stderr, /no gh pr merge hook on Bash/);
+});
+
+test('ADR-0022: copilot peer needs only the review hook', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[copilot]'), files: claude(hooks(['gh pr review'])) }));
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: copilot hook on another tool', () => {
+  for (const matcher of ['Edit', '[']) {
+    const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), files: claude(hooks(['gh pr review', 'gh pr merge'], matcher)) }));
+    assert.notEqual(r.status, 0, matcher);
+  }
+});
+
+test('ADR-0022: copilot settings untracked or not JSON', () => {
+  let r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), untracked: bothHooks }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not tracked/);
+  r = local(wired({ adrs: reviewAdr('maintainer', '0', '[copilot]'), files: { '.claude/settings.json': '{ hooks\n' } }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
+});
+
+test('ADR-0022: claude-code and copilot together', () => {
+  const both = claude({ permissions: { deny: ['Bash(gh pr merge:*)', 'Bash(gh pr review:*)'] }, ...hooks(['gh pr review', 'gh pr merge']) });
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code, copilot]'), files: both }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /denies Bash\(gh pr merge:\*\)/);
+  assert.match(r.stdout, /blocks gh pr merge in a PreToolUse hook on Bash/);
+});
+
 test('ADR-0022: ADR-0017 missing', () => {
   const r = local(wired({ adrs: reviewAdr('maintainer', '0') }));
   assert.equal(r.status, 0, r.stderr);

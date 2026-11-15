@@ -150,6 +150,11 @@ sandbox: a permission rule can keep a path out of its read tool, but a
 shell command still reads the file. Run the agent where the maintainer's credentials do not exist,
 as above, and hand it the agent's token.
 
+**With `copilot`** in `agent.hosts`, Copilot CLI does not read the
+`permissions` above, and governance has not verified a sandbox for it. Run
+the agent where the maintainer's credentials do not exist, as above, and
+hand it the agent's token.
+
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
 
