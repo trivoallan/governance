@@ -549,7 +549,33 @@ function changes(root: string, file: string): number {
   const trait = 'ADR-0016: changes.framework is openspec';
   if (runTool(root, 'openspec', ['schema', 'validate', schema], trait) !== 0) failed = true;
   if (runTool(root, 'openspec', ['validate', '--all', '--no-interactive'], trait) !== 0) failed = true;
+  if (unarchived(root)) failed = true;
   return failed ? 1 : 0;
+}
+
+// ponytail: openspec's checkbox rule copied (`- [..]`, done when the box holds only x);
+// if openspec ever counts other forms (`*`, numbered), read `openspec list --json` instead.
+const TASK = /^\s*- \[([^\]]*)\]/gm;
+
+// ADR-0016 revision 3: a change is archived in the pull request that checks its last task.
+function unarchived(root: string): boolean {
+  const dir = join(root, 'openspec', 'changes');
+  const names = existsSync(dir)
+    ? readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'archive').map((d) => d.name).sort()
+    : [];
+  let failed = false;
+  for (const name of names) {
+    const file = join(dir, name, 'tasks.md');
+    const boxes = existsSync(file) ? [...readFileSync(file, 'utf8').matchAll(TASK)].map((m) => m[1].trim().toLowerCase()) : [];
+    if (boxes.length === 0) {
+      console.log(`ADR-0016: change ${name} has no task, archive not checked`);
+    } else if (boxes.every((b) => b === 'x')) {
+      console.error(`ADR-0016: change ${name} has every task checked; archive it in this pull request (openspec archive ${name})`);
+      failed = true;
+    }
+  }
+  if (!failed) console.log('ADR-0016: no complete change left in openspec/changes/');
+  return failed;
 }
 
 // ADR-0022 reads ADR-0017: the deny list it looks for belongs to the agent host.

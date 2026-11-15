@@ -134,6 +134,9 @@ repository already at 1.0.0 or above does not set it.
    request: a page, the README, an example. Not in a later one, and not at
    release time.
 
+With [ADR-0016](ADR-0016-changes.md)'s `changes.framework: openspec`, the
+change is also archived in that same pull request.
+
 Whatever a check can verify belongs in a check, so the pipeline catches it
 next time; review covers the rest. Nothing else waits for the release,
 except the highlights when `delivery.release_notes` is `highlights`.

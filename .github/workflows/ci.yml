@@ -73,13 +73,22 @@ jobs:
       # is the one in this pull request, not the older pinned copy. Not skipped
       # for Dependabot: its branches are exempt in the check itself.
       - run: node checks/ontrack-engineering-check.ts ADR-0009
+      # ADR-0016: the configured schema, openspec's validation, and no change
+      # left in openspec/changes/ with every task checked (revision 3: a
+      # change is archived in the pull request that checks its last task).
+      # The checkout's script, as above; openspec comes from node_modules.
+      - run: node checks/ontrack-engineering-check.ts ADR-0016
       # For the reviewer (change add-pr-change-summary, #88): each active
       # OpenSpec change the pull request touches, with a per-requirement diff
       # of its deltas against the current specs, in this job's summary. A
       # summary, not a PR comment, so the token stays read-only (ADR-0011).
       # Three-dot diff: against the merge base, so changes merged on main
-      # since the branch started are left out. Never fails `test`, and runs
-      # even when a step above failed.
+      # since the branch started are left out. A change the pull request
+      # archives (ADR-0016) is shown too, from its archive directory: its
+      # proposal and its spec deltas, as openspec show reads active changes
+      # only. --no-renames, or git reports the moved files as renames and the
+      # added-file filter misses them. Never fails `test`, and runs even when
+      # a step above failed.
       - if: always()
         continue-on-error: true
         run: |
@@ -97,5 +106,22 @@ jobs:
                   echo "## Change \`$change\`"
                   npx --no-install openspec show "$change" --type change --diff --no-interactive \
                     | awk '/^Specifications Changed/ { print; print "```diff"; fenced = 1; next } /^  [A-Z]+: / { modified = /^  MODIFIED: / } fenced && modified { sub(/^    /, "") } { print } END { if (fenced) print "```" }'
+                } >> "$GITHUB_STEP_SUMMARY"
+              done
+          git diff --name-only --no-renames --diff-filter=A "origin/${GITHUB_BASE_REF}...HEAD" -- openspec/changes/archive \
+            | cut -d/ -f4 | sort -u \
+            | while read -r change; do
+                dir="openspec/changes/archive/$change"
+                [ -f "$dir/proposal.md" ] || continue
+                {
+                  echo "## Change \`$change\` (archived)"
+                  cat "$dir/proposal.md"
+                  find "$dir/specs" -name spec.md 2>/dev/null | sort | while read -r delta; do
+                    echo
+                    echo "### \`${delta#"$dir/"}\`"
+                    echo '````markdown'
+                    cat "$delta"
+                    echo '````'
+                  done
                 } >> "$GITHUB_STEP_SUMMARY"
               done

@@ -812,6 +812,39 @@ test('ADR-0016: invalid change', () => {
   assert.notEqual(runWith(dir, ['ADR-0016'], { FAKE_EXIT_schema: '1' }).status, 0);
 });
 
+const withChanges = (changes: Record<string, string>) => {
+  const dir = branched({ adrs: changesAdr('openspec', 'spec-driven'), files: { ...openspecFiles('spec-driven'), ...changes } });
+  stub(dir, 'openspec');
+  return runWith(dir, ['ADR-0016']);
+};
+
+test('ADR-0016: complete change not archived', () => {
+  const r = withChanges({ 'openspec/changes/add-x/tasks.md': '# Tasks\n\n- [x] 1.1 Do it\n- [ X ] 1.2 Then this\n' });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /^ADR-0016: change add-x has every task checked; archive it in this pull request \(openspec archive add-x\)$/m);
+});
+
+test('ADR-0016: change with an open task', () => {
+  const r = withChanges({
+    'openspec/changes/add-x/tasks.md': '- [x] 1.1 Do it\n- [ ] 1.2 Merge the release pull request\n',
+    'openspec/changes/add-y/tasks.md': '- [x] 1.1 Do it\n- [~] 1.2 Half done\n',
+  });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0016: no complete change left in openspec\/changes\/$/m);
+});
+
+test('ADR-0016: change without tasks', () => {
+  const r = withChanges({ 'openspec/changes/add-x/proposal.md': '# Proposal\n', 'openspec/changes/add-y/tasks.md': '# Tasks\n' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0016: change add-x has no task, archive not checked$/m);
+  assert.match(r.stdout, /^ADR-0016: change add-y has no task, archive not checked$/m);
+});
+
+test('ADR-0016: archived change', () => {
+  const r = withChanges({ 'openspec/changes/archive/2026-01-01-add-x/tasks.md': '- [x] 1.1 Do it\n' });
+  assert.equal(r.status, 0, r.stderr);
+});
+
 test('ADR-0016: framework none', () => {
   const r = runWith(branched({ adrs: changesAdr('none', 'none') }), ['ADR-0016'], { PATH: barePath });
   assert.equal(r.status, 0, r.stderr);
