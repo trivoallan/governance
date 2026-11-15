@@ -7,6 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
+check: npx --no-install governance-check ADR-0025
 traits:
   tools:
     manager:
@@ -120,6 +121,25 @@ commit.
    pins current (rule 4), and the reason for your decision wherever you
    depart from the recommendation.
 
+**The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
+runs it from your repository's root. It lists the tools your answers name
+outside the package manager: the value of `secrets.guard`
+([ADR-0015](ADR-0015-secrets.md)) and of `forge.audit`
+([ADR-0011](ADR-0011-forge-and-ci.md)), when those ADRs are accepted and not
+superseded, and unless the value is `none`.
+
+- with `mise`, it runs `mise which` for each tool and prints the binary mise
+  pins. It fails on `gitleaks` or `zizmor` when mise does not provide it. Any
+  other value is only noted when mise does not find it: its binary may have
+  another name;
+- with `script` or `aqua`, it lists the tools and says their pins are not
+  verified;
+- with `none`, it fails when a tool is listed.
+
+The checks of ADR-0015 and ADR-0011 take their tool from the same place:
+from mise when this ADR rules `mise`, from the `PATH` otherwise, never from
+`node_modules/.bin`, where any npm package's bin may sit.
+
 The first step is the one people forget: a decision written only in prose
 leaves an agent guessing. This is what the frontmatter looks like once
 filled, and it is the one part of the file an agent reads without
@@ -135,6 +155,7 @@ revision: 1
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
+check: npx --no-install governance-check ADR-0025
 traits:
   tools:
     manager: script
@@ -163,8 +184,10 @@ what makes a decision different from an accepted default.
 
 ### Neutral
 
-- No check verifies that each tool named by a ruled trait is pinned in that
-  place: review does.
+- `governance-check ADR-0025` verifies, with `mise`, that the tools
+  `secrets.guard` and `forge.audit` name are pinned. Review still covers a
+  tool another trait or a local ADR names, a tool whose binary has another
+  name than the value, the pins under `script` and `aqua`, and rule 4.
 - governance installs no tool by ruling this; each repository writes its
   script or its manager's files.
 

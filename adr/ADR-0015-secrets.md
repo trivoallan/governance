@@ -160,8 +160,10 @@ runs it from your repository's root, and it reads the keys you ruled:
   `origin/HEAD` and `HEAD`, secrets redacted from its report, and fails on
   any finding. This is what catches, in CI, a commit whose local hook was
   skipped with `--no-verify`. `gitleaks` must be installed where the check
-  runs, from `node_modules/.bin` or `PATH`; it is not an npm package, so CI
-  installs it from its GitHub release. If your CI checkout has no
+  runs. It is not an npm package, so the check never takes it from
+  `node_modules/.bin`: it takes the one mise pins when
+  [ADR-0025](ADR-0025-tools.md) rules `tools.manager: mise`, and the one on
+  the `PATH` otherwise. If your CI checkout has no
   `origin/HEAD`, append the base, as in
   `check: npx --no-install governance-check ADR-0015 --from origin/main`;
 - with `none` or another tool, it has nothing to check, and passes.

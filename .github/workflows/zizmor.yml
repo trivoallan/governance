@@ -21,20 +21,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # ADR-0025: mise.toml is the one place that holds zizmor's version. The
-      # action installs zizmor itself, so it is given that version rather
-      # than one written here.
-      - id: pin
-        run: |
-          version=$(sed -n 's/^zizmor = "\(.*\)"$/\1/p' mise.toml)
-          [ -n "$version" ] || { echo "no zizmor version in mise.toml" >&2; exit 1; }
-          echo "zizmor=$version" >> "$GITHUB_OUTPUT"
-      - uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+      # ADR-0025 (tools.manager: mise): zizmor at the version mise.toml pins,
+      # checked against mise.lock's checksum (the action passes --locked when
+      # the lockfile is there). Only zizmor is installed. mise's own version
+      # is written here and nothing updates it: keep it at mise.toml's
+      # min_version, as ci.yml does.
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
         with:
-          version: ${{ steps.pin.outputs.zizmor }}
-          # The files ADR-0011 names, the ones `ontrack check` audits offline.
-          inputs: .github/workflows
-          # Findings fail the job and show in its log. Not uploaded as SARIF:
-          # that would need security-events: write, which a fork's token
-          # lacks, and would no longer fail the job.
-          advanced-security: false
+          version: 2026.11.8
+          install_args: zizmor
+      # The files ADR-0011 names, the ones `ontrack check` audits offline,
+      # here with the online audits, which read GitHub's API with the job's
+      # token. --no-config: a finding is silenced only inline. Findings fail
+      # the job and show as annotations; no SARIF upload, which would need
+      # security-events: write, which a fork's token lacks.
+      - run: zizmor --no-config --format=github .github/workflows
+        env:
+          GH_TOKEN: ${{ github.token }}

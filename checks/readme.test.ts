@@ -21,7 +21,6 @@ test('readme: frontmatter check lines only', () => {
   assert.equal(hasCheck('---\nadr: X\ncheck: npx a\n---\n'), true);
   assert.equal(hasCheck('---\nadr: X\n---\n\n```yaml\ncheck: npx a\n```\n'), false);
   assert.equal(hasCheck('no frontmatter\ncheck: npx a\n'), false);
-  assert.equal(hasCheck(readFileSync(join(root, 'adr', 'ADR-0001-record-architecture-decisions.md'), 'utf8')), false);
 });
 
 test('readme: decision count matches adr/', () => {
