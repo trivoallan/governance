@@ -43,7 +43,9 @@ function commit(dir: string, files: Record<string, string>, env: Record<string, 
   return git(dir, ['commit', '-q', '-m', 'change'], env);
 }
 
-const realGitleaks = { skip: !onPath('gitleaks') && 'gitleaks not on PATH' };
+// The hook runs the gitleaks mise pins (ADR-0025), so these need mise and
+// `mise install --locked`.
+const realGitleaks = { skip: !onPath('mise') && 'mise not on PATH' };
 
 test('pre-commit: clean commit', realGitleaks, () => {
   const dir = repo();
@@ -73,11 +75,11 @@ test('pre-commit: secret already in history, not staged', realGitleaks, () => {
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
 
-test('pre-commit: gitleaks missing refuses the commit', () => {
+test('pre-commit: mise missing refuses the commit', () => {
   const dir = repo();
   const before = head(dir);
   const r = commit(dir, { 'a.txt': 'nothing to see\n' }, { PATH: barePath });
   assert.notEqual(r.status, 0);
   assert.equal(head(dir), before, 'no commit is created');
-  assert.match(r.stderr, /gitleaks is not installed/);
+  assert.match(r.stderr, /mise is not installed/);
 });

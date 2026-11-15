@@ -34,10 +34,13 @@ you apply anything:
 - install the dependencies the way CI does, with the npm version CI pins
   (`.github/workflows/ci.yml`): `npm ci --strict-allow-scripts`. Its `prepare`
   script builds the check and turns the repository's hooks on;
-- make sure `gitleaks` is on the PATH of the commands you run: the pre-commit
-  hook (`.githooks/pre-commit`, ADR-0015) refuses every commit without it.
-  If it is missing, install a release binary from
-  <https://github.com/gitleaks/gitleaks/releases>;
+- install the tools `mise.toml` pins (ADR-0025): the pre-commit hook
+  (`.githooks/pre-commit`, ADR-0015) refuses every commit without the
+  gitleaks it names. If `mise` is missing, install the version CI pins
+  (`jdx/mise-action`'s `version:` in `.github/workflows/ci.yml`), with
+  `curl https://mise.run | MISE_VERSION=v<that version> sh`. Then run
+  `mise trust && mise install --locked`. Never install gitleaks or zizmor
+  another way;
 - tell git which branch is the default one, which the commit check reads:
   `git remote set-head origin --auto`.
 

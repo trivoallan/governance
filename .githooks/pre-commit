@@ -4,9 +4,20 @@
 # "prepare", sets core.hooksPath to .githooks). Fails closed: without
 # gitleaks, no commit. A refusal means removing the secret, and revoking it
 # if it was pushed; never `git commit --no-verify`.
-if ! command -v gitleaks >/dev/null 2>&1; then
-  echo "pre-commit: gitleaks is not installed, so the ADR-0015 secret guard cannot run." >&2
-  echo "Install it (brew install gitleaks, or a release binary from https://github.com/gitleaks/gitleaks/releases), then commit again." >&2
+#
+# ADR-0025 (tools.manager: mise): the gitleaks that runs is the one mise.toml
+# and mise.lock pin, never one found on the PATH. `mise which` names its
+# binary, and fails when the pinned version is not installed or the
+# repository's mise.toml is not trusted.
+root=$(dirname "$0")/..
+if ! command -v mise >/dev/null 2>&1; then
+  echo "pre-commit: mise is not installed, so the ADR-0015 secret guard cannot run." >&2
+  echo "Install mise (https://mise.jdx.dev/installing-mise.html), run \`mise trust && mise install --locked\` in this repository, then commit again." >&2
   exit 1
 fi
-exec gitleaks git --pre-commit --staged --redact
+if ! gitleaks=$(mise -C "$root" which gitleaks); then
+  echo "pre-commit: the gitleaks pinned in mise.toml is not installed, so the ADR-0015 secret guard cannot run." >&2
+  echo "Run \`mise trust && mise install --locked\` in this repository, then commit again." >&2
+  exit 1
+fi
+exec "$gitleaks" git --pre-commit --staged --redact

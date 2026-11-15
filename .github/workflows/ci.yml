@@ -34,6 +34,14 @@ jobs:
       # (Dependabot reads no run: line): drop this step once the Node version
       # above ships npm 12.
       - run: npm install --global npm@12.2.2 # zizmor: ignore[adhoc-packages] npm itself, exact version, no lockfile can hold it
+      # ADR-0025 (tools.manager: mise): gitleaks and zizmor at the versions
+      # mise.toml pins, checked against mise.lock (the action passes --locked
+      # when the lockfile is there). The tests drive the pre-commit hook, which
+      # runs that gitleaks. mise's own version is written here and nothing
+      # updates it: keep it at mise.toml's min_version.
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+        with:
+          version: 2026.11.8
       # ADR-0020: install from package-lock.json without resolving again; a
       # lockfile out of date with package.json fails here, and so does any
       # install script not named in package.json's allowScripts. The tests
