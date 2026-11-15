@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/trivoallan/governance/compare/v0.5.1...v0.6.0) (2026-11-15)
+
+
+### Features
+
+* **checks:** run pinned tools from mise and check ADR-0001 and ADR-0025 ([#123](https://github.com/trivoallan/governance/issues/123)) ([3f5781b](https://github.com/trivoallan/governance/commit/3f5781b73565132bad1cd03265fb00dcec9d127e))
+
 ## [0.5.1](https://github.com/trivoallan/governance/compare/v0.5.0...v0.5.1) (2026-11-15)
 
 
