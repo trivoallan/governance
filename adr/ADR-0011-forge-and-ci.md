@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -31,7 +31,7 @@ Proposed
 
 ## Context
 
-governance assumes **GitHub** as the forge: pull requests, GitHub Actions
+ontrack-engineering assumes **GitHub** as the forge: pull requests, GitHub Actions
 workflows in `.github/workflows/`, secrets in repository or environment
 settings, and branch protection in rulesets. A repository on another forge
 rules this ADR `rejected` and names its forge in the reason.
@@ -48,7 +48,7 @@ real.
 
 **The workflows are code an agent writes, and nothing reads them.** The
 rules below are written for whoever writes a workflow. Measured on
-governance's own workflows with zizmor 1.32.0, five findings slipped past
+ontrack-engineering's own workflows with zizmor 1.32.0, five findings slipped past
 them, among them a template injection and write permissions granted to the
 whole workflow, while every action was correctly pinned. While
 `forge.audit` is empty, an agent does not know whether a tool will read
@@ -61,7 +61,7 @@ model ([ADR-0009](ADR-0009-branching.md)), the delivery
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ and write `none`. `rejected` has one use only, a forge other than GitHub.
 Who reviews a change to this repository, and who merges it, is
 [ADR-0022](ADR-0022-review-and-merge.md)'s question: `review.by`.
 
-**What governance fixes, whatever you rule.** Five rules apply to every
+**What ontrack-engineering fixes, whatever you rule.** Five rules apply to every
 workflow job, not only to deployment:
 
 1. **Deploy only from the default branch.** A pushed feature branch deploys
@@ -94,7 +94,7 @@ workflow job, not only to deployment:
    `pull_request_target` checking out the fork's head. Secret-free CI still
    runs on pull requests from forks: what stops is the secret, not the test.
 
-**What governance fixes when you rule `forge.audit: zizmor`:**
+**What ontrack-engineering fixes when you rule `forge.audit: zizmor`:**
 
 1. **A job runs zizmor on every pull request**, through
    `zizmorcore/zizmor-action` pinned by SHA (rule 3). In CI it also runs
@@ -139,7 +139,7 @@ nothing. The table never writes a job's content.
 
 **Ask before writing, once.** None of the following follows from a trait:
 the names of the registry and cluster credentials, the namespace or the
-platform's service declaration, the apply tool (governance prescribes
+platform's service declaration, the apply tool (ontrack-engineering prescribes
 none), who reviews a change proposed elsewhere, and the service URL. The
 order is: rule ADR-0012, collect these, then write.
 
@@ -212,7 +212,7 @@ runs it from your repository's root. It reads the keys you ruled:
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -275,7 +275,7 @@ before pushing.
 
 ### CodeQL's `actions` language
 
-GitHub's code scanning analyses workflows too. Measured on governance's
+GitHub's code scanning analyses workflows too. Measured on ontrack-engineering's
 workflows on 2026-11-15, its 17 queries reported nothing where zizmor found
 five issues.
 
@@ -293,7 +293,7 @@ from here; copy those you keep into your own ADR.
 
 - Suggested skills: `setup` from `actionlint@melodic-software`, to install and wire actionlint.
 - Adapted from surdesrails [SDR-0010](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0010-forge-and-ci.md), revision 2 (GitHub only: `forge.vendor` and the sections for the other forge dropped; the `image` stage follows `delivery.target` instead of `hosting.offer`).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [actionlint](https://github.com/rhysd/actionlint) and [act](https://github.com/nektos/act).
 - zizmor: [audits](https://docs.zizmor.sh/audits/), [usage and ignores](https://docs.zizmor.sh/usage/), [configuration](https://docs.zizmor.sh/configuration/), [zizmorcore/zizmor-action](https://github.com/zizmorcore/zizmor-action). Measured with zizmor 1.32.0 on 2026-11-15.
 

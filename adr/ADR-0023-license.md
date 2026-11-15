@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -55,7 +55,7 @@ in source files.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -64,13 +64,13 @@ in source files.
 Any SPDX expression is an answer. Use `UNLICENSED` for a private
 repository that nobody outside may reuse.
 
-**Why governance itself is under MIT-0, not MIT.** governance's ADRs are
+**Why ontrack-engineering itself is under MIT-0, not MIT.** ontrack-engineering's ADRs are
 copied into other repositories and rewritten there. MIT requires keeping its
 copyright notice in every copy, which would mean a notice in each imported
 ADR. MIT-0 drops that condition. A package someone installs has no such
 problem: the notice stays in its `LICENSE`, and MIT costs nothing.
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **The root manifest declares the value**: `"license"` in
    `package.json`, `license` under `[project]` in `pyproject.toml`, as the
@@ -136,7 +136,7 @@ It reads neither the licence file's text nor the manifests in subfolders:
 a `LICENSE` holding another licence than the one declared passes it, and
 review catches it.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -173,7 +173,7 @@ touches an area where patents are filed.
 ### `MIT-0`
 
 MIT without the obligation to keep the notice. It suits text meant to be
-copied and rewritten, as governance's ADRs are. For a package, the
+copied and rewritten, as ontrack-engineering's ADRs are. For a package, the
 notice costs nothing, and MIT is the identifier people already know.
 
 ### A copyleft licence (`GPL-3.0-or-later`)
@@ -198,8 +198,8 @@ re-answer it for a question that is not ADR-0012's.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0012](ADR-0012-delivery.md): what accompanies a version.
 - [ADR-0019](ADR-0019-vulnerabilities.md): leaves dependency licence compliance out.
 - GitHub: [licensing a repository](https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository). [choosealicense.com: no license](https://choosealicense.com/no-permission/). npm: [`license` in package.json](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#license). Python: [PEP 639](https://peps.python.org/pep-0639/), [writing `pyproject.toml`: license](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license). [SPDX license list](https://spdx.org/licenses/). Read on 2026-11-15.

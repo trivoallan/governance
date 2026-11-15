@@ -19,7 +19,7 @@ traits:
 
 Accepted
 
-> **This ADR is not a question.** The other governance ADRs arrive with
+> **This ADR is not a question.** The other ontrack-engineering ADRs arrive with
 > `status: proposed` and wait for your repository to rule on them. This one
 > arrives `accepted`, because it describes the mechanics you will use to
 > rule on the others. You can supersede it like any other ADR, with a new
@@ -40,9 +40,9 @@ branching, localization, tests. Deciding them from scratch in every
 repository drifts. Copying another repository's answers copies a context
 that is not yours.
 
-governance answers this the way [surdesrails](https://github.com/trivoallan/surdesrails)
+ontrack-engineering answers this the way [surdesrails](https://github.com/trivoallan/surdesrails)
 does: it ships the **question**, with the answer it recommends and why, and
-each repository rules on it. governance is a personal edition of
+each repository rules on it. ontrack-engineering is a personal edition of
 surdesrails, without its enterprise context, and is imported **instead of**
 it through [ontrack](https://github.com/trivoallan/ontrack).
 
@@ -56,10 +56,10 @@ the others.
 **1. The format is Nygard's.** Every ADR has, in this order: `## Status`,
 `## Context`, `## Decision`, `## Consequences` (with `### Positive`,
 `### Negative` and `### Neutral`), `## Alternatives Considered` and
-`## References`. Everything is in English. governance writes its ADRs with
+`## References`. Everything is in English. ontrack-engineering writes its ADRs with
 `/pm-skills:develop-adr`, and uses its template sections.
 
-**2. governance ADRs are named `ADR-NNNN-slug.md`** and numbered without
+**2. ontrack-engineering ADRs are named `ADR-NNNN-slug.md`** and numbered without
 gaps. ontrack imports them into `docs/adr/trivoallan/`. The ADRs your
 repository writes for itself live in `docs/adr/`, outside that directory,
 with their own numbering.
@@ -71,7 +71,7 @@ adr: ADR-0006        # must match the file name
 slug: commits        # must match the file name
 title: Commits
 status: accepted     # proposed as shipped; accepted or rejected once ruled
-revision: 1          # written by governance: it dates the question, not the file
+revision: 1          # written by ontrack-engineering: it dates the question, not the file
 date: 2026-11-14     # the day you ruled
 authors: [Your Name] # the people who decided, no email addresses
 supersedes: []       # the ADRs this one replaces
@@ -92,13 +92,13 @@ directory, marked: the directory is a log of decisions, not a list of what
 is in force.
 
 This freeze is about **your verdict**. The ADRs this package ships, this one
-included, change only through `revision` (rule 6): governance edits the
+included, change only through `revision` (rule 6): ontrack-engineering edits the
 file and raises the number, and `ontrack plan` tells you. It does not write
 a superseding ADR for its own revisions.
 
-**5. A governance ADR asks a question, and the answer belongs to your
+**5. A ontrack-engineering ADR asks a question, and the answer belongs to your
 repository.** It arrives `status: proposed`, with every key under `traits:`
-empty. Its Decision section states what governance recommends and why, then
+empty. Its Decision section states what ontrack-engineering recommends and why, then
 a how-to-rule block, opened by a marker sentence, that lists the steps to
 rule. The schema recognises that sentence, so this ADR does not quote it. Staying `proposed` is a state, not an oversight.
 
@@ -110,7 +110,7 @@ trait is read without interpretation.
 repository, rule `rejected`, remove the whole `traits:` block, and say what
 stands in for the decision, so an agent knows what to go by.
 
-**6. `revision` dates the question.** governance raises it by one when, and
+**6. `revision` dates the question.** ontrack-engineering raises it by one when, and
 only when, the question changes: a trait added, removed or renamed, an enum
 value changed, or the recommended answer changed. A wording, typo or link
 fix leaves it alone, and so does a change to a `Suggested skills` line in
@@ -143,14 +143,14 @@ it runs this package's code in your repository.
 
 Those scripts follow the version of this package, not `revision`:
 an `npm update` can change what a check does, and `ontrack plan` does not
-report it. A `check:` line governance adds, changes or removes in an ADR
+report it. A `check:` line ontrack-engineering adds, changes or removes in an ADR
 you have already ruled does reach your copy, as rule 4 allows: `ontrack
 plan` reports the ADR `check` and shows the line that would go and the one
 that would come, and `ontrack apply` reports it `synced` and writes that
 line, nothing else. Read the line at `plan`, before `apply` writes it.
 
-**9. If governance asks the wrong question,** write your own ADR in
-`docs/adr/`, cite the governance ADR you depart from, and say how. It does
+**9. If ontrack-engineering asks the wrong question,** write your own ADR in
+`docs/adr/`, cite the ontrack-engineering ADR you depart from, and say how. It does
 not depend on any network: the record lives where the decision applies.
 
 ## Consequences
@@ -172,15 +172,15 @@ not depend on any network: the record lives where the decision applies.
 - Three conventions, one of them tooled: `mdschema` checks a ruled ADR when
   `ontrack check` runs. If nothing runs `ontrack check`, in a pull request or
   elsewhere, nothing looks at your ADRs.
-- governance adapts surdesrails and will drift from it. Nothing detects
+- ontrack-engineering adapts surdesrails and will drift from it. Nothing detects
   when an SDR it adapts changes: the only link is the source line in each
   ADR's References, read by hand.
 - A question ADR as this package ships it fails the schema on purpose, so
-  governance's own questions are checked by review only.
+  ontrack-engineering's own questions are checked by review only.
 
 ### Neutral
 
-- governance is imported instead of surdesrails, not alongside it. A
+- ontrack-engineering is imported instead of surdesrails, not alongside it. A
   repository that needs surdesrails' enterprise questions imports
   surdesrails.
 - The section format differs from surdesrails (Nygard rather than MADR),
@@ -197,7 +197,7 @@ and a half-filled ADR goes unnoticed.
 ### MADR, as surdesrails uses it
 
 A richer section set (Considered Options, Decision Drivers, Pros and Cons).
-Rejected so that governance ADRs follow the `/pm-skills:develop-adr`
+Rejected so that ontrack-engineering ADRs follow the `/pm-skills:develop-adr`
 template they are written with; the Nygard sections carry the same content
 under fewer headings.
 
@@ -210,13 +210,13 @@ its schema enums would not fit.
 
 ### Shipping verdicts instead of questions
 
-governance could ship its own answers as `accepted` ADRs. Simpler to write,
+ontrack-engineering could ship its own answers as `accepted` ADRs. Simpler to write,
 but the consuming repository would have nothing to decide, and the reasons
-would describe governance's context instead of its own.
+would describe ontrack-engineering's context instead of its own.
 
 ## References
 
-- Suggested skills: `develop-adr` from `pm-skills@product-on-purpose`, to write a governance ADR or your own.
+- Suggested skills: `develop-adr` from `pm-skills@product-on-purpose`, to write a ontrack-engineering ADR or your own.
 - Adapted from surdesrails [SDR-0001](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0001-record-architecture-decisions.md), revision 1.
 - Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions) (2011).
 - [ontrack](https://github.com/trivoallan/ontrack): imports these ADRs and reports `new`, `revised` and `removed` ones.
@@ -226,6 +226,6 @@ would describe governance's context instead of its own.
 **Revisions.** What changed in the question at each revision, and what
 a repository that already ruled must re-answer.
 
-- Revision 2: rule 4's freeze applies to a repository's verdict, and governance changes the ADRs it ships only through `revision`; a `Suggested skills` line changes no revision. No key changed: nothing to re-answer.
+- Revision 2: rule 4's freeze applies to a repository's verdict, and ontrack-engineering changes the ADRs it ships only through `revision`; a `Suggested skills` line changes no revision. No key changed: nothing to re-answer.
 - Revision 3: rule 8 describes `check:` lines, rule 4 lets a ruled ADR receive one, and rule 6 says a `check:` line and its scripts change no revision. No key changed: nothing to re-answer.
 - Revision 4: rule 7 runs the schema through this ADR's `check:` line, which refuses a half-ruled ADR, in place of a command typed by hand after copying `.mdschema.yml`. No key changed: nothing to re-answer.

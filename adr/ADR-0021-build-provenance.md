@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -60,7 +60,7 @@ reproducible builds.
 
 ## Decision
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **The key applies to every repository whose artifacts leave it**: when
    ADR-0012's `delivery.target` is `package` or `container`, whatever
@@ -82,7 +82,7 @@ reproducible builds.
 
 What is yours to decide is the level.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -165,7 +165,7 @@ only that the files they imply are committed, not what those files say:
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -225,8 +225,8 @@ consumers model a compromised build step as a threat.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the rules every workflow obeys, the publishing one included.
 - [ADR-0012](ADR-0012-delivery.md): `delivery.target`, which decides whether this ADR applies.
 - [ADR-0020](ADR-0020-adding-dependencies.md): the admission rule that reports a dependency's provenance.

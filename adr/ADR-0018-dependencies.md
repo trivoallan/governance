@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -68,7 +68,7 @@ repository current. Nor is adding a new dependency: that is
 
 ## Decision
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **No automerge without `forge.gate: blocking`** (ADR-0011). With
    `informative` or `none`, a required check does not exist, and automerge
@@ -88,7 +88,7 @@ repository current. Nor is adding a new dependency: that is
 
 What is yours to decide is the tool, and how far automerge goes.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -196,7 +196,7 @@ ruling `none` is not reported.
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -262,8 +262,8 @@ pile up first.
 ## References
 
 - Suggested skills: `github-project` from `github-project@netresearch-claude-code-marketplace`, for auto-merge of Dependabot pull requests and the repository settings it needs.
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): `forge.gate`, and the rules every workflow obeys, the automerge one included.
 - [ADR-0009](ADR-0009-branching.md): the merge method `gh pr merge` uses.
 - GitHub documentation: [Dependabot options reference](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference) and [automating Dependabot with GitHub Actions](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions); Renovate [configuration options](https://docs.renovatebot.com/configuration-options/) and [helper presets](https://docs.renovatebot.com/presets-helpers/), read on 2026-11-14.

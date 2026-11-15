@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -71,13 +71,13 @@ consumes. They crossed no boundary, and the language already checks them.
 
 ## Decision
 
-**What governance fixes:** data is validated at every boundary. What is
+**What ontrack-engineering fixes:** data is validated at every boundary. What is
 yours to decide is the **mechanism**. A repository that cannot use any of
 the recommended mechanisms (a performance-critical path, a zero-dependency
 constraint) names another and says why: it departs from the means, never
 from the requirement.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -144,7 +144,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -186,7 +186,7 @@ Trust what comes in. Tenable only for a repository with no boundary; rule
 ## References
 
 - Adapted from surdesrails [SDR-0005](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0005-validation.md), revision 1 (adds `zod` for TypeScript, which SDR-0005 left open).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): the main language, which picks the `boundary` library.
 
 **The keys.**

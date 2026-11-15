@@ -1,7 +1,7 @@
 # adr-format Specification
 
 ## Purpose
-Defines the shape every ADR shipped by governance follows, so that a
+Defines the shape every ADR shipped by ontrack-engineering follows, so that a
 consuming repository can rule on it and ontrack can compare its revision.
 
 ## Requirements
@@ -43,17 +43,17 @@ the sections `## Status`, `## Context`, `## Decision`, `## Consequences`
 ### Requirement: Question ADRs ship proposed
 Every ADR except ADR-0001 SHALL ship with `status: proposed`, an empty
 `date:`, `authors: []`, and every key under `traits:` left without a value.
-Its Decision section SHALL state the answer governance recommends for each
-trait with its reasons, and SHALL say when governance has no answer to
+Its Decision section SHALL state the answer ontrack-engineering recommends for each
+trait with its reasons, and SHALL say when ontrack-engineering has no answer to
 recommend.
 
 #### Scenario: Shipped unanswered
-- **WHEN** a question ADR is read straight from governance
+- **WHEN** a question ADR is read straight from ontrack-engineering
 - **THEN** its status is `proposed` and no trait has a value
 
 #### Scenario: Recommendation is reasoned
 - **WHEN** the Decision section of a question ADR is read
-- **THEN** each trait has either a recommended value with its reason or an explicit statement that governance recommends none
+- **THEN** each trait has either a recommended value with its reason or an explicit statement that ontrack-engineering recommends none
 
 ### Requirement: How-to-rule block
 Every question ADR SHALL include, inside its Decision section, a block that
@@ -64,7 +64,7 @@ whole `traits:` block when ruling `rejected`), set `status`, `date` and
 ADR-0001 SHALL NOT contain this block.
 
 #### Scenario: Block present on a shipped question
-- **WHEN** a question ADR is read straight from governance
+- **WHEN** a question ADR is read straight from ontrack-engineering
 - **THEN** its Decision section contains the sentence `Everything below disappears when you rule`
 
 #### Scenario: Block absent once ruled
@@ -77,7 +77,7 @@ SHALL have no `traits:` block and SHALL say what stands in for the decision.
 Once a repository has ruled an ADR `accepted` or `rejected`, the body of
 that repository's copy SHALL NOT change; only `status` and the `check:` line
 may change, and reopening the decision SHALL take a new ADR that lists it in
-`supersedes:`. This freeze applies to a repository's verdict. governance
+`supersedes:`. This freeze applies to a repository's verdict. ontrack-engineering
 SHALL change the ADRs it ships, ADR-0001 included, only through `revision`.
 
 #### Scenario: Rejected without traits
@@ -88,12 +88,12 @@ SHALL change the ADRs it ships, ADR-0001 included, only through `revision`.
 - **WHEN** an accepted decision is reopened
 - **THEN** a new ADR lists the old one in `supersedes:` and the old file's body is unchanged
 
-#### Scenario: governance revises a shipped accepted ADR
-- **WHEN** governance changes what ADR-0001 says
+#### Scenario: ontrack-engineering revises a shipped accepted ADR
+- **WHEN** ontrack-engineering changes what ADR-0001 says
 - **THEN** ADR-0001's `revision` goes up by one and no superseding ADR is written
 
 #### Scenario: Check line copied into a ruled ADR
-- **WHEN** a repository that ruled ADR-0006 before governance added its `check:` line runs `ontrack apply`
+- **WHEN** a repository that ruled ADR-0006 before ontrack-engineering added its `check:` line runs `ontrack apply`
 - **THEN** `apply` reports ADR-0006 `synced`, its copy gains the `check:` line, nothing else in the file changes, and the ADR stays ruled
 
 ### Requirement: Revision tracks the question
@@ -103,7 +103,7 @@ or the recommended answer changes. Wording, typo and link fixes SHALL NOT
 change `revision`, and neither SHALL adding, changing or removing a
 `Suggested skills` line, adding, changing or removing a `check:` line, or
 changing the scripts a `check:` line calls. Those scripts follow the version
-of governance's package.
+of ontrack-engineering's package.
 
 #### Scenario: Typo fix
 - **WHEN** a typo is fixed in a shipped ADR
@@ -118,7 +118,7 @@ of governance's package.
 - **THEN** that ADR's `revision` is unchanged and `ontrack plan` reports it `unchanged`
 
 #### Scenario: Check line added
-- **WHEN** governance adds a `check:` line to ADR-0006 and a repository whose copy is up to date runs `ontrack plan`
+- **WHEN** ontrack-engineering adds a `check:` line to ADR-0006 and a repository whose copy is up to date runs `ontrack plan`
 - **THEN** ADR-0006's `revision` is unchanged, `ontrack plan` reports it `check` and shows the line that would come, and `ontrack apply` writes that line
 
 ### Requirement: Source line
@@ -135,7 +135,7 @@ the SDR it was adapted from and that SDR's revision.
 present is empty, the sections above are present, and the sentence
 `Everything below disappears when you rule` is gone. It checks the
 consuming repository's ruled ADRs, through `ontrack-engineering-check ADR-0001`, so a
-question ADR as governance ships it SHALL fail it; ADR-0001 SHALL pass it.
+question ADR as ontrack-engineering ships it SHALL fail it; ADR-0001 SHALL pass it.
 
 #### Scenario: Ruled file passes
 - **WHEN** `mdschema check --schema adr/.mdschema.yml` runs on a ruled ADR with every trait filled
@@ -146,7 +146,7 @@ question ADR as governance ships it SHALL fail it; ADR-0001 SHALL pass it.
 - **THEN** the check reports that file and the empty key
 
 #### Scenario: Shipped question fails
-- **WHEN** the schema is applied to a question ADR straight from governance
+- **WHEN** the schema is applied to a question ADR straight from ontrack-engineering
 - **THEN** it reports the `proposed` status and the empty traits
 
 ### Requirement: Suggested skills line
@@ -167,14 +167,14 @@ skill SHALL carry no such line. The line is advice, not a trait.
 ### Requirement: Check line
 An ADR MAY carry, at column zero of its frontmatter, a `check:` key holding
 one shell command that `ontrack check` runs once a repository has ruled the
-ADR `accepted`. A `check:` line shipped by governance SHALL call
+ADR `accepted`. A `check:` line shipped by ontrack-engineering SHALL call
 `npx --no-install ontrack-engineering-check <ADR number>`, so that no package is fetched
 from a registry, and SHALL be verdict-independent: the command reads the
 traits, and the ADR's text is not changed by the value a repository rules.
 `adr/.mdschema.yml` SHALL accept an ADR that carries a `check:` key.
 
 #### Scenario: Shipped check line
-- **WHEN** ADR-0006's frontmatter is read straight from governance
+- **WHEN** ADR-0006's frontmatter is read straight from ontrack-engineering
 - **THEN** it holds `check: npx --no-install ontrack-engineering-check ADR-0006`
 
 #### Scenario: Schema accepts the key
@@ -182,7 +182,7 @@ traits, and the ADR's text is not changed by the value a repository rules.
 - **THEN** it reports no error about `check`
 
 ### Requirement: Revisions list
-Every ADR governance ships with a `revision` above 1 SHALL end with a
+Every ADR ontrack-engineering ships with a `revision` above 1 SHALL end with a
 paragraph that starts with `**Revisions.**`, followed by one list item per
 revision from 2 up to the current one, in increasing order. Each item
 SHALL start with `Revision N:`. It SHALL say what changed in the question

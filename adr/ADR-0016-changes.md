@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -42,7 +42,7 @@ framework writes it down as files before the code: what is wanted, what
 the system shall do, how, and the task list. A reviewer reads the intent
 next to the diff, and the next agent finds it in the repository.
 
-**governance already depends on this.** [ADR-0014](ADR-0014-work-tracking.md)
+**ontrack-engineering already depends on this.** [ADR-0014](ADR-0014-work-tracking.md)
 writes its `Issue served` line in the first artefact of a change. Until
 this ADR is ruled, nothing says where that artefact lives.
 
@@ -50,11 +50,11 @@ this ADR is ruled, nothing says where that artefact lives.
 behaves (tests first, no write to the tracker without a request) is
 decided in the ADRs that own each subject: [ADR-0007](ADR-0007-tests.md),
 [ADR-0014](ADR-0014-work-tracking.md). Which agent or editor runs the
-framework is not decided anywhere: governance does not choose your tools.
+framework is not decided anywhere: ontrack-engineering does not choose your tools.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ framework is not decided anywhere: governance does not choose your tools.
 | `changes.schema` | `spec-driven-with-adr` | the [schema](https://github.com/intent-driven-dev/openspec-schemas/tree/main/openspec/schemas/spec-driven-with-adr) that adds an ADR review step between design and tasks: each change reads the ADRs in force before planning, and records a new one when it takes a durable decision. It is ADR-0001's reason for ADRs, applied at the moment decisions are made. It needs three adjustments, below |
 
 **The first artefact of a change** is where ADR-0014's `Issue served`
-line, and any other per-change record governance asks for, is written:
+line, and any other per-change record ontrack-engineering asks for, is written:
 
 - with `framework: openspec`, the first artefact the schema declares, read
   from its `schema.yaml` (`proposal.md` for `spec-driven-with-adr` and
@@ -111,7 +111,7 @@ Copy it into `openspec/schemas/spec-driven-with-adr/` (rule 3 below), then
 change its `adr` and `design` instructions so that:
 
 1. **ADRs are written in `docs/adr/`**, not in a top-level `adr/`. They
-   read `docs/adr/` and its subdirectories, so governance's ruled ADRs in
+   read `docs/adr/` and its subdirectories, so ontrack-engineering's ruled ADRs in
    `docs/adr/trivoallan/` count among the ADRs in force.
 2. **They follow ADR-0001's format**: Nygard sections and ADR-0001's
    frontmatter, `supersedes:` included, instead of MADR-short with a
@@ -119,7 +119,7 @@ change its `adr` and `design` instructions so that:
 3. **They are named `ADR-NNNN-slug.md`**, instead of `NNNN-kebab-title.md`.
 
 The schema's own rule, that an accepted ADR is never edited and a new one
-supersedes it, agrees with ADR-0001 and stays. A `proposed` governance ADR
+supersedes it, agrees with ADR-0001 and stays. A `proposed` ontrack-engineering ADR
 is not accepted: ruling it is not editing a decision.
 
 Adding these as `rules:` in `openspec/config.yaml` instead of forking does
@@ -194,7 +194,7 @@ runs it from your repository's root, and it reads the keys you ruled:
   where the check runs, from `node_modules/.bin` or `PATH`;
 - with `none`, it has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -226,7 +226,7 @@ what makes a decision different from an accepted default.
 
 - With `framework: none`, the intent lives in the pull request, on the
   forge, and does not survive a move to another forge.
-- governance itself uses `spec-driven`, unforked: its own ADRs are the
+- ontrack-engineering itself uses `spec-driven`, unforked: its own ADRs are the
   catalog it ships, written by hand, not decisions taken by its changes.
 
 ## Alternatives Considered
@@ -250,7 +250,7 @@ ADRs need the same three adjustments.
 ### Spec Kit
 
 Another spec-driven framework, built around its own commands and agent
-integrations. Not offered as a value: governance would have to say where
+integrations. Not offered as a value: ontrack-engineering would have to say where
 its first artefact is and how it meets ADR-0001, and no repository has
 asked. Adding it later changes the enum and raises `revision`.
 

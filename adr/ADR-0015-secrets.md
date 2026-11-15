@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -63,7 +63,7 @@ the rules of [ADR-0011](ADR-0011-forge-and-ci.md).
 
 ## Decision
 
-**What governance fixes, and is not up for ruling:**
+**What ontrack-engineering fixes, and is not up for ruling:**
 
 1. **No secret value enters the repository**, in any file and any commit,
    history included.
@@ -75,7 +75,7 @@ the rules of [ADR-0011](ADR-0011-forge-and-ci.md).
 
 What is yours to decide is the **mechanism**.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -103,7 +103,7 @@ property on other platforms or across machines.
 `git commit --no-verify` bypasses it, and agents do reach for that flag when
 a hook blocks them. The refusal that cannot be skipped happens on the
 server, such as GitHub's push protection where your plan offers it. No
-governance ADR asks for it yet, so the hook is often the only thing standing
+ontrack-engineering ADR asks for it yet, so the hook is often the only thing standing
 between a secret and a push. Install it as a pre-commit hook running:
 
 ```bash
@@ -170,7 +170,7 @@ runs it from your repository's root, and it reads the keys you ruled:
 
 It does not check `secrets.storage`.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -198,7 +198,7 @@ what makes a decision different from an accepted default.
 ### Neutral
 
 - CI secrets follow ADR-0011; a server-side refusal on push is outside this
-  ADR and outside any governance ADR so far.
+  ADR and outside any ontrack-engineering ADR so far.
 
 ## Alternatives Considered
 
@@ -228,7 +228,7 @@ favour of revocation, which works whoever already fetched the commit.
 ### Denying the agent access to `.env`
 
 An agent permission rule that refuses to read the file. Not recommended:
-a shell command reads it anyway, and governance does not configure one
+a shell command reads it anyway, and ontrack-engineering does not configure one
 agent's tooling.
 
 ### No guard
@@ -239,8 +239,8 @@ which is when revocation becomes mandatory.
 ## References
 
 - Suggested skills: `claude-security` from `claude-security@claude-plugins-official`, to scan the repository or a diff.
-- Original to governance: no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering: no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): where CI secrets live, and the rules that keep them out of logs and forks.
 - [ADR-0005](ADR-0005-validation.md): environment variables are a boundary; their shape is validated there, their values are kept here.
 - [gitleaks](https://github.com/gitleaks/gitleaks), [direnv](https://direnv.net/), [sops](https://github.com/getsops/sops).

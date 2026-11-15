@@ -18,7 +18,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -43,7 +43,7 @@ Where the architecture is *documented* is a separate question, asked by
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -101,7 +101,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -154,7 +154,7 @@ Shared services, coupled through contracts.
 
 - Suggested skills: `architecture` and `system-design` from `engineering@knowledge-work-plugins`.
 - Adapted from surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.pattern` key; `architecture.document` is asked by ADR-0010).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 
 **The key.**
 
@@ -162,7 +162,7 @@ Shared services, coupled through contracts.
 | --- | --- | --- |
 | `architecture.pattern` | the pattern that structures this repository's code | `event-driven`, `hexagonal`, `layered`, `microservices`, `monolithic`, `soa` |
 
-**One key, on purpose.** governance does not carry your directory layout,
+**One key, on purpose.** ontrack-engineering does not carry your directory layout,
 package names or dependency rules: they are decided in your repository and
 written in this ADR's body. The trait carries only what an agent must read
 without interpreting.

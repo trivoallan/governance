@@ -1,7 +1,7 @@
 # adr-checks Specification
 
 ## Purpose
-Defines `governance-check`, the command a governance ADR's `check:` line calls,
+Defines `governance-check`, the command a ontrack-engineering ADR's `check:` line calls,
 so that `ontrack check` can tell a consuming repository when its work departs
 from a decision it ruled.
 
@@ -92,7 +92,7 @@ that the ADR is not ruled.
 - **THEN** the check exits non-zero and standard error says `commits.tool` is not set
 
 ### Requirement: Wiring check
-When governance ships no dedicated check for an ADR but its wiring table has
+When ontrack-engineering ships no dedicated check for an ADR but its wiring table has
 rows for it, `governance-check <number>` SHALL run the wiring check on the
 repository's copy of that ADR. For each trait the table names, it SHALL read
 the trait's value and apply the row for that value. A row is one of three
@@ -129,7 +129,7 @@ otherwise. It MUST NOT create, modify or delete any file in the repository.
 ### Requirement: Wiring check is presence only
 A wiring row SHALL only require that something be present. No row SHALL
 require a file to be absent. When a trait's value has no row (`none`,
-`manual`, a URL where a path is expected, or a value governance did not
+`manual`, a URL where a path is expected, or a value ontrack-engineering did not
 foresee), the check SHALL print `<number>: <trait> is <value>, nothing to
 check` for that trait and SHALL NOT fail on it. When a trait the table names
 is absent or empty in the ADR, the check SHALL exit non-zero and say that the
@@ -148,7 +148,7 @@ trait is not set.
 - **THEN** the check exits non-zero and standard error says `dependencies.updater` is not set
 
 ### Requirement: Wiring rows
-governance SHALL ship these rows. Workflows are the tracked files matching
+ontrack-engineering SHALL ship these rows. Workflows are the tracked files matching
 `.github/workflows/*.yml` or `.github/workflows/*.yaml`.
 
 | ADR | Trait = value | Kind | What must be tracked |
@@ -760,7 +760,7 @@ alias the package is installed under. When the namespace is not known (the
 check runs outside `node_modules`), it SHALL name it `<number>`.
 
 #### Scenario: Installed under an alias
-- **WHEN** governance is installed as `node_modules/trivoallan` and the ADR-0009 check refuses a `dependabot/` branch because ADR-0018 is missing
+- **WHEN** ontrack-engineering is installed as `node_modules/trivoallan` and the ADR-0009 check refuses a `dependabot/` branch because ADR-0018 is missing
 - **THEN** its message names `trivoallan/ADR-0018`
 
 ### Requirement: ADR-0025 check
@@ -775,7 +775,7 @@ ADR-0015 and `forge.audit` in ADR-0011, and print one line per trait:
 
 With `tools.manager: mise`, for each tool, it SHALL run `mise which <tool>`
 from the repository's root and print the path it finds. When mise does not
-find it, the check SHALL fail for a tool whose value governance knows
+find it, the check SHALL fail for a tool whose value ontrack-engineering knows
 (`gitleaks`, `zizmor`), naming `mise.toml`, `mise.lock` and
 `mise install --locked`; for any other value it SHALL print a note that the
 tool's binary may have another name and that its pin is left to review,
@@ -822,9 +822,9 @@ is nothing to check and exit `0`. With `nygard`, it SHALL select the
 repository's copies of this package's ADRs (the files in the directory
 that holds the repository's copy of ADR-0001, so another source's ADRs are
 never checked against this schema) whose `status:` is not `proposed`, and run on
-them the mdschema that governance's package depends on, with the
-`adr/.mdschema.yml` that governance's package ships as its schema. mdschema
-SHALL be resolved from governance's own package, never from the
+them the mdschema that ontrack-engineering's package depends on, with the
+`adr/.mdschema.yml` that ontrack-engineering's package ships as its schema. mdschema
+SHALL be resolved from ontrack-engineering's own package, never from the
 repository's `node_modules/.bin` nor from `PATH`. mdschema's report SHALL
 reach the check's output, and the check SHALL exit non-zero when mdschema
 does. When no copy is selected, it SHALL print that no ADR is ruled yet and
@@ -839,7 +839,7 @@ exit `0`. The check SHALL NOT copy the schema into the repository.
 - **THEN** the check exits non-zero and its output names ADR-0006 and the empty key
 
 #### Scenario: Proposed ADR skipped
-- **WHEN** ADR-0009 is still `proposed`, as governance ships it
+- **WHEN** ADR-0009 is still `proposed`, as ontrack-engineering ships it
 - **THEN** the check does not pass it to mdschema and does not fail on it
 
 #### Scenario: Schema not copied
@@ -851,7 +851,7 @@ exit `0`. The check SHALL NOT copy the schema into the repository.
 - **THEN** the check still exits non-zero
 
 ### Requirement: Two runtime dependencies
-governance's package SHALL declare exactly two runtime dependencies, each at
+ontrack-engineering's package SHALL declare exactly two runtime dependencies, each at
 an exact version: the library its own ADR-0005 rules as
 `validation.boundary`, and `@jackchuka/mdschema`, which the ADR-0001 check
 runs. Everything else the checks use SHALL come from Node's standard library
@@ -859,11 +859,11 @@ or from the consuming repository (commitlint, gitleaks, zizmor, openspec, as
 the other requirements say).
 
 #### Scenario: Dependencies of the package
-- **WHEN** governance's `package.json` is read after this change
+- **WHEN** ontrack-engineering's `package.json` is read after this change
 - **THEN** `dependencies` holds exactly `zod` and `@jackchuka/mdschema`, both without a range
 
 #### Scenario: Installs without install scripts
-- **WHEN** governance is installed with `npm install --ignore-scripts`
+- **WHEN** ontrack-engineering is installed with `npm install --ignore-scripts`
 - **THEN** `governance-check ADR-0001` runs mdschema
 
 ### Requirement: ADR-0011 check refuses forge.review

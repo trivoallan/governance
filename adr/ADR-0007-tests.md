@@ -18,7 +18,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -34,14 +34,14 @@ know what coverage to hold. So it aims for none, and ships code tested
 according to whatever seemed useful at the time. Once the value is written,
 it knows what it must reach before opening its pull request.
 
-governance already requires **test-driven development** and **three fixed
+ontrack-engineering already requires **test-driven development** and **three fixed
 bounds** on what "coverage" means. What is left to you is the **number**,
 because it depends on what this repository does and on what you are willing
 to defend in review.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -105,7 +105,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -146,7 +146,7 @@ like any other.
 
 - Suggested skills: `test-driven-development` from `superpowers@superpowers-marketplace`.
 - Adapted from surdesrails [SDR-0007](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0007-tests.md), revision 1.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): the main language the threshold applies to.
 
 **The key.**
@@ -156,7 +156,7 @@ like any other.
 | `tests.coverage_target` | the coverage threshold of the main language, as a percentage | a number, or `none` |
 
 **What this key does not cover:** no runner, test command, expected output
-or coverage tool. governance does not carry them: it does not know what your
+or coverage tool. ontrack-engineering does not carry them: it does not know what your
 repository runs.
 
 **An empty key is not an answer**: this one is required, and `none` is an

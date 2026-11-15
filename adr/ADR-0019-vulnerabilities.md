@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -61,7 +61,7 @@ licences too.
 
 ## Decision
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **No blocking scan without `forge.gate: blocking`**
    ([ADR-0011](ADR-0011-forge-and-ci.md)). With `informative` or `none`, a
@@ -93,7 +93,7 @@ licences too.
 
 What is yours to decide is the format, the tool, and the threshold.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -268,8 +268,8 @@ then reconstructed from its tag, if the lockfile was complete.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): `forge.gate`, the `scan` stage, and the rules every workflow obeys.
 - [ADR-0012](ADR-0012-delivery.md): the release job that builds and publishes the SBOM.
 - [ADR-0018](ADR-0018-dependencies.md): the updates that fix what the scan finds.

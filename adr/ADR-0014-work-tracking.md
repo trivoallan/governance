@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -41,12 +41,12 @@ cleanup can ship without one, and saying so is enough.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `tracking.tool` | `github-issues` | governance assumes GitHub (ADR-0011), so issues live next to the code and pull requests, with no other account and no other token |
-| `tracking.project` | *your project* | any value governance proposed would be a guess that sends issues to someone else's project. For `github-issues`, write `owner/repo`; for `linear` or `jira`, the key that prefixes issue identifiers (`PLAT` in `PLAT-142`) |
+| `tracking.tool` | `github-issues` | ontrack-engineering assumes GitHub (ADR-0011), so issues live next to the code and pull requests, with no other account and no other token |
+| `tracking.project` | *your project* | any value ontrack-engineering proposed would be a guess that sends issues to someone else's project. For `github-issues`, write `owner/repo`; for `linear` or `jira`, the key that prefixes issue identifiers (`PLAT` in `PLAT-142`) |
 
 **Each change says which issue it serves**, once this ADR is accepted. The
 first artefact of each change, as [ADR-0016](ADR-0016-changes.md) defines
@@ -130,7 +130,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -180,7 +180,7 @@ themselves.
 
 - Suggested skills: `track` from `work-items@melodic-software`, within rule 2 (no tracker write without an explicit request).
 - Adapted from surdesrails [SDR-0014](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0014-work-tracking.md), revision 1 (the tool becomes a trait instead of a requirement; the `proposal.md` line and the four agent rules kept).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0016](ADR-0016-changes.md): where the first artefact of a change lives.
 
 **The keys.**

@@ -23,7 +23,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -49,7 +49,7 @@ is one you choose, and `default` is where you say it.
 
 ## Decision
 
-**What governance recommends, and why.** One default language, no
+**What ontrack-engineering recommends, and why.** One default language, no
 overrides:
 
 | Key | Recommended value | Reason |
@@ -113,7 +113,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -150,7 +150,7 @@ non-French readers.
 ### French prose, English symbols
 
 surdesrails' recommendation: `default: french`, `code: english`. A good fit
-for a French-speaking team; governance does not recommend it because its
+for a French-speaking team; ontrack-engineering does not recommend it because its
 repositories are written for a wider audience, and two languages means one
 more rule to apply.
 
@@ -163,7 +163,7 @@ override is one more thing to remember.
 ## References
 
 - Adapted from surdesrails [SDR-0002](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0002-localization.md), revision 1.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 
 **The keys.**
 

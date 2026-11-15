@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -61,7 +61,7 @@ it does not change what the agent may do.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -81,7 +81,7 @@ because a maintainer cannot approve their own pull request and the agent
 never approves; `1` or more with `peer`. The number is your own choice,
 and it changes nothing the agent does.
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **The agent opens the pull request ready for review, says when its
    checks are green, and never approves a pull request**, its own or
@@ -284,7 +284,7 @@ match none of them, and `/usr/bin/gh pr merge` passes the denies though not
 the hook. The ruleset above closes the merge; nothing closes an approval
 made under a teammate's token except the deny or the hook.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -352,8 +352,8 @@ extra step proves nothing the merge does not already prove.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0009](ADR-0009-branching.md): one change, one branch, one pull request.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the required checks a merge waits for.
 - [ADR-0017](ADR-0017-agent-tooling.md): `agent.hosts`, which decides what the check reads.

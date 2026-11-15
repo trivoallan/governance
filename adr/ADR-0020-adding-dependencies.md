@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -60,7 +60,7 @@ what it imports installs whatever took that name.
 
 ## Decision
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **The name comes from a source, not from memory**: the package's own
    documentation or repository, and the registry page points back to that
@@ -94,7 +94,7 @@ rules with its own switches.
 
 What is yours to decide is who admits, and whether install code runs.
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -185,7 +185,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -235,7 +235,7 @@ the cooldown, runs with the session's rights.
 
 ### A list of allowed or forbidden packages
 
-governance cannot know your packages, and a denylist names only what is
+ontrack-engineering cannot know your packages, and a denylist names only what is
 already known to be bad. Both go stale; the fixed rules do not.
 
 ### Requiring provenance
@@ -257,8 +257,8 @@ is recommended until a tool documents the exception.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): why npm and Python are the ecosystems tabulated.
 - [ADR-0015](ADR-0015-secrets.md): the active leak that install code exploits.
 - [ADR-0018](ADR-0018-dependencies.md): updates, and the cooldown this ADR reuses.

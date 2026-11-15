@@ -18,7 +18,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -63,7 +63,7 @@ proposes.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -75,7 +75,7 @@ or when **the person's review must be an approval GitHub enforces** rather
 than a merge the agent host holds the agent back from. Rule `own` for
 either reason, and say which.
 
-**What governance fixes when you rule `own`:**
+**What ontrack-engineering fixes when you rule `own`:**
 
 1. **The agent acts under its own GitHub identity**, a GitHub App or a
    machine account. Its commits, pushes, pull requests and comments are
@@ -151,7 +151,7 @@ shell command still reads the file. Run the agent where the maintainer's credent
 as above, and hand it the agent's token.
 
 **With `copilot`** in `agent.hosts`, Copilot CLI does not read the
-`permissions` above, and governance has not verified a sandbox for it. Run
+`permissions` above, and ontrack-engineering has not verified a sandbox for it. Run
 the agent where the maintainer's credentials do not exist, as above, and
 hand it the agent's token.
 
@@ -205,7 +205,7 @@ ADR-0022's check already reads, in CI, the approvals the ruleset requires;
 it cannot see the bypass list, so the admin role's place in it is not
 verified either.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -264,8 +264,8 @@ maintainers, as ADR-0022 says.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0015](ADR-0015-secrets.md): where the agent's token is stored.
 - [ADR-0017](ADR-0017-agent-tooling.md): `agent.hosts`, which decides how the credentials are kept apart.
 - [ADR-0018](ADR-0018-dependencies.md): Dependabot, the other bypass actor under `peer`.
