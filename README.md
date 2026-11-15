@@ -33,6 +33,10 @@ doesn't fit your repository.
 
 ### The questions
 
+The questions of the latest release, rendered, are in
+[the track's catalogue](https://trivoallan.github.io/ontrack/ontrack-engineering/)
+on ontrack's site.
+
 - [ADR-0001](adr/ADR-0001-record-architecture-decisions.md) Record architecture decisions
 - [ADR-0002](adr/ADR-0002-localization.md) Localization
 - [ADR-0003](adr/ADR-0003-architecture.md) Software architecture
