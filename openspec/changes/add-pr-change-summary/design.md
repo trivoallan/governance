@@ -5,9 +5,28 @@
 `ci.yml` has one job, `test`, that the ruleset in `.github/rulesets/main.json`
 requires on `main`. It runs on `pull_request` only, with `contents: read`,
 and checks out the full history (`fetch-depth: 0`) for the ADR-0006 step.
-`openspec` 1.13.1 is a devDependency, so `npm ci` installs it, and its
-`show <change> --diff` prints the proposal and a per-requirement diff of
-each delta against the current spec. See proposal.md for why.
+`openspec show <change> --diff` prints the proposal and a per-requirement
+diff of each delta against the current spec. The CLI was not a dependency:
+contributors ran it from their `PATH`, and CI had none, so the first run of
+this step wrote an empty summary. See proposal.md for why.
+
+## Dependency
+
+Admitted by a person under ADR-0020, in the session that applied this
+change:
+
+- **`@fission-ai/openspec@1.13.1`**, published 2026-09-17. Source:
+  <https://github.com/Fission-AI/OpenSpec>, which the registry page points
+  back to.
+- **Why:** run `openspec show --diff` in CI.
+- **Not covered by:** anything short of re-implementing OpenSpec's delta
+  parsing.
+- **Provenance:** attested (SLSA v1). No install script.
+- **Version:** pinned exactly to 1.13.1, the version contributors run
+  locally and the one this step was tested with; 2.0.0 (2026-11-11) is
+  untested here.
+- **Age:** the 67 packages it adds to the lockfile were all published at
+  least three days before admission (newest: 2026-11-10).
 
 ## Goals / Non-Goals
 
