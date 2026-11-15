@@ -52,3 +52,29 @@ jobs:
       # is the one in this pull request, not the older pinned copy. Not skipped
       # for Dependabot: its branches are exempt in the check itself.
       - run: node checks/governance-check.ts ADR-0009
+      # For the reviewer (change add-pr-change-summary, #88): each active
+      # OpenSpec change the pull request touches, with a per-requirement diff
+      # of its deltas against the current specs, in this job's summary. A
+      # summary, not a PR comment, so the token stays read-only (ADR-0011).
+      # Three-dot diff: against the merge base, so changes merged on main
+      # since the branch started are left out. Never fails `test`, and runs
+      # even when a step above failed.
+      - if: always()
+        continue-on-error: true
+        run: |
+          git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD" -- openspec/changes \
+            | cut -d/ -f3 | { grep -vx archive || true; } | sort -u \
+            | while read -r change; do
+                [ -d "openspec/changes/$change" ] || continue
+                # The proposal is Markdown and renders as is; from openspec's
+                # "Specifications Changed" line on, the output is a diff,
+                # fenced so the summary keeps its +/- lines. Under MODIFIED
+                # only, lines lose the four spaces openspec indents them by, so
+                # GitHub colours the hunk; ADDED text keeps them, or its
+                # "- **WHEN**" lines would show as removals.
+                {
+                  echo "## Change \`$change\`"
+                  npx --no-install openspec show "$change" --type change --diff --no-interactive \
+                    | awk '/^Specifications Changed/ { print; print "```diff"; fenced = 1; next } /^  [A-Z]+: / { modified = /^  MODIFIED: / } fenced && modified { sub(/^    /, "") } { print } END { if (fenced) print "```" }'
+                } >> "$GITHUB_STEP_SUMMARY"
+              done
