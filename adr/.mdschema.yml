@@ -108,6 +108,8 @@ frontmatter:
     - { name: "traits.code_scanning.fail_on", enum: [critical, high, medium, low, none], optional: true }
     # ADR-0025
     - { name: "traits.tools.manager", enum: [mise, aqua, script, none], optional: true }
+    # ADR-0026
+    - { name: "traits.agent.identity", enum: [maintainer, own], optional: true }
 structure:
   - heading:
       pattern: "^# .+"

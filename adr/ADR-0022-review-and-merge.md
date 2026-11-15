@@ -40,7 +40,9 @@ nobody read.
 **An agent's merge cannot be told apart afterwards.** The agent works with
 the maintainer's `gh` session or token, so GitHub records its merge under
 the maintainer's name. The history shows a merge, never who decided it.
-The rule can only be enforced **before** the merge, not audited after it.
+The rule can only be enforced **before** the merge, not audited after it,
+unless the agent acts under an identity of its own
+([ADR-0026](ADR-0026-agent-identity.md)).
 
 **For one person, the merge is the review.** GitHub does not let the author
 of a pull request approve it. A repository with one maintainer that
@@ -86,7 +88,9 @@ a demo or a throwaway, and it is justified here when you rule it.
 pull request before merging, with zero required approvals, and leave the
 bypass list empty. Pushing to the default branch then fails for everyone,
 the agent included. That setting lives on GitHub, not in a file of the
-repository, and the check does not verify it.
+repository, and the check does not verify it. With
+[ADR-0026](ADR-0026-agent-identity.md)'s `agent.identity: own`, ADR-0026's
+ruleset replaces this one.
 
 **With `agent.host: claude-code`** ([ADR-0017](ADR-0017-agent-tooling.md)),
 `.claude/settings.json` denies the merge:
@@ -201,7 +205,9 @@ nobody installs from or depends on.
 
 The usual rule for a team. For one maintainer it cannot work: GitHub
 refuses the author's own approval, so every merge is blocked or bypassed,
-and a rule bypassed on every merge is not a rule.
+and a rule bypassed on every merge is not a rule. It becomes workable once
+the agent has an identity of its own: see
+[ADR-0026](ADR-0026-agent-identity.md).
 
 ### `CODEOWNERS`
 

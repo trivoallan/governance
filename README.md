@@ -6,7 +6,7 @@
 
 **Opinionated ADRs you import, overrule where you disagree, and check in CI.**
 
-The 25 questions I answer for every Python or TypeScript repository I keep
+The 26 questions I answer for every Python or TypeScript repository I keep
 on GitHub (commits, branching, delivery, supply chain, agent tooling), each
 with the answer I recommend and why; 14 of them come with a check.
 
@@ -24,7 +24,7 @@ question at a time.
 | **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |
 | **Code** (0004, 0005, 0007, 0013, 0024) | Validation at every boundary (`zod` or `pydantic`), a test coverage target you set, and your own code scanned by CodeQL, its alerts blocking from `high` | a scan workflow sends its SARIF to code scanning (or keeps it as an artifact); the threshold, held by the ruleset, is not verified |
 | **Decisions & docs** (0001, 0002, 0008) | Decisions kept as ADRs, docs in one language under one root | the docs tool and root exist. Separately, the `.mdschema.yml` shipped beside the ADRs attests that each ruled ADR carries its verdict |
-| **Agents** (0017, 0022) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned; the agent opens the pull request, a person merges it | `.claude/settings.json` exists, and denies `gh pr merge` when a person merges |
+| **Agents** (0017, 0022, 0026) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned; the agent opens the pull request, a person merges it; if you choose, the agent acts under its own GitHub identity, which a ruleset stops from merging | `.claude/settings.json` exists, and denies `gh pr merge` when a person merges; the agent's identity and its ruleset are not verified |
 
 Checks confirm the wiring is there, not that it is right: the gate's
 ruleset, for one, is yours to set on GitHub. Reject any question that
@@ -57,6 +57,7 @@ doesn't fit your repository.
 - [ADR-0023](adr/ADR-0023-license.md) License
 - [ADR-0024](adr/ADR-0024-code-scanning.md) Code scanning
 - [ADR-0025](adr/ADR-0025-tools.md) Tools outside the package manager
+- [ADR-0026](adr/ADR-0026-agent-identity.md) Agent identity
 
 ### Not covered
 
@@ -73,8 +74,10 @@ governance decides nothing about:
   rules;
 - infrastructure as code, hosting and operations (logging, monitoring,
   incidents);
-- how many approvals a pull request needs, and ownership (`CODEOWNERS`):
-  [ADR-0022](adr/ADR-0022-review-and-merge.md) decides only who merges.
+- ownership (`CODEOWNERS`) and review among several people:
+  [ADR-0022](adr/ADR-0022-review-and-merge.md) decides who merges, and
+  [ADR-0026](adr/ADR-0026-agent-identity.md) under whose identity the agent
+  proposes.
 
 ## What an ADR looks like
 
