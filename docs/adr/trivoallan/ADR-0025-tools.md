@@ -100,16 +100,21 @@ repository names two: gitleaks ([ADR-0015](ADR-0015-secrets.md)) and zizmor
 [ADR-0018](ADR-0018-dependencies.md) rules here, does not read mise's
 files. A person moves each pin, with its checksum, in one pull request.
 
-Nothing is set up yet: `mise.toml`, `mise.lock` and their use by the
-pre-commit hook and the workflows are tracked as an issue. Until then
-gitleaks comes from `brew`, unpinned.
+`mise.toml` holds both versions and `mise.lock` their checksums, for four
+platforms. The pre-commit hook runs the gitleaks mise names, the `test` job
+installs both tools with `jdx/mise-action`, and the zizmor job reads its
+version from `mise.toml`. A remote agent session installs them as
+`.github/apply-session.md` says.
+
+mise itself is pinned by `version:` on `jdx/mise-action`, and
+`mise.toml`'s `min_version` refuses an older one on a workstation.
 
 ## Consequences
 
 ### Positive
 
-- Once set up, the workstation, the runner and an agent session run the
-  same gitleaks and the same zizmor.
+- The workstation, the runner and an agent session run the same gitleaks
+  and the same zizmor.
 
 ### Negative
 

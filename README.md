@@ -10,7 +10,7 @@ The 25 questions I answer for every Python or TypeScript repository I keep
 on GitHub (commits, branching, delivery, supply chain, agent tooling), each
 with the answer I recommend and why; 14 of them come with a check.
 
-governance is an [ontrack](https://github.com/trivoallan/ontrack) source:
+governance is an [ontrack](https://github.com/trivoallan/ontrack) track:
 an npm package of ADRs that your repository imports and rules on, one
 question at a time.
 
@@ -105,7 +105,7 @@ traits:
 ## Use it
 
 With [ontrack installed](https://trivoallan.github.io/ontrack/), add the
-source:
+track:
 
 ```bash
 npm i -D trivoallan@npm:@trivoallan/ontrack-governance
@@ -120,7 +120,7 @@ Everything after that (`ontrack plan`, `ontrack apply`, what a new
 
 ## See it in use
 
-[ontrack](https://github.com/trivoallan/ontrack) imports this source: its
+[ontrack](https://github.com/trivoallan/ontrack) imports this track: its
 answers are in
 [`docs/adr/trivoallan/`](https://github.com/trivoallan/ontrack/tree/main/docs/adr/trivoallan),
 the rules they produce in its
