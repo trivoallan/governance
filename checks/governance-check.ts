@@ -179,10 +179,12 @@ function holds(root: string, file: string, strings: string[]): boolean {
 }
 
 // What a row looks for: files matching each list of alternatives, a file
-// holding one of some strings, or any file under a path.
+// holding one of some strings, a file holding one string from each list, or
+// any file under a path.
 type Row = { note?: string } & (
   | { exists: string[][] }
   | { contains: { in: string[]; any: string[] } }
+  | { containsAll: { in: string[]; all: string[][] } }
   | { path: string }
 );
 // ctx.traits holds the entries of the ADR validated so far: { <group>: { <key>: value } }.
@@ -204,6 +206,11 @@ function evaluate(row: Row, files: string[], root: string): { found?: string; fa
     const { in: where, any } = row.contains;
     const hit = matching(files, where).find((f) => holds(root, f, any));
     return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${any.join(' or ')}` };
+  }
+  if ('containsAll' in row) {
+    const { in: where, all } = row.containsAll;
+    const hit = matching(files, where).find((f) => all.every((any) => holds(root, f, any)));
+    return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${all.map((any) => any.join(' or ')).join(', and ')}` };
   }
   const dir = prefix(row.path);
   const hit = files.find((f) => f.startsWith(dir));
@@ -237,9 +244,6 @@ const WIRING: Record<string, Entry[]> = {
       : null },
     { group: 'architecture', key: 'model', row: byValue({ likec4: { exists: [['**/*.c4', '**/*.likec4']] } }) },
   ],
-  'ADR-0011': [
-    { group: 'forge', key: 'gate', row: byValue({ blocking: gate, informative: gate }) },
-  ],
   'ADR-0012': [
     { group: 'delivery', key: 'release_tool', row: byValue({ 'release-please': inWorkflow('googleapis/release-please-action') }) },
     { group: 'delivery', key: 'target', row: byValue({ container: { exists: [['**/Dockerfile', '**/Containerfile']] } }) },
@@ -263,6 +267,17 @@ const WIRING: Record<string, Entry[]> = {
     { group: 'supply_chain', key: 'build_level', row: (v) => (['1', '2', '3'].includes(v)
       ? inWorkflow('actions/attest-build-provenance', '--provenance', 'pypa/gh-action-pypi-publish')
       : null) },
+  ],
+  'ADR-0024': [
+    // CodeQL's analyze step uploads its own SARIF. Any other tool: its name and its SARIF's
+    // destination in one workflow, so Grype's upload-sarif alone does not count.
+    { group: 'code_scanning', key: 'tool', row: (v) => {
+      if (v === 'none') return null;
+      if (v === 'codeql') return inWorkflow('github/codeql-action/analyze');
+      return { containsAll: { in: WORKFLOWS, all: [[v], ['github/codeql-action/upload-sarif', 'actions/upload-artifact']] } };
+    } },
+    // The threshold lives in the ruleset and the workflow's settings: validated, not wired.
+    { group: 'code_scanning', key: 'fail_on', row: () => null },
   ],
 };
 
@@ -425,7 +440,129 @@ function changes(root: string, file: string): number {
   return failed ? 1 : 0;
 }
 
+// ADR-0022 reads ADR-0017: the deny list it looks for belongs to the agent host.
+const Review = z.object({ merge_by: z.enum(['person', 'agent']) });
+const SETTINGS = '.claude/settings.json';
+const MERGE = 'Bash(gh pr merge';
+
+function review(root: string, file: string): number {
+  const { merge_by } = traitsOf(Review, 'ADR-0022', 'review', file, readFileSync(file, 'utf8'));
+  const name = `ADR-0022: review.merge_by is ${merge_by}`;
+  if (merge_by === 'agent') {
+    console.log(`${name}, nothing to check`);
+    return 0;
+  }
+  const host = toolAnswer(root, 'ADR-0017', 'agent', 'host');
+  if (host.value !== 'claude-code') {
+    const why = host.found ? `ADR-0017 agent.host is ${host.value || '(not set)'}` : 'ADR-0017 is not in this repository';
+    console.log(`${name}, but ${why}, nothing to check`);
+    return 0;
+  }
+  // Tracked only, as wiring rows: a deny never committed protects one machine.
+  if (!tracked(root).includes(SETTINGS)) throw new CheckError(`${name}, but ${SETTINGS} is not tracked`);
+  let deny: unknown;
+  try {
+    deny = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.permissions?.deny;
+  } catch {
+    throw new CheckError(`${name}, but ${SETTINGS} is not valid JSON`);
+  }
+  // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
+  const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(MERGE)) : undefined;
+  if (!entry) throw new CheckError(`${name}, but ${SETTINGS} permissions.deny has no ${MERGE} entry`);
+  console.log(`${name}, ${SETTINGS} denies ${entry}`);
+  return 0;
+}
+
+// ADR-0023: the root manifests declare the ruled licence, and a licence file sits at the root.
+const License = z.object({ spdx: one() });
+const LICENSE_FILES = ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'COPYING'];
+
+// `license` under [project]: a string, or { text = "..." }.
+// ponytail: line match, no TOML parser (one runtime dependency); a multiline inline table reads as absent.
+function pyprojectLicense(text: string): string | undefined {
+  let inProject = false;
+  for (const line of text.split(/\r?\n/)) {
+    const table = line.match(/^\s*\[([^\]]*)\]\s*$/);
+    if (table) {
+      inProject = table[1].trim() === 'project';
+      continue;
+    }
+    const m = inProject && line.match(/^\s*license\s*=\s*(?:\{\s*text\s*=\s*)?(["'])(.*?)\1/);
+    if (m) return m[2];
+  }
+  return undefined;
+}
+
+function license(root: string, file: string): number {
+  const { spdx } = traitsOf(License, 'ADR-0023', 'license', file, readFileSync(file, 'utf8'));
+  const files = tracked(root);
+  let failed = false;
+  const fail = (msg: string) => { console.error(`ADR-0023: ${msg}`); failed = true; };
+  const manifests = ['package.json', 'pyproject.toml'].filter((m) => files.includes(m));
+  if (!manifests.length) console.log('ADR-0023: no root manifest (package.json, pyproject.toml) is tracked');
+  for (const m of manifests) {
+    const text = readFileSync(join(root, m), 'utf8');
+    let declared: unknown;
+    if (m === 'package.json') {
+      try {
+        declared = JSON.parse(text)?.license;
+      } catch {
+        fail(`${m} is not valid JSON`);
+        continue;
+      }
+    } else {
+      declared = pyprojectLicense(text);
+    }
+    if (typeof declared !== 'string' || !declared) fail(`${m} has no license field; license.spdx rules ${spdx}`);
+    else if (declared !== spdx) fail(`${m} has license ${declared} where license.spdx rules ${spdx}`);
+    else console.log(`ADR-0023: ${m} declares ${spdx}`);
+  }
+  if (spdx !== 'UNLICENSED') {
+    const found = LICENSE_FILES.find((f) => files.includes(f));
+    if (found) console.log(`ADR-0023: license.spdx is ${spdx}, ${found} found`);
+    else fail(`license.spdx is ${spdx}, but no tracked ${LICENSE_FILES.slice(0, -1).join(', ')} or ${LICENSE_FILES.at(-1)} at the root`);
+  }
+  return failed ? 1 : 0;
+}
+
+// ADR-0011: forge.gate is wiring; forge.audit runs zizmor on what the workflows say.
+// ponytail: an open value, as secrets.guard; only zizmor has something to run.
+const forgeGate = wiring('ADR-0011', [{ group: 'forge', key: 'gate', row: byValue({ blocking: gate, informative: gate }) }]);
+const ForgeAudit = z.object({ audit: one() });
+
+function forge(root: string, file: string, opts: Options): number {
+  let failed = forgeGate(root, file, opts) !== 0;
+  let audit: string;
+  try {
+    ({ audit } = traitsOf(ForgeAudit, 'ADR-0011', 'forge', file, readFileSync(file, 'utf8')));
+  } catch (e) {
+    if (!(e instanceof CheckError)) throw e;
+    console.error(e.message);
+    return 1;
+  }
+  const name = `ADR-0011: forge.audit is ${audit}`;
+  if (audit !== 'zizmor') {
+    console.log(`${name}, nothing to check`);
+    return failed ? 1 : 0;
+  }
+  const workflows = matching(tracked(root), WORKFLOWS);
+  if (!workflows.length) {
+    console.log(`${name}, but no workflow is committed, nothing to audit`);
+    return failed ? 1 : 0;
+  }
+  runTool(root, 'zizmor', ['--version'], name);
+  // --no-config: a repository's zizmor.yml cannot loosen the verdict; inline ignores still apply.
+  if (runTool(root, 'zizmor', ['--offline', '--no-config', '--no-progress', ...workflows], name) !== 0) {
+    console.error(`${name}, and zizmor reported findings no inline ignore covers`);
+    failed = true;
+  }
+  return failed ? 1 : 0;
+}
+
 const CHECKS: Record<string, Check> = {
+  'ADR-0011': forge,
+  'ADR-0022': review,
+  'ADR-0023': license,
   'ADR-0006': commits,
   'ADR-0009': branching,
   'ADR-0015': secrets,

@@ -156,6 +156,8 @@ governance SHALL ship these rows. Workflows are the tracked files matching
 | ADR-0018 | `dependencies.updater = renovate` | exists | `renovate.json`, `renovate.json5`, `.renovaterc`, `.renovaterc.json`, `.github/renovate.json` or `.github/renovate.json5` |
 | ADR-0018 | `dependencies.automerge = patch` or `minor`, when `dependencies.updater` is `dependabot` | contains | a workflow holds `dependabot/fetch-metadata` |
 | ADR-0021 | `supply_chain.build_level = 1`, `2` or `3` | contains | a workflow holds `actions/attest-build-provenance`, `--provenance` or `pypa/gh-action-pypi-publish` |
+| ADR-0024 | `code_scanning.tool = codeql` | contains | a workflow holds `github/codeql-action/analyze` |
+| ADR-0024 | `code_scanning.tool = <any other value but none>` | contains all | one workflow holds the value, and `github/codeql-action/upload-sarif` or `actions/upload-artifact` (ADR-0024 rule 2: the SARIF goes to code scanning, or stays a job artifact where the plan does not allow the upload) |
 
 The arc42 row looks under `docs/architecture/arc42/` whatever ADR-0008's
 `docs.root` says: the architecture document does not move with the user
@@ -163,7 +165,9 @@ documentation. A
 `deployment.manifests` value holding `://` is a URL and has no row. The
 ADR-0011 line SHALL say that the ruleset requiring the pipeline is not
 verified. With `dependencies.updater: renovate`, `dependencies.automerge` has
-no row.
+no row. A `contains all` row passes only when a single file holds, for each
+of its lists, one of that list's strings. `code_scanning.fail_on` has no row: the threshold lives in the
+ruleset and the workflow, which the check does not read.
 
 #### Scenario: arc42 under another root
 - **WHEN** ADR-0008 has `docs.root: site/` and ADR-0010 has `architecture.document: arc42`
@@ -192,6 +196,26 @@ no row.
 #### Scenario: Starlight site in a subfolder
 - **WHEN** ADR-0008 has `docs.tool: starlight` and only `site/package.json` names `@astrojs/starlight`
 - **THEN** the `docs.tool` row passes and names `site/package.json`
+
+#### Scenario: CodeQL in advanced setup
+- **WHEN** ADR-0024 has `code_scanning.tool: codeql` and a workflow uses `github/codeql-action/analyze@<sha>`
+- **THEN** the check exits `0` and names that workflow
+
+#### Scenario: CodeQL in default setup only
+- **WHEN** ADR-0024 has `code_scanning.tool: codeql` and no workflow holds `github/codeql-action/analyze`
+- **THEN** the check exits non-zero, even if default setup is on in the repository's settings
+
+#### Scenario: Another tool uploads SARIF
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep` and one workflow runs `semgrep ci --sarif` and `github/codeql-action/upload-sarif`
+- **THEN** the check exits `0` and names that workflow
+
+#### Scenario: Private repository keeps the SARIF
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep` and one workflow runs `semgrep ci --sarif` and keeps the file with `actions/upload-artifact`
+- **THEN** the check exits `0`
+
+#### Scenario: Grype's upload does not count
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep`, the only `upload-sarif` is in a workflow running Grype, and semgrep runs in another workflow
+- **THEN** the check exits non-zero
 
 ### Requirement: Repository tools
 When a check runs a tool other than commitlint, it SHALL look for it in the
@@ -403,3 +427,98 @@ repository (commitlint, gitleaks, openspec, as the other requirements say).
 #### Scenario: Dependencies of the package
 - **WHEN** governance's `package.json` is read after this change
 - **THEN** `dependencies` holds exactly `zod`
+
+### Requirement: ADR-0022 check
+`governance-check ADR-0022` SHALL read `review.merge_by` from ADR-0022 and
+`agent.host` from the repository's copy of ADR-0017.
+- When `review.merge_by` is absent or empty, it SHALL exit non-zero and say it is not set.
+- When `review.merge_by` is `agent`, it SHALL print that there is nothing to check and exit `0`.
+- When `review.merge_by` is `person` and ADR-0017 is missing, or `agent.host` is empty, `none` or a value other than `claude-code`, it SHALL print that there is nothing to check and give the reason. It SHALL exit `0`.
+- When `review.merge_by` is `person` and `agent.host` is `claude-code`, it SHALL read the tracked `.claude/settings.json`. It SHALL exit `0` only when that file's `permissions.deny` array holds an entry that starts with `Bash(gh pr merge`.
+- It SHALL exit non-zero, naming the file, when that file is not tracked, is not valid JSON, or has no such entry.
+
+An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy
+the check. `.claude/settings.local.json` SHALL NOT be read.
+
+#### Scenario: Merge denied
+- **WHEN** `merge_by` is `person`, `host` is `claude-code`, and the tracked `.claude/settings.json` has `"deny": ["Bash(gh pr merge:*)"]` under `permissions`
+- **THEN** the check exits `0` and names the entry
+
+#### Scenario: Merge only asked
+- **WHEN** the same entry sits under `permissions.ask` and not under `permissions.deny`
+- **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr merge` entry
+
+#### Scenario: No agent host
+- **WHEN** `merge_by` is `person` and ADR-0017 rules `agent.host: none`
+- **THEN** the check prints `ADR-0022: review.merge_by is person, but ADR-0017 agent.host is none, nothing to check` and exits `0`
+
+#### Scenario: Agent merges
+- **WHEN** `merge_by` is `agent`
+- **THEN** the check prints `ADR-0022: review.merge_by is agent, nothing to check` and exits `0`
+
+#### Scenario: Settings not committed
+- **WHEN** `merge_by` is `person`, `host` is `claude-code`, and `.claude/settings.json` exists but is not tracked
+- **THEN** the check exits non-zero and names `.claude/settings.json`
+
+### Requirement: ADR-0023 check
+`governance-check ADR-0023` SHALL read `license.spdx` from ADR-0023.
+- When it is absent or empty, the check SHALL exit non-zero and say it is not set.
+- Otherwise it SHALL read the tracked root manifests: `package.json` (its `license` field) and `pyproject.toml` (its `[project] license`, as a string or as `{ text = "..." }`).
+- It SHALL exit non-zero, naming the file and both values, when a tracked root manifest has no licence field or one that differs from the trait.
+- When the value is not `UNLICENSED`, it SHALL also exit non-zero unless a tracked `LICENSE`, `LICENSE.md`, `LICENSE.txt` or `COPYING` exists at the root.
+- When no root manifest is tracked, it SHALL check only the licence file and say no manifest was found.
+
+The check SHALL NOT read the licence file's text, nor manifests outside the
+root.
+
+#### Scenario: Ruled and wired
+- **WHEN** `license.spdx` is `MIT`, `package.json` has `"license": "MIT"` and `LICENSE` is tracked
+- **THEN** the check exits `0` and names both files
+
+#### Scenario: Manifest disagrees
+- **WHEN** `license.spdx` is `MIT` and `package.json` has `"license": "ISC"`
+- **THEN** the check exits non-zero and says `package.json` has `ISC` where ADR-0023 rules `MIT`
+
+#### Scenario: No licence file
+- **WHEN** `license.spdx` is `Apache-2.0`, `pyproject.toml` has `license = "Apache-2.0"` and no licence file is tracked
+- **THEN** the check exits non-zero and names the file names it looked for
+
+#### Scenario: Private repository
+- **WHEN** `license.spdx` is `UNLICENSED`, `package.json` has `"license": "UNLICENSED"` and no licence file exists
+- **THEN** the check exits `0`
+
+### Requirement: ADR-0011 audit check
+`governance-check ADR-0011` SHALL evaluate `forge.gate` as its wiring row
+does, then read `forge.audit`.
+- When `forge.audit` is absent or empty, it SHALL exit non-zero and say it is not set.
+- When it is `none` or another value, it SHALL print that there is nothing to check for `forge.audit`.
+- When it is `zizmor` and no workflow is tracked, it SHALL print that there is no workflow to audit.
+- Otherwise it SHALL run `zizmor --offline` on the tracked workflows without loading any configuration, so zizmor's defaults, which require hash pinning for every action, apply in place of any `zizmor.yml` the repository holds. It SHALL print the zizmor version it ran, and SHALL fail when zizmor reports a finding that no inline ignore comment covers.
+- When zizmor is not installed, it SHALL exit non-zero and say so, naming the trait.
+
+The check SHALL exit non-zero when either key fails, and SHALL report both.
+
+#### Scenario: Clean workflows
+- **WHEN** `forge.gate` is `blocking`, `forge.audit` is `zizmor`, and every tracked workflow pins its actions by SHA with job-level write permissions
+- **THEN** the check exits `0` and prints the zizmor version
+
+#### Scenario: Tag pin refused
+- **WHEN** `forge.audit` is `zizmor` and a workflow uses `actions/checkout@v4`
+- **THEN** the check exits non-zero and its output names `unpinned-uses`
+
+#### Scenario: Repository config ignored
+- **WHEN** the repository's `zizmor.yml` disables `unpinned-uses` and a workflow uses a tag
+- **THEN** the check still exits non-zero
+
+#### Scenario: Inline ignore honoured
+- **WHEN** the only finding carries `# zizmor: ignore[template-injection]` on its line
+- **THEN** the check exits `0`
+
+#### Scenario: Audit none
+- **WHEN** `forge.audit` is `none`
+- **THEN** the output says `forge.audit` has nothing to check, and the exit code follows `forge.gate` alone
+
+#### Scenario: zizmor missing
+- **WHEN** `forge.audit` is `zizmor` and zizmor is not on the `PATH`
+- **THEN** the check exits non-zero and says zizmor is not installed
+

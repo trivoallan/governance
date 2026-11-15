@@ -65,6 +65,7 @@ frontmatter:
     - { name: "traits.branching.prefixes", type: array, optional: true }
     # ADR-0011
     - { name: "traits.forge.gate", enum: [blocking, informative, none], optional: true }
+    - { name: "traits.forge.audit", type: string, optional: true }
     # ADR-0012
     - { name: "traits.delivery.target", enum: [container, platform, package, none], optional: true }
     - { name: "traits.delivery.environments", type: array, optional: true }
@@ -97,6 +98,13 @@ frontmatter:
     - { name: "traits.admission.install_scripts", enum: [ignored, allowed], optional: true }
     # ADR-0021
     - { name: "traits.supply_chain.build_level", enum: [0, 1, 2, 3], optional: true }
+    # ADR-0022
+    - { name: "traits.review.merge_by", enum: [person, agent], optional: true }
+    # ADR-0023
+    - { name: "traits.license.spdx", type: string, optional: true }
+    # ADR-0024
+    - { name: "traits.code_scanning.tool", type: string, optional: true }
+    - { name: "traits.code_scanning.fail_on", enum: [critical, high, medium, low, none], optional: true }
 structure:
   - heading:
       pattern: "^# .+"

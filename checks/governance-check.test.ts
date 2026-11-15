@@ -267,7 +267,7 @@ test('wiring: arc42 under another root', () => {
 });
 
 test('wiring: gate states its ceiling', () => {
-  const r = run(wired({ adrs: { 'ADR-0011-forge-and-ci.md': '  forge:\n    gate: blocking' }, files: { '.github/workflows/ci.yml': 'on: push\n' } }), 'ADR-0011');
+  const r = run(wired({ adrs: { 'ADR-0011-forge-and-ci.md': '  forge:\n    gate: blocking\n    audit: none' }, files: { '.github/workflows/ci.yml': 'on: push\n' } }), 'ADR-0011');
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /ruleset .* is not verified/);
 });
@@ -698,4 +698,304 @@ test('coverage threshold in npm test is the one ADR-0007 rules', () => {
   assert.ok(applied, 'package.json: the test script has no --test-coverage-lines=<n>');
   assert.ok(ruled, 'ADR-0007: no tests.coverage_target');
   assert.equal(applied, ruled, `ADR-0007 rules coverage_target: ${ruled}, but the test script applies --test-coverage-lines=${applied}`);
+});
+
+// --- ADR-0022: who merges, read with ADR-0017's agent host
+
+const reviewAdr = (mergeBy: string, host?: string): Files => ({
+  'ADR-0022-review-and-merge.md': `  review:\n    merge_by: ${mergeBy}`,
+  ...(host === undefined ? {} : { 'ADR-0017-agent-tooling.md': `  agent:\n    host: ${host}` }),
+});
+const settings = (permissions: object) => ({ '.claude/settings.json': `${JSON.stringify({ permissions })}\n` });
+
+test('ADR-0022: merge denied', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ deny: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0022: review\.merge_by is person, \.claude\/settings\.json denies Bash\(gh pr merge:\*\)/);
+});
+
+test('ADR-0022: space form of the rule passes', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ deny: ['Read(./.env)', 'Bash(gh pr merge *)'] }) }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: merge only asked', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ ask: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /permissions\.deny has no Bash\(gh pr merge entry/);
+});
+
+test('ADR-0022: no agent host', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'none') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0022: review\.merge_by is person, but ADR-0017 agent\.host is none, nothing to check$/m);
+});
+
+test('ADR-0022: ADR-0017 missing', () => {
+  const r = run(wired({ adrs: reviewAdr('person') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0017 is not in this repository, nothing to check/);
+});
+
+test('ADR-0022: agent merges', () => {
+  const r = run(wired({ adrs: reviewAdr('agent', 'claude-code') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0022: review\.merge_by is agent, nothing to check$/m);
+});
+
+test('ADR-0022: merge_by not set', () => {
+  const r = run(wired({ adrs: reviewAdr('', 'claude-code') }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /review\.merge_by is not set/);
+});
+
+test('ADR-0022: unknown value', () => {
+  const r = run(wired({ adrs: reviewAdr('bot', 'claude-code') }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /review\.merge_by has an unknown value: bot/);
+});
+
+test('ADR-0022: settings not committed', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), untracked: settings({ deny: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not tracked/);
+});
+
+test('ADR-0022: settings not JSON', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: { '.claude/settings.json': '{ deny\n' } }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
+});
+
+// --- ADR-0023: the licence the manifest declares and the file at the root
+
+const licenseAdr = (spdx: string): Files => ({ 'ADR-0023-license.md': `  license:\n    spdx: ${spdx}` });
+const pkg = (license?: string) => ({ 'package.json': `${JSON.stringify(license === undefined ? { name: 'x' } : { name: 'x', license })}\n` });
+
+test('ADR-0023: ruled and wired', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), LICENSE: 'MIT License\n' } }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /package\.json declares MIT/);
+  assert.match(r.stdout, /LICENSE found/);
+});
+
+test('ADR-0023: manifest disagrees', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('ISC'), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json has license ISC where license\.spdx rules MIT/);
+});
+
+test('ADR-0023: MIT-0 is not MIT', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT-0'), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: manifest without a licence field', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg(), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json has no license field/);
+});
+
+test('ADR-0023: no licence file', () => {
+  const r = run(wired({ adrs: licenseAdr('Apache-2.0'), files: { 'pyproject.toml': '[project]\nname = "x"\nlicense = "Apache-2.0"\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no tracked LICENSE, LICENSE\.md, LICENSE\.txt or COPYING at the root/);
+});
+
+test('ADR-0023: licence file in a subfolder does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), 'docs/LICENSE': 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: untracked licence file does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: pkg('MIT'), untracked: { LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: private repository', () => {
+  const r = run(wired({ adrs: licenseAdr('UNLICENSED'), files: pkg('UNLICENSED') }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0023: value not set', () => {
+  const r = run(wired({ adrs: licenseAdr(''), files: pkg('MIT') }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /license\.spdx is not set/);
+});
+
+test('ADR-0023: pyproject.toml string and table forms', () => {
+  for (const line of ['license = "MIT"', "license = 'MIT'", 'license = { text = "MIT" }']) {
+    const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'pyproject.toml': `[project]\nname = "x"\n${line}\n\n[tool.x]\nlicense = "other"\n`, 'LICENSE.md': 'x\n' } }), 'ADR-0023');
+    assert.equal(r.status, 0, `${line}: ${r.stderr}`);
+    assert.match(r.stdout, /pyproject\.toml declares MIT/);
+  }
+});
+
+test('ADR-0023: pyproject.toml licence outside [project] does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'pyproject.toml': '[project]\nname = "x"\n\n[tool.x]\nlicense = "MIT"\n', LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /pyproject\.toml has no license field/);
+});
+
+test('ADR-0023: both manifests checked', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), 'pyproject.toml': '[project]\nlicense = "Apache-2.0"\n', COPYING: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /package\.json declares MIT/);
+  assert.match(r.stderr, /pyproject\.toml has license Apache-2\.0/);
+});
+
+test('ADR-0023: no manifest', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /no root manifest \(package\.json, pyproject\.toml\) is tracked/);
+});
+
+test('ADR-0023: package.json not JSON', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'package.json': '{ nope\n', LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json is not valid JSON/);
+});
+
+// --- ADR-0011: forge.audit runs zizmor on the committed workflows
+
+const forgeAdr = (gate: string, audit: string): Files => ({ 'ADR-0011-forge-and-ci.md': `  forge:\n    gate: ${gate}\n    audit: ${audit}` });
+const pinned = 'on: pull_request\npermissions: {}\njobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0\n        with:\n          persist-credentials: false\n      - run: echo hi\n';
+const tagged = pinned.replace('@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0', '@v4');
+
+// A zizmor stand-in: logs its arguments, prints a version, exits $FAKE_ZIZMOR_EXIT.
+function fakeZizmor(dir: string) {
+  const bin = join(dir, 'node_modules', '.bin');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, 'zizmor'), `#!/bin/sh\necho "$@" >> "${join(dir, '.zizmor.log')}"\n[ "$1" = --version ] && { echo "zizmor 0.0.0-fake"; exit 0; }\nexit \${FAKE_ZIZMOR_EXIT:-0}\n`, { mode: 0o755 });
+  return () => readFileSync(join(dir, '.zizmor.log'), 'utf8');
+}
+
+test('ADR-0011: audit runs zizmor offline, without config, on the committed workflows', () => {
+  const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned, '.github/workflows/b.yaml': pinned }, untracked: { '.github/workflows/scratch.yml': tagged } });
+  const log = fakeZizmor(dir);
+  const r = runWith(dir, ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /zizmor 0\.0\.0-fake/);
+  assert.match(r.stdout, /ruleset that makes the pipeline required is not verified/);
+  const call = log().split('\n').find((l) => l.startsWith('--offline'))!;
+  assert.match(call, /^--offline --no-config --no-progress /);
+  assert.match(call, /\.github\/workflows\/ci\.yml/);
+  assert.match(call, /\.github\/workflows\/b\.yaml/);
+  assert.doesNotMatch(call, /scratch\.yml/);
+});
+
+test('ADR-0011: a zizmor finding fails the check', () => {
+  const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged } });
+  fakeZizmor(dir);
+  const r = runWith(dir, ['ADR-0011'], { PATH: barePath, FAKE_ZIZMOR_EXIT: '14' });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0011: forge\.audit is zizmor, and zizmor reported findings no inline ignore covers/);
+});
+
+test('ADR-0011: audit none', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', 'none'), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0011: forge\.audit is none, nothing to check/);
+});
+
+test('ADR-0011: no workflow to audit', () => {
+  const r = runWith(wired({ adrs: forgeAdr('none', 'zizmor') }), ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /forge\.audit is zizmor, but no workflow is committed, nothing to audit/);
+});
+
+test('ADR-0011: zizmor missing', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.audit is zizmor, but zizmor is not installed/);
+});
+
+test('ADR-0011: audit not set', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', ''), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.audit is not set/);
+});
+
+test('ADR-0011: gate and audit both fail, both reported', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', '') }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.gate is blocking, but no tracked file matches/);
+  assert.match(r.stderr, /forge\.audit is not set/);
+});
+
+// Against the real zizmor, when it is on the PATH.
+const real = { skip: !onPath('zizmor') && 'zizmor is not on the PATH' };
+
+test('ADR-0011 with zizmor: a tag pin is refused', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged } }), 'ADR-0011');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout + r.stderr, /unpinned-uses/);
+});
+
+test('ADR-0011 with zizmor: the repository config is not read', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged, 'zizmor.yml': 'rules:\n  unpinned-uses:\n    disable: true\n', '.github/zizmor.yml': 'rules:\n  unpinned-uses:\n    disable: true\n' } }), 'ADR-0011');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0011 with zizmor: an inline ignore is honoured', real, () => {
+  const wf = pinned.replace('      - run: echo hi\n', '      - run: echo "${{ github.event.pull_request.title }}" # zizmor: ignore[template-injection] echoed only\n');
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': wf } }), 'ADR-0011');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('ADR-0011 with zizmor: clean workflows pass', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned } }), 'ADR-0011');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+// --- ADR-0024: a scan workflow that sends its SARIF somewhere
+
+const scanAdr = (tool: string, failOn = 'high'): Files => ({ 'ADR-0024-code-scanning.md': `  code_scanning:\n    tool: ${tool}\n    fail_on: ${failOn}` });
+const grypeWf = 'jobs:\n  scan:\n    steps:\n      - uses: anchore/scan-action@abc\n      - uses: github/codeql-action/upload-sarif@abc\n';
+
+test('ADR-0024: CodeQL in advanced setup passes', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/codeql.yml': 'steps:\n  - uses: github/codeql-action/init@abc\n  - uses: github/codeql-action/analyze@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /code_scanning\.tool is codeql, found \.github\/workflows\/codeql\.yml/);
+  assert.match(r.stdout, /code_scanning\.fail_on is high, nothing to check/);
+});
+
+test('ADR-0024: CodeQL default setup only fails', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/scan.yml': grypeWf } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /holds github\/codeql-action\/analyze/);
+});
+
+test('ADR-0024: CodeQL init without analyze fails', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/codeql.yml': 'steps:\n  - uses: github/codeql-action/init@abc\n' } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0024: another tool uploading SARIF passes', () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci --sarif > semgrep.sarif\n  - uses: github/codeql-action/upload-sarif@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /found \.github\/workflows\/sast\.yml/);
+});
+
+test('ADR-0024: private repository keeps the SARIF as an artifact', () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci --sarif > semgrep.sarif\n  - uses: actions/upload-artifact@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test("ADR-0024: Grype's upload does not count for another tool", () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/scan.yml': grypeWf, '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci\n' } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /holds semgrep, and github\/codeql-action\/upload-sarif or actions\/upload-artifact/);
+});
+
+test('ADR-0024: none has nothing to check', () => {
+  const r = run(wired({ adrs: scanAdr('none', 'none') }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /code_scanning\.tool is none, nothing to check/);
+});
+
+test('ADR-0024: fail_on not set', () => {
+  const r = run(wired({ adrs: scanAdr('none', '') }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /code_scanning\.fail_on is not set/);
 });

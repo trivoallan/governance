@@ -39,8 +39,12 @@ confirm the wiring is present but not that it is right, and that a
 repository may reject any question that does not fit it.
 
 #### Scenario: A domain with no check
+- **WHEN** no ADR of a row's domain has a check
+- **THEN** the row names no check, and says that nothing is verified
+
+#### Scenario: Code row
 - **WHEN** the Code row is read
-- **THEN** it names no check, and says that nothing is verified
+- **THEN** it says that a scan workflow sending its SARIF to code scanning or to an artifact is verified, and that the threshold is not
 
 #### Scenario: A verified claim
 - **WHEN** a row says `governance-check` verifies something
@@ -61,12 +65,20 @@ states, linked to that ADR, or a topic that no shipped ADR addresses. The
 section SHALL NOT promise that a topic will be covered later.
 
 #### Scenario: An item from an ADR's exclusion
-- **WHEN** the section lists static analysis of your own code or licence compliance
-- **THEN** the item links to ADR-0019, which states both as not concerned
+- **WHEN** the section lists licence compliance
+- **THEN** the item links to ADR-0019, which states it as not concerned
+
+#### Scenario: Static analysis covered
+- **WHEN** the section is read
+- **THEN** it does not list static analysis of your own code, which ADR-0024 decides
 
 #### Scenario: A topic an ADR covers
 - **WHEN** a topic has a shipped ADR that decides it
 - **THEN** the section does not list it
+
+#### Scenario: Review beyond who merges
+- **WHEN** the section's item on code review is read
+- **THEN** it lists required approvals and ownership (`CODEOWNERS`) only, and links to ADR-0022, which names both as outside its question
 
 ### Requirement: README shows one ADR excerpt
 The README SHALL show a short excerpt of one shipped ADR: its question, its
