@@ -935,7 +935,11 @@ test('ADR-0022: rules unreadable in CI', () => {
 });
 
 test('ADR-0022: gh missing in CI', () => {
-  const r = runWith(wired({ adrs: reviewAdr('peer', '1', 'none') }), ['ADR-0022'], { PATH: barePath, GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'o/r' });
+  // An empty PATH dir: barePath holds /usr/bin, where CI runners install gh.
+  const dir = wired({ adrs: reviewAdr('peer', '1', 'none') });
+  const empty = join(dir, '.empty-bin');
+  mkdirSync(empty);
+  const r = runWith(dir, ['ADR-0022'], { PATH: empty, GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'o/r' });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /gh is not installed/);
 });
