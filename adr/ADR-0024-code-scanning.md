@@ -104,9 +104,9 @@ outside input. Any tool that writes SARIF answers it too.
    excluding a path (`paths-ignore`, `paths`, a tool's ignore file) and
    removing a query or rule (`query-filters`, a narrower suite) all
    silence a finding. The agent fixes the code, or proposes one of these
-   with its reason, and a person dismisses or merges it, as ADR-0019 rule 4
-   has for an ignore rule and [ADR-0022](ADR-0022-review-and-merge.md) for
-   any merge.
+   with its reason, and a person dismisses it, or approves or merges it as
+   [ADR-0022](ADR-0022-review-and-merge.md)'s `review.by` says, as
+   ADR-0019 rule 4 has for an ignore rule.
 
 **What `codeql` looks like in practice:**
 
@@ -272,7 +272,7 @@ ADRs were split to avoid.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the gate, the pinning rule, and `forge.audit` for workflows.
 - [ADR-0019](ADR-0019-vulnerabilities.md): the dependency scan, its SARIF upload and its rule 4.
-- [ADR-0022](ADR-0022-review-and-merge.md): who merges.
+- [ADR-0022](ADR-0022-review-and-merge.md): who reviews and merges.
 - GitHub:
   - [about code scanning with CodeQL](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql);
   - [customizing advanced setup](https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning);

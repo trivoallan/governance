@@ -19,7 +19,7 @@ question at a time.
 
 | Domain | What you gain | What `ontrack-engineering-check` verifies |
 | --- | --- | --- |
-| **Agents** (0017, 0022) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned; the agent opens the pull request, a person merges it | `.claude/settings.json` exists, and denies `gh pr merge` when a person merges |
+| **Agents** (0017, 0022) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned; the agent opens the pull request and never approves one; a person merges it, or approves it so the agent can | `.claude/settings.json` exists, denies `gh pr review`, and denies `gh pr merge` with `review.by: maintainer`; in CI, the default branch's ruleset matches `review.approvals` |
 | **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |
 | **Code** (0004, 0005, 0007, 0013, 0024) | Validation at every boundary (`zod` or `pydantic`), a test coverage target you set, and your own code scanned by CodeQL, its alerts blocking from `high` | a scan workflow sends its SARIF to code scanning (or keeps it as an artifact); the threshold, held by the ruleset, is not verified |
 | **Decisions & docs** (0001, 0002, 0008) | Decisions kept as ADRs, docs in one language under one root | each ruled ADR carries its verdict (status decided, no trait left empty, how-to-rule block gone), checked against the shipped `.mdschema.yml`; the docs tool and root exist |
@@ -74,8 +74,9 @@ governance decides nothing about:
   rules;
 - infrastructure as code, hosting and operations (logging, monitoring,
   incidents);
-- how many approvals a pull request needs, and ownership (`CODEOWNERS`):
-  [ADR-0022](adr/ADR-0022-review-and-merge.md) decides only who merges.
+- ownership (`CODEOWNERS`):
+  [ADR-0022](adr/ADR-0022-review-and-merge.md) decides who reviews and
+  merges, not who owns which path.
 
 ## What an ADR looks like
 
