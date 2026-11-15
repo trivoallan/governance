@@ -58,6 +58,7 @@ frontmatter:
     - { name: "traits.docs.tool", enum: [starlight, docusaurus, mkdocs, none], optional: true }
     - { name: "traits.docs.root", type: string, optional: true }
     - { name: "traits.docs.audience", enum: [single-user, team, public], optional: true }
+    - { name: "traits.docs.channels", type: array, optional: true }
     # ADR-0009
     - { name: "traits.branching.model", enum: [github-flow, trunk-based, gitflow], optional: true }
     - { name: "traits.branching.merge", enum: [squash, merge-commit, rebase], optional: true }
