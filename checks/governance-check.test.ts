@@ -699,3 +699,70 @@ test('coverage threshold in npm test is the one ADR-0007 rules', () => {
   assert.ok(ruled, 'ADR-0007: no tests.coverage_target');
   assert.equal(applied, ruled, `ADR-0007 rules coverage_target: ${ruled}, but the test script applies --test-coverage-lines=${applied}`);
 });
+
+// --- ADR-0022: who merges, read with ADR-0017's agent host
+
+const reviewAdr = (mergeBy: string, host?: string): Files => ({
+  'ADR-0022-review-and-merge.md': `  review:\n    merge_by: ${mergeBy}`,
+  ...(host === undefined ? {} : { 'ADR-0017-agent-tooling.md': `  agent:\n    host: ${host}` }),
+});
+const settings = (permissions: object) => ({ '.claude/settings.json': `${JSON.stringify({ permissions })}\n` });
+
+test('ADR-0022: merge denied', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ deny: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0022: review\.merge_by is person, \.claude\/settings\.json denies Bash\(gh pr merge:\*\)/);
+});
+
+test('ADR-0022: space form of the rule passes', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ deny: ['Read(./.env)', 'Bash(gh pr merge *)'] }) }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: merge only asked', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: settings({ ask: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /permissions\.deny has no Bash\(gh pr merge entry/);
+});
+
+test('ADR-0022: no agent host', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'none') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0022: review\.merge_by is person, but ADR-0017 agent\.host is none, nothing to check$/m);
+});
+
+test('ADR-0022: ADR-0017 missing', () => {
+  const r = run(wired({ adrs: reviewAdr('person') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0017 is not in this repository, nothing to check/);
+});
+
+test('ADR-0022: agent merges', () => {
+  const r = run(wired({ adrs: reviewAdr('agent', 'claude-code') }), 'ADR-0022');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0022: review\.merge_by is agent, nothing to check$/m);
+});
+
+test('ADR-0022: merge_by not set', () => {
+  const r = run(wired({ adrs: reviewAdr('', 'claude-code') }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /review\.merge_by is not set/);
+});
+
+test('ADR-0022: unknown value', () => {
+  const r = run(wired({ adrs: reviewAdr('bot', 'claude-code') }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /review\.merge_by has an unknown value: bot/);
+});
+
+test('ADR-0022: settings not committed', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), untracked: settings({ deny: ['Bash(gh pr merge:*)'] }) }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not tracked/);
+});
+
+test('ADR-0022: settings not JSON', () => {
+  const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: { '.claude/settings.json': '{ deny\n' } }), 'ADR-0022');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
+});

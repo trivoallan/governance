@@ -425,7 +425,41 @@ function changes(root: string, file: string): number {
   return failed ? 1 : 0;
 }
 
+// ADR-0022 reads ADR-0017: the deny list it looks for belongs to the agent host.
+const Review = z.object({ merge_by: z.enum(['person', 'agent']) });
+const SETTINGS = '.claude/settings.json';
+const MERGE = 'Bash(gh pr merge';
+
+function review(root: string, file: string): number {
+  const { merge_by } = traitsOf(Review, 'ADR-0022', 'review', file, readFileSync(file, 'utf8'));
+  const name = `ADR-0022: review.merge_by is ${merge_by}`;
+  if (merge_by === 'agent') {
+    console.log(`${name}, nothing to check`);
+    return 0;
+  }
+  const host = toolAnswer(root, 'ADR-0017', 'agent', 'host');
+  if (host.value !== 'claude-code') {
+    const why = host.found ? `ADR-0017 agent.host is ${host.value || '(not set)'}` : 'ADR-0017 is not in this repository';
+    console.log(`${name}, but ${why}, nothing to check`);
+    return 0;
+  }
+  // Tracked only, as wiring rows: a deny never committed protects one machine.
+  if (!tracked(root).includes(SETTINGS)) throw new CheckError(`${name}, but ${SETTINGS} is not tracked`);
+  let deny: unknown;
+  try {
+    deny = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.permissions?.deny;
+  } catch {
+    throw new CheckError(`${name}, but ${SETTINGS} is not valid JSON`);
+  }
+  // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
+  const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(MERGE)) : undefined;
+  if (!entry) throw new CheckError(`${name}, but ${SETTINGS} permissions.deny has no ${MERGE} entry`);
+  console.log(`${name}, ${SETTINGS} denies ${entry}`);
+  return 0;
+}
+
 const CHECKS: Record<string, Check> = {
+  'ADR-0022': review,
   'ADR-0006': commits,
   'ADR-0009': branching,
   'ADR-0015': secrets,
