@@ -14,11 +14,8 @@ permissions: {}
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    # Tags, the GitHub release and the release pull request. The action acts
-    # with RELEASE_PLEASE_TOKEN; these cover GITHUB_TOKEN should it be used.
-    permissions:
-      contents: write
-      pull-requests: write
+    # No permission for GITHUB_TOKEN: the action tags, releases and opens the
+    # release pull request with RELEASE_PLEASE_TOKEN.
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       # vX.Y.Z, the tag and the GitHub release the sbom job attaches to.
