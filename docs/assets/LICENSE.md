@@ -1,6 +1,6 @@
 # Logo licence
 
-`logo.png` is a painting by nota2k, made for governance.
+`logo.png` is a painting by [nota2k](https://github.com/nota2k), made for governance.
 
 It is licensed under
 [Creative Commons Attribution-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nd/4.0/)

@@ -133,4 +133,4 @@ Setting up a clone (Claude Code plugins, the secret guard) is in
 ## Licence
 
 The code and the ADRs are under [MIT-0](LICENSE). The logo is a painting by
-nota2k, under [CC BY-ND 4.0](docs/assets/LICENSE.md).
+[nota2k](https://github.com/nota2k), under [CC BY-ND 4.0](docs/assets/LICENSE.md).
