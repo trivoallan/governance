@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.png" alt="A red and orange brushstroke" width="240">
+</p>
+
 # governance
 
 **Opinionated ADRs you import, overrule where you disagree, and check in CI.**
@@ -126,3 +130,8 @@ and its architecture in arc42 and LikeC4 under
 
 Setting up a clone (Claude Code plugins, the secret guard) is in
 [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Licence
+
+The code and the ADRs are under [MIT-0](LICENSE). The logo is a painting by
+[nota2k](https://github.com/nota2k), under [CC BY-ND 4.0](docs/assets/LICENSE.md).
