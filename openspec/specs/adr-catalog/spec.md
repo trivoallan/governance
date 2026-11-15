@@ -482,6 +482,41 @@ the model in `docs/architecture/model/`. Both ADRs SHALL be at
 - **WHEN** ADR-0008 shows the Starlight `glob` loader over `./docs`
 - **THEN** it says the pattern also publishes `adr/` and `architecture/`, and shows how to exclude them
 
+### Requirement: ADR-0022 asks who merges a pull request
+ADR-0022 "Review and merge" SHALL ask who merges a pull request in a
+repository kept by one person, through one trait, `review.merge_by`, with the
+values `person` and `agent` and the recommended value `person`. It SHALL say
+that `agent` is acceptable when the ADR's text gives the reason. When the
+repository rules `person`, its Decision SHALL fix four rules:
+1. the agent opens the pull request ready for review, says when its checks are green, and stops;
+2. the agent merges nothing: not with `gh pr merge`, not with `--auto`, not through the API, not by pushing to the default branch;
+3. a bot that a workflow runs under another ADR's ruling is not an agent session, and ADR-0018's automerge is that exception;
+4. a review the agent runs on its own work is advice, and the person's merge is the review.
+
+It SHALL describe the GitHub ruleset that backs these rules (pull request
+required, zero approvals, no bypass) and SHALL say the check does not
+verify it. It SHALL name required approvals and `CODEOWNERS` as outside its
+question. It SHALL ship with `check: npx --no-install governance-check ADR-0022`,
+and its how-to-rule block SHALL say that the check denies nothing itself, and
+that `gh api` and a push to the default branch pass it. ADR-0018 SHALL state
+that its automerge is the exception ADR-0022 allows, and ADR-0019's rule 4
+SHALL link to ADR-0022. Neither SHALL change `revision:`.
+
+#### Scenario: One trait
+- **WHEN** ADR-0022's frontmatter is read as shipped
+- **THEN** it holds `review.merge_by` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent at a green pull request
+- **WHEN** an agent reads `review.merge_by: person` and its pull request's checks are green
+- **THEN** ADR-0022 tells it to say so and stop, not to merge or enable auto-merge
+
+#### Scenario: Dependabot automerge
+- **WHEN** ADR-0018 rules `automerge: patch` and ADR-0022 rules `merge_by: person`
+- **THEN** both ADRs say the Dependabot merge is the allowed exception, and neither contradicts the other
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0022's References are read
+
 ### Requirement: ADR-0024 asks what analyses the repository's own code
 ADR-0024 "Code scanning" SHALL ask two traits:
 - `code_scanning.tool`, a free string recommending `codeql`, answered by any tool that writes SARIF, naming `semgrep` for a private repository without GitHub Code Security, and accepting `none`;
