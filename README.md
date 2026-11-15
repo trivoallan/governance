@@ -17,7 +17,7 @@ question at a time.
 
 ## What you get
 
-| Domain | What you gain | What `governance-check` verifies |
+| Domain | What you gain | What `ontrack-engineering-check` verifies |
 | --- | --- | --- |
 | **Agents** (0017, 0022, 0026) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which your coding agent reads on every session; plugins pinned; the agent opens the pull request and never approves one; a person merges it, or approves it so the agent can; if you choose, the agent acts under its own GitHub identity, so that approval is one GitHub enforces | `.claude/settings.json` exists, denies `gh pr review`, and denies `gh pr merge` with `review.by: maintainer`; in CI, the default branch's ruleset matches `review.approvals`; the agent's identity is not verified |
 | **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |

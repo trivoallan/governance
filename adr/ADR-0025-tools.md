@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0025
+check: npx --no-install ontrack-engineering-check ADR-0025
 traits:
   tools:
     manager:
@@ -155,7 +155,7 @@ revision: 1
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0025
+check: npx --no-install ontrack-engineering-check ADR-0025
 traits:
   tools:
     manager: script
@@ -184,7 +184,7 @@ what makes a decision different from an accepted default.
 
 ### Neutral
 
-- `governance-check ADR-0025` verifies, with `mise`, that the tools
+- `ontrack-engineering-check ADR-0025` verifies, with `mise`, that the tools
   `secrets.guard` and `forge.audit` name are pinned. Review still covers a
   tool another trait or a local ADR names, a tool whose binary has another
   name than the value, the pins under `script` and `aqua`, and rule 4.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// governance-check <ADR number> [--from <ref>] [--branch <name>]
-// Runs the check governance ships for one ADR, from the consuming repository's
+// ontrack-engineering-check <ADR number> [--from <ref>] [--branch <name>]
+// Runs the check this package ships for one ADR, from the consuming repository's
 // root, as called by that ADR's `check:` line through `ontrack check`.
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join, dirname, basename, delimiter, relative } from 'node:path';
@@ -21,7 +21,7 @@ type Check = (root: string, file: string, opts: Options) => number;
 // The directory under docs/adr/ that holds the repository's copies of this
 // package's ADRs: the alias the package is installed under, read from this
 // script's own path, node_modules/<alias>/dist/. Empty when the script runs
-// from elsewhere (a linked package, governance's own tests).
+// from elsewhere (a linked package, this package's own tests).
 const pkg = dirname(dirname(fileURLToPath(import.meta.url)));
 const NAMESPACE = basename(dirname(pkg)) === 'node_modules' ? basename(pkg) : '';
 
@@ -57,7 +57,7 @@ function scalar(raw: string): string {
 
 // The keys of `traits.<group>` in the frontmatter, read line by line, no YAML parser.
 // A value is a string, a list (flow `[a, b]` or block `- a`), or '' when empty.
-// ponytail: handles the shapes governance ADRs use, not arbitrary YAML.
+// ponytail: handles the shapes this package's ADRs use, not arbitrary YAML.
 function readTraits(text: string, group: string): Traits | null {
   const lines = text.split(/\r?\n/);
   const end = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
@@ -193,7 +193,7 @@ function commits(root: string, file: string, { from }: Options): number {
     ? { 'scope-enum': [2, 'always', scopes] }
     : { 'scope-empty': [2, 'always'] };
   // Outside the repository, removed afterwards: the check writes nothing in it.
-  const tmp = mkdtempSync(join(tmpdir(), 'governance-check-'));
+  const tmp = mkdtempSync(join(tmpdir(), 'ontrack-engineering-check-'));
   try {
     const config = join(tmp, 'commitlint.config.mjs');
     writeFileSync(config, `export default ${JSON.stringify({ extends: [conventional], rules })};\n`);
@@ -388,7 +388,7 @@ function wiring(number: string, entries: Entry[]): Check {
 // --- Checks that run a tool on the branch, as ADR-0006 runs commitlint.
 
 // Traits that name a tool outside the package manager (ADR-0025). The value is the
-// binary, `none` names nothing; `known` are the values governance's checks run.
+// binary, `none` names nothing; `known` are the values this package's checks run.
 // Not a trait: the list follows from those ADRs' answers, as TOOLS below.
 const PINNED: [adr: string, group: string, key: string, known: string[]][] = [
   ['ADR-0015', 'secrets', 'guard', ['gitleaks']],
@@ -790,7 +790,7 @@ function tools(root: string, file: string): number {
   return failed ? 1 : 0;
 }
 
-// ADR-0001: the schema governance ships, run by the mdschema governance depends on, on
+// ADR-0001: the schema this package ships, run by the mdschema it depends on, on
 // the repository's ruled copies of this package's ADRs (those beside its ADR-0001).
 const Format = z.object({ format: one() });
 
@@ -809,7 +809,7 @@ function adrs(root: string, file: string): number {
     console.log(`${name}, but no ADR is ruled yet, nothing to check`);
     return 0;
   }
-  // From governance's own package, never the repository's node_modules/.bin nor PATH.
+  // From this package, never the repository's node_modules/.bin nor PATH.
   const manifest = createRequire(import.meta.url).resolve('@jackchuka/mdschema/package.json');
   const cli = join(dirname(manifest), JSON.parse(readFileSync(manifest, 'utf8')).bin.mdschema);
   const files = ruled.map((f) => relative(root, f));
@@ -834,7 +834,7 @@ const CHECKS: Record<string, Check> = {
 
 // --- Arguments (ADR-0005): parseArgs tokenizes, the schema validates and defaults.
 
-const USAGE = 'usage: governance-check <ADR number> [--from <ref>] [--branch <name>]';
+const USAGE = 'usage: ontrack-engineering-check <ADR number> [--from <ref>] [--branch <name>]';
 const Args = z.object({
   positionals: z.tuple([z.string().min(1)]),
   values: z.object({
@@ -865,7 +865,7 @@ function main(argv: string[], root = process.cwd()): number {
   try {
     const { number, opts } = args(argv);
     const check = CHECKS[number];
-    if (!check) throw new CheckError(`governance ships no check for ${number}`);
+    if (!check) throw new CheckError(`this package ships no check for ${number}`);
     return check(root, findAdr(root, number), opts);
   } catch (e) {
     if (!(e instanceof CheckError)) throw e;

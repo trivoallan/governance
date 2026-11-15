@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0024
+check: npx --no-install ontrack-engineering-check ADR-0024
 traits:
   code_scanning:
     tool:
@@ -178,7 +178,7 @@ revision: 1
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0024
+check: npx --no-install ontrack-engineering-check ADR-0024
 traits:
   code_scanning:
     tool: codeql

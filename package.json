@@ -20,10 +20,11 @@
   "type": "module",
   "files": [
     "adr/",
-    "dist/governance-check.js"
+    "dist/ontrack-engineering-check.js"
   ],
   "bin": {
-    "governance-check": "dist/governance-check.js"
+    "ontrack-engineering-check": "dist/ontrack-engineering-check.js",
+    "governance-check": "dist/ontrack-engineering-check.js"
   },
   "engines": {
     "node": ">=22.18"

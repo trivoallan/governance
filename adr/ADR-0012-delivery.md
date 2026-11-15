@@ -7,7 +7,7 @@ revision: 3
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0012
+check: npx --no-install ontrack-engineering-check ADR-0012
 traits:
   delivery:
     target:
@@ -173,7 +173,7 @@ revision: 3
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0012
+check: npx --no-install ontrack-engineering-check ADR-0012
 traits:
   delivery:
     target: container

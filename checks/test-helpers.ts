@@ -1,6 +1,6 @@
 // Helpers shared by the tests under checks/. Not a test file itself, so
 // `node --test checks/*.test.ts` does not run it; not shipped (package.json
-// "files" lists dist/governance-check.js only).
+// "files" lists dist/ontrack-engineering-check.js only).
 import { dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
