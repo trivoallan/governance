@@ -2,6 +2,7 @@
   "name": "@trivoallan/ontrack-governance",
   "version": "0.4.0",
   "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
+  "license": "MIT-0",
   "keywords": [
     "ontrack-source",
     "adr",
