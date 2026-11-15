@@ -11,7 +11,7 @@ that every one of your Python or TypeScript repositories on GitHub imports
 and overrules where it disagrees; 16 of them come with a check that runs in
 CI. When a decision changes, each repository is told, instead of drifting.
 
-governance is an [ontrack](https://github.com/trivoallan/ontrack) track:
+ontrack-engineering is an [ontrack](https://github.com/trivoallan/ontrack) track:
 an npm package of ADRs that your repository imports and rules on, one
 question at a time.
 
@@ -62,7 +62,7 @@ doesn't fit your repository.
 
 ### Not covered
 
-governance decides nothing about:
+ontrack-engineering decides nothing about:
 
 - licence compliance of your dependencies
   ([ADR-0019](adr/ADR-0019-vulnerabilities.md) says so);
