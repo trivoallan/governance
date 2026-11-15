@@ -55,7 +55,8 @@ every day; the lockfile does not. A scan that runs only on pull requests
 stays green on a repository nobody touches, until someone does.
 
 **Not concerned:** secrets ([ADR-0015](ADR-0015-secrets.md)), static analysis
-of your own code (SAST), and licence compliance, even though an SBOM lists
+of your own code ([ADR-0024](ADR-0024-code-scanning.md)), and licence
+compliance, even though an SBOM lists
 licences too.
 
 ## Decision

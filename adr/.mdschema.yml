@@ -99,6 +99,9 @@ frontmatter:
     - { name: "traits.supply_chain.build_level", enum: [0, 1, 2, 3], optional: true }
     # ADR-0022
     - { name: "traits.review.merge_by", enum: [person, agent], optional: true }
+    # ADR-0024
+    - { name: "traits.code_scanning.tool", type: string, optional: true }
+    - { name: "traits.code_scanning.fail_on", enum: [critical, high, medium, low, none], optional: true }
 structure:
   - heading:
       pattern: "^# .+"

@@ -179,10 +179,12 @@ function holds(root: string, file: string, strings: string[]): boolean {
 }
 
 // What a row looks for: files matching each list of alternatives, a file
-// holding one of some strings, or any file under a path.
+// holding one of some strings, a file holding one string from each list, or
+// any file under a path.
 type Row = { note?: string } & (
   | { exists: string[][] }
   | { contains: { in: string[]; any: string[] } }
+  | { containsAll: { in: string[]; all: string[][] } }
   | { path: string }
 );
 // ctx.traits holds the entries of the ADR validated so far: { <group>: { <key>: value } }.
@@ -204,6 +206,11 @@ function evaluate(row: Row, files: string[], root: string): { found?: string; fa
     const { in: where, any } = row.contains;
     const hit = matching(files, where).find((f) => holds(root, f, any));
     return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${any.join(' or ')}` };
+  }
+  if ('containsAll' in row) {
+    const { in: where, all } = row.containsAll;
+    const hit = matching(files, where).find((f) => all.every((any) => holds(root, f, any)));
+    return hit ? { found: hit } : { fail: `no tracked file matching ${where.join(' or ')} holds ${all.map((any) => any.join(' or ')).join(', and ')}` };
   }
   const dir = prefix(row.path);
   const hit = files.find((f) => f.startsWith(dir));
@@ -263,6 +270,17 @@ const WIRING: Record<string, Entry[]> = {
     { group: 'supply_chain', key: 'build_level', row: (v) => (['1', '2', '3'].includes(v)
       ? inWorkflow('actions/attest-build-provenance', '--provenance', 'pypa/gh-action-pypi-publish')
       : null) },
+  ],
+  'ADR-0024': [
+    // CodeQL's analyze step uploads its own SARIF. Any other tool: its name and its SARIF's
+    // destination in one workflow, so Grype's upload-sarif alone does not count.
+    { group: 'code_scanning', key: 'tool', row: (v) => {
+      if (v === 'none') return null;
+      if (v === 'codeql') return inWorkflow('github/codeql-action/analyze');
+      return { containsAll: { in: WORKFLOWS, all: [[v], ['github/codeql-action/upload-sarif', 'actions/upload-artifact']] } };
+    } },
+    // The threshold lives in the ruleset and the workflow's settings: validated, not wired.
+    { group: 'code_scanning', key: 'fail_on', row: () => null },
   ],
 };
 
