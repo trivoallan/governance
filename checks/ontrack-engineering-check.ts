@@ -582,6 +582,37 @@ function claudeDeny(root: string, files: string[], commands: string[]): Verdict[
   });
 }
 
+// Absent, empty or `*` covers every tool; anything else is tried as a pattern against `Bash`.
+function coversBash(matcher: unknown): boolean {
+  if (matcher === undefined || matcher === '' || matcher === '*') return true;
+  if (typeof matcher !== 'string') return false;
+  try {
+    return new RegExp(`^(?:${matcher})$`).test('Bash');
+  } catch {
+    return false;
+  }
+}
+
+// Copilot CLI reads .claude/settings.json but ignores `permissions`: a PreToolUse hook is its guard.
+function copilotHook(root: string, files: string[], commands: string[]): Verdict[] {
+  if (!files.includes(SETTINGS)) return [{ ok: false, detail: `${SETTINGS} is not tracked` }];
+  let pre: unknown;
+  try {
+    pre = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.hooks?.PreToolUse;
+  } catch {
+    return [{ ok: false, detail: `${SETTINGS} is not valid JSON` }];
+  }
+  const entries = (Array.isArray(pre) ? pre : []).filter((e) => coversBash(e?.matcher) && Array.isArray(e?.hooks));
+  return commands.map((command) => {
+    // ponytail: substring match, so a hook that names the command without blocking it passes; run the hook if that matters.
+    const entry = entries.find((e) => e.hooks.some((h: { type?: unknown; command?: unknown }) =>
+      h?.type === 'command' && typeof h.command === 'string' && h.command.includes(command)));
+    return entry
+      ? { ok: true, detail: `${SETTINGS} blocks ${command} in a PreToolUse hook on ${entry.matcher || '*'}` }
+      : { ok: false, detail: `${SETTINGS} hooks.PreToolUse has no ${command} hook on Bash (Copilot CLI ignores permissions.deny)` };
+  });
+}
+
 // opencode joins the `permissions` of the root file, then of .opencode/, and the
 // last rule matching the action and the command decides. Replayed on the command
 // alone and with an argument.
@@ -622,6 +653,7 @@ function opencodeDeny(root: string, files: string[], commands: string[]): Verdic
 const HOSTS = {
   'claude-code': { files: [SETTINGS], deny: claudeDeny },
   opencode: { files: OPENCODE, deny: opencodeDeny },
+  copilot: { files: [SETTINGS], deny: copilotHook },
 };
 type Host = keyof typeof HOSTS;
 const Agent = z.object({ hosts: z.array(z.enum(Object.keys(HOSTS) as [Host, ...Host[]])) });

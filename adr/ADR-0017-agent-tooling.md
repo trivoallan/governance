@@ -3,7 +3,7 @@ adr: ADR-0017
 slug: agent-tooling
 title: Agent tooling
 status: proposed
-revision: 2
+revision: 3
 date:
 authors: []
 supersedes: []
@@ -41,11 +41,12 @@ the network on each run can change between two sessions; a skill committed
 to the repository can pre-approve tools through its `allowed-tools` field.
 What reaches the repository, from where, and pinned how, is the question.
 
-governance targets **Claude Code** first, and covers **opencode** too:
-one repository can be worked on with both, by different contributors.
+governance targets **Claude Code** first, and covers **opencode** and
+**GitHub Copilot CLI** too: one repository can be worked on with several,
+by different contributors.
 While this key is empty, an agent does not know which hosts' project
 settings the repository expects, and installs skills however the last
-guide it read suggested. Both hosts read `AGENTS.md`, where ontrack writes
+guide it read suggested. All three read `AGENTS.md`, where ontrack writes
 the rules this repository accepted; opencode does not read `CLAUDE.md`.
 
 ## Decision
@@ -58,7 +59,8 @@ the rules this repository accepted; opencode does not read `CLAUDE.md`.
 
 List every host the repository's contributors work with: a team where
 some use Claude Code and others opencode rules
-`[claude-code, opencode]`, and the rules of both apply. `[]` says the
+`[claude-code, opencode]`, and the rules of both apply. A contributor
+working with Copilot CLI adds `copilot`. `[]` says the
 repository declares no agent tooling: the rules below do not apply, and
 the `Suggested skills` lines are only reading material.
 
@@ -145,6 +147,28 @@ Neither the marketplace nor vendored skills load in cloud sessions.
 opencode installs these plugins on startup: there is no per-contributor
 install step.
 
+**What governance fixes when the list holds `copilot`.** `copilot` means
+GitHub Copilot CLI. Copilot CLI reads `extraKnownMarketplaces`,
+`enabledPlugins` and `hooks` from `.claude/settings.json`, the marketplace
+it points at, and `.claude/skills/`, so the repository keeps the Claude Code
+files above, and their rules 1 to 5 apply as they are.
+
+1. **Each contributor trusts the folder** in Copilot (Copilot lists trusted
+   folders under `trustedFolders` in `~/.copilot/config.json`). Copilot CLI
+   then installs each enabled plugin by itself, at the commit its entry
+   pins: there is no install step. Outside a trusted folder, it reads
+   neither the plugins nor the hooks.
+2. **`.github/copilot/settings.json` holds no plugin list.** That file takes
+   precedence over `.claude/settings.json` for the plugins it names, so a
+   committed one holds neither `enabledPlugins` nor
+   `extraKnownMarketplaces`: the list stays in one place.
+3. **Copilot CLI does not read `permissions`.** A rule that must hold for it
+   is a `PreToolUse` hook in `.claude/settings.json`, as
+   [ADR-0022](ADR-0022-review-and-merge.md) shows.
+
+Read from Copilot CLI 1.0.112 on 2026-11-15. Copilot's cloud coding agent
+and Copilot in VS Code were not tested, and `copilot` does not cover them.
+
 **Departing from a rule** (vendoring everything to work offline, say) is
 declared in your own ADR, with its reason.
 
@@ -224,7 +248,7 @@ adr: ADR-0017
 slug: agent-tooling
 title: Agent tooling
 status: accepted
-revision: 2
+revision: 3
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
@@ -239,10 +263,10 @@ traits:
 runs it from your repository's root. It reads `agent.hosts` and checks
 only that each host's settings file is committed, not what it says:
 
-- `claude-code`: `.claude/settings.json`;
+- `claude-code` and `copilot`: `.claude/settings.json`;
 - `opencode`: `opencode.json` or `.opencode/opencode.json`.
 
-It reads neither file: an entry with no `sha` or no exact version passes,
+It reads none of them: an entry with no `sha` or no exact version passes,
 and review catches it. `[]` has nothing to check. A host it does not know
 fails, and so does the revision 1 key `agent.host`, with the line to write
 in its place.
@@ -269,10 +293,11 @@ what makes a decision different from an accepted default.
 - Pinned SHAs go stale; someone has to bump them, by hand or with a tool.
 - The repository maintains a marketplace file of its own, one entry per
   plugin.
-- The policy covers Claude Code and opencode only. A third host is a
-  revision of this ADR.
-- A repository with both hosts maintains two sets of settings, and the
-  same plugin may not exist for both.
+- The policy covers Claude Code, opencode and Copilot CLI only. Another
+  host, Copilot's cloud coding agent included, is a revision of this ADR.
+- A repository with Claude Code and opencode maintains two sets of
+  settings, and the same plugin may not exist for both. Copilot CLI shares
+  Claude Code's.
 
 ### Neutral
 
@@ -324,12 +349,13 @@ sessions are guaranteed the same tools.
 - [ADR-0016](ADR-0016-changes.md): skills listed by an OpenSpec schema.
 - Claude Code documentation: [plugins for a team](https://code.claude.com/docs/en/plugins/org.md), [marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference.md) and [skills](https://code.claude.com/docs/en/skills.md), read on 2026-11-14.
 - opencode documentation: [config](https://opencode.ai/docs/config/), [plugins](https://opencode.ai/docs/plugins/), [skills](https://opencode.ai/docs/skills/) and [instructions](https://opencode.ai/docs/instructions/), read on 2026-11-15.
+- GitHub Copilot CLI documentation: [plugins](https://docs.github.com/en/copilot/concepts/agents/copilot-cli/about-cli-plugins), [plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference) and [configuration directory](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference), read on 2026-11-15, and tests with Copilot CLI 1.0.112 the same day.
 
 **The key.**
 
 | Key | What it holds | Allowed values |
 | --- | --- | --- |
-| `agent.hosts` | the agents whose project settings this repository uses | a list of `claude-code`, `opencode`; `[]` for none |
+| `agent.hosts` | the agents whose project settings this repository uses | a list of `claude-code`, `opencode`, `copilot`; `[]` for none |
 
 **What the check does not see.** It refuses an empty key, a value that is
 not a list, and an unknown host. It reads neither the settings files nor the
@@ -344,3 +370,4 @@ ADR-0001 for the check command.
 a repository that already ruled must re-answer.
 
 - Revision 2: `agent.host` (one value) became `agent.hosts`, a list of `claude-code` and `opencode`, with rules for `opencode`. Re-answer: write your former value as a one-item list (`agent.hosts: [claude-code]`), or `agent.hosts: []` for `none`; add `opencode` if contributors use it.
+- Revision 3: `copilot` (GitHub Copilot CLI) joins `agent.hosts`, with its rules. Nothing to re-answer unless contributors use Copilot CLI: then add `copilot`, and the `PreToolUse` hooks ADR-0022 shows.
