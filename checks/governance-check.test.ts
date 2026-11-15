@@ -267,7 +267,7 @@ test('wiring: arc42 under another root', () => {
 });
 
 test('wiring: gate states its ceiling', () => {
-  const r = run(wired({ adrs: { 'ADR-0011-forge-and-ci.md': '  forge:\n    gate: blocking' }, files: { '.github/workflows/ci.yml': 'on: push\n' } }), 'ADR-0011');
+  const r = run(wired({ adrs: { 'ADR-0011-forge-and-ci.md': '  forge:\n    gate: blocking\n    audit: none' }, files: { '.github/workflows/ci.yml': 'on: push\n' } }), 'ADR-0011');
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /ruleset .* is not verified/);
 });
@@ -765,4 +765,96 @@ test('ADR-0022: settings not JSON', () => {
   const r = run(wired({ adrs: reviewAdr('person', 'claude-code'), files: { '.claude/settings.json': '{ deny\n' } }), 'ADR-0022');
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
+});
+
+// --- ADR-0011: forge.audit runs zizmor on the committed workflows
+
+const forgeAdr = (gate: string, audit: string): Files => ({ 'ADR-0011-forge-and-ci.md': `  forge:\n    gate: ${gate}\n    audit: ${audit}` });
+const pinned = 'on: pull_request\npermissions: {}\njobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0\n        with:\n          persist-credentials: false\n      - run: echo hi\n';
+const tagged = pinned.replace('@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0', '@v4');
+
+// A zizmor stand-in: logs its arguments, prints a version, exits $FAKE_ZIZMOR_EXIT.
+function fakeZizmor(dir: string) {
+  const bin = join(dir, 'node_modules', '.bin');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, 'zizmor'), `#!/bin/sh\necho "$@" >> "${join(dir, '.zizmor.log')}"\n[ "$1" = --version ] && { echo "zizmor 0.0.0-fake"; exit 0; }\nexit \${FAKE_ZIZMOR_EXIT:-0}\n`, { mode: 0o755 });
+  return () => readFileSync(join(dir, '.zizmor.log'), 'utf8');
+}
+
+test('ADR-0011: audit runs zizmor offline, without config, on the committed workflows', () => {
+  const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned, '.github/workflows/b.yaml': pinned }, untracked: { '.github/workflows/scratch.yml': tagged } });
+  const log = fakeZizmor(dir);
+  const r = runWith(dir, ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /zizmor 0\.0\.0-fake/);
+  assert.match(r.stdout, /ruleset that makes the pipeline required is not verified/);
+  const call = log().split('\n').find((l) => l.startsWith('--offline'))!;
+  assert.match(call, /^--offline --no-config --no-progress /);
+  assert.match(call, /\.github\/workflows\/ci\.yml/);
+  assert.match(call, /\.github\/workflows\/b\.yaml/);
+  assert.doesNotMatch(call, /scratch\.yml/);
+});
+
+test('ADR-0011: a zizmor finding fails the check', () => {
+  const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged } });
+  fakeZizmor(dir);
+  const r = runWith(dir, ['ADR-0011'], { PATH: barePath, FAKE_ZIZMOR_EXIT: '14' });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /ADR-0011: forge\.audit is zizmor, and zizmor reported findings no inline ignore covers/);
+});
+
+test('ADR-0011: audit none', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', 'none'), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0011: forge\.audit is none, nothing to check/);
+});
+
+test('ADR-0011: no workflow to audit', () => {
+  const r = runWith(wired({ adrs: forgeAdr('none', 'zizmor') }), ['ADR-0011'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /forge\.audit is zizmor, but no workflow is committed, nothing to audit/);
+});
+
+test('ADR-0011: zizmor missing', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.audit is zizmor, but zizmor is not installed/);
+});
+
+test('ADR-0011: audit not set', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', ''), files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.audit is not set/);
+});
+
+test('ADR-0011: gate and audit both fail, both reported', () => {
+  const r = runWith(wired({ adrs: forgeAdr('blocking', '') }), ['ADR-0011'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.gate is blocking, but no tracked file matches/);
+  assert.match(r.stderr, /forge\.audit is not set/);
+});
+
+// Against the real zizmor, when it is on the PATH.
+const real = { skip: !onPath('zizmor') && 'zizmor is not on the PATH' };
+
+test('ADR-0011 with zizmor: a tag pin is refused', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged } }), 'ADR-0011');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout + r.stderr, /unpinned-uses/);
+});
+
+test('ADR-0011 with zizmor: the repository config is not read', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged, 'zizmor.yml': 'rules:\n  unpinned-uses:\n    disable: true\n', '.github/zizmor.yml': 'rules:\n  unpinned-uses:\n    disable: true\n' } }), 'ADR-0011');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0011 with zizmor: an inline ignore is honoured', real, () => {
+  const wf = pinned.replace('      - run: echo hi\n', '      - run: echo "${{ github.event.pull_request.title }}" # zizmor: ignore[template-injection] echoed only\n');
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': wf } }), 'ADR-0011');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test('ADR-0011 with zizmor: clean workflows pass', real, () => {
+  const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned } }), 'ADR-0011');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
 });

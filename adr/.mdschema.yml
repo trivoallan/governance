@@ -65,6 +65,7 @@ frontmatter:
     - { name: "traits.branching.prefixes", type: array, optional: true }
     # ADR-0011
     - { name: "traits.forge.gate", enum: [blocking, informative, none], optional: true }
+    - { name: "traits.forge.audit", type: string, optional: true }
     # ADR-0012
     - { name: "traits.delivery.target", enum: [container, platform, package, none], optional: true }
     - { name: "traits.delivery.environments", type: array, optional: true }
