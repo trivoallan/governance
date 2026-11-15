@@ -33,12 +33,15 @@ unless the table says it is original:
 | ADR-0019 | vulnerabilities | none (original to governance) | proposed |
 | ADR-0020 | adding-dependencies | none (original to governance) | proposed |
 | ADR-0021 | build-provenance | none (original to governance) | proposed |
+| ADR-0022 | review-and-merge | none (original to governance) | proposed |
+| ADR-0023 | license | none (original to governance) | proposed |
+| ADR-0024 | code-scanning | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the twenty-one files in the table, with the slugs shown
+- **THEN** they are exactly the twenty-four files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
@@ -112,7 +115,7 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
   `audience` enum of `single-user`, `team` and `public`: SDR-0008's
   scale translated, without the enterprise-only steps `LS` and `groupe`.
 - ADR-0011 SHALL assume GitHub as the forge, SHALL NOT ask `forge.vendor`,
-  and SHALL ask `forge.gate`.
+  and SHALL ask `forge.gate` and, from revision 2, `forge.audit`.
 - ADR-0012 SHALL ask `delivery.target` (`container`, `platform`, `package`,
   `none`) in place of SDR-0011's `hosting.offer`, plus `delivery.environments`,
   `delivery.release_tool` (recommended `release-please`), `delivery.registry`
@@ -138,7 +141,7 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 
 #### Scenario: GitHub assumed
 - **WHEN** the `traits:` block of ADR-0011 is read
-- **THEN** it contains `forge.gate` and no `forge.vendor`
+- **THEN** it contains `forge.gate` and `forge.audit`, and no `forge.vendor`
 
 ### Requirement: ADR-0017 asks which agent host the repository uses
 ADR-0017 SHALL ask `agent.host` (`claude-code`, `none`), recommending
@@ -355,13 +358,16 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 - **THEN** they state that no surdesrails SDR asks this question
 
 ### Requirement: Wiring ADRs ship their check
-ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0017, ADR-0018 and ADR-0021 SHALL
+ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0017, ADR-0018, ADR-0021 and
+ADR-0024 SHALL
 each ship with `check: npx --no-install governance-check <number>`, at their
 current `revision`. Each how-to-rule block SHALL say that the line runs once
 the ADR is `accepted`, which files the check looks for, that it checks
 presence only, and that a value it has no row for passes with "nothing to
 check". ADR-0011's SHALL add that the check does not verify the ruleset that
-makes the pipeline required.
+makes the pipeline required, and, from revision 2, that with
+`forge.audit: zizmor` the check also runs zizmor on the workflows, so for
+that key it checks content, not presence.
 
 #### Scenario: Check line without a revision bump
 - **WHEN** ADR-0018 is read straight from governance after this change
@@ -475,3 +481,142 @@ the model in `docs/architecture/model/`. Both ADRs SHALL be at
 #### Scenario: The glob snippet warns of what it publishes
 - **WHEN** ADR-0008 shows the Starlight `glob` loader over `./docs`
 - **THEN** it says the pattern also publishes `adr/` and `architecture/`, and shows how to exclude them
+
+### Requirement: ADR-0022 asks who merges a pull request
+ADR-0022 "Review and merge" SHALL ask who merges a pull request in a
+repository kept by one person, through one trait, `review.merge_by`, with the
+values `person` and `agent` and the recommended value `person`. It SHALL say
+that `agent` is acceptable when the ADR's text gives the reason. When the
+repository rules `person`, its Decision SHALL fix four rules:
+1. the agent opens the pull request ready for review, says when its checks are green, and stops;
+2. the agent merges nothing: not with `gh pr merge`, not with `--auto`, not through the API, not by pushing to the default branch;
+3. a bot that a workflow runs under another ADR's ruling is not an agent session, and ADR-0018's automerge is that exception;
+4. a review the agent runs on its own work is advice, and the person's merge is the review.
+
+It SHALL describe the GitHub ruleset that backs these rules (pull request
+required, zero approvals, no bypass) and SHALL say the check does not
+verify it. It SHALL name required approvals and `CODEOWNERS` as outside its
+question. It SHALL ship with `check: npx --no-install governance-check ADR-0022`,
+and its how-to-rule block SHALL say that the check denies nothing itself, and
+that `gh api` and a push to the default branch pass it. ADR-0018 SHALL state
+that its automerge is the exception ADR-0022 allows, and ADR-0019's rule 4
+SHALL link to ADR-0022. Neither SHALL change `revision:`.
+
+#### Scenario: One trait
+- **WHEN** ADR-0022's frontmatter is read as shipped
+- **THEN** it holds `review.merge_by` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent at a green pull request
+- **WHEN** an agent reads `review.merge_by: person` and its pull request's checks are green
+- **THEN** ADR-0022 tells it to say so and stop, not to merge or enable auto-merge
+
+#### Scenario: Dependabot automerge
+- **WHEN** ADR-0018 rules `automerge: patch` and ADR-0022 rules `merge_by: person`
+- **THEN** both ADRs say the Dependabot merge is the allowed exception, and neither contradicts the other
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0022's References are read
+- **THEN** they say it is original to governance and hold the key table
+
+### Requirement: ADR-0023 asks under which licence others may use the repository
+ADR-0023 "License" SHALL ask one trait, `license.spdx`, holding a free SPDX
+license expression, with the recommended value `MIT`. It SHALL name
+`Apache-2.0` for when a patent grant matters, `UNLICENSED` for a private
+repository, and SHALL accept compound expressions. Its Decision SHALL fix
+that the root manifest's licence field (`license` in `package.json`,
+`[project] license` in `pyproject.toml`) holds the trait, and that a licence
+file is committed at the root unless the value is `UNLICENSED`. It SHALL say
+in prose that the copyright holder is the organisation owning the
+repository, or else the ADR's `authors:`, and SHALL NOT make it a key. It
+SHALL say why governance itself ships under MIT-0. It SHALL leave dependency
+licence compliance to ADR-0019's exclusion. It SHALL ship with
+`check: npx --no-install governance-check ADR-0023`, and its how-to-rule
+block SHALL say that the check reads neither the licence text nor manifests
+outside the root.
+
+#### Scenario: One trait
+- **WHEN** ADR-0023's frontmatter is read as shipped
+- **THEN** it holds `license.spdx` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent creating a manifest
+- **WHEN** an agent creates `package.json` in a repository that rules `license.spdx: MIT`
+- **THEN** ADR-0023 tells it to write `"license": "MIT"` and a `LICENSE` file, which `npm init` leaves out
+
+#### Scenario: Holder not a key
+- **WHEN** ADR-0023's traits are listed
+- **THEN** there is no key for the copyright holder, and the Decision names who holds it
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0023's References are read
+
+### Requirement: ADR-0024 asks what analyses the repository's own code
+ADR-0024 "Code scanning" SHALL ask two traits:
+- `code_scanning.tool`, a free string recommending `codeql`, answered by any tool that writes SARIF, naming `semgrep` for a private repository without GitHub Code Security, and accepting `none`;
+- `code_scanning.fail_on` (`critical`, `high`, `medium`, `low`, `none`), recommending `high`.
+
+It SHALL give the reason `high` differs from ADR-0019's `critical`: the
+finding is in the repository's own code, and the agent that wrote it can fix
+it at once. Its Decision SHALL fix, whatever the repository rules:
+1. no blocking scan without `forge.gate: blocking`; blocking goes through the ruleset rule that requires code scanning results, which the check does not verify;
+2. the scan runs in a workflow (CodeQL's advanced setup), with its actions pinned by SHA and, for CodeQL, `tools: linked` so that the bundle and its default queries follow the pinned action, on every pull request and every push to the default branch. Its results go to GitHub code scanning as SARIF, as ADR-0019's scanner's do, or stay a job artifact where the plan does not allow the upload. CodeQL blocks through the ruleset rule that requires code scanning results, with its security-alert threshold at `fail_on`. Any other tool blocks through its own exit code at `fail_on`. Default setup alone does not answer the ADR;
+3. all code is scanned, tests included;
+4. dismissing an alert, excluding a path (`paths-ignore`, `paths`, a tool's own ignore file) or removing a query or rule (`query-filters`, a narrower suite or ruleset) silences a finding: the agent may propose one with its reason, and a person merges or dismisses (ADR-0019 rule 4, ADR-0022);
+5. workflows are `forge.audit`'s concern (ADR-0011), not this ADR's.
+
+It SHALL state that pinning `github/codeql-action` by SHA does not pin the
+CodeQL bundle on github.com unless `tools: linked` is set, and that with it
+a scheduled scan adds nothing. It SHALL
+ship with `check: npx --no-install governance-check ADR-0024`. ADR-0019's
+"Not concerned" paragraph SHALL link to ADR-0024 for static analysis,
+without changing ADR-0019's `revision:`.
+
+#### Scenario: Two traits
+- **WHEN** ADR-0024's frontmatter is read as shipped
+- **THEN** it holds `code_scanning.tool` and `code_scanning.fail_on` with empty values, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent narrows the scan
+- **WHEN** an agent meets a CodeQL alert in a test file
+- **THEN** ADR-0024 tells it to fix the code or to propose a dismissal or exclusion with its reason, not to add `paths-ignore` and merge it
+
+#### Scenario: Private repository
+- **WHEN** a private repository without GitHub Code Security reads ADR-0024
+- **THEN** it finds `semgrep` named as the answer, blocking through its exit code at `fail_on`, with `none` acceptable
+
+#### Scenario: Another tool's threshold
+- **WHEN** a public repository rules `code_scanning.tool: semgrep` and `fail_on: high`
+- **THEN** ADR-0024 tells it to block on Semgrep's exit code for high findings and to upload its SARIF to code scanning, and says the ruleset's security-alert threshold is not relied on for Semgrep
+
+#### Scenario: CodeQL bundle pinned
+- **WHEN** an agent writes the CodeQL workflow
+- **THEN** ADR-0024 tells it to pin the actions by SHA and set `tools: linked`
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0024's References are read
+- **THEN** they say it is original to governance and hold the key table
+
+### Requirement: ADR-0011 revision 2 audits the workflows
+ADR-0011 SHALL move to `revision: 2` and SHALL add one key, `forge.audit`,
+with `zizmor` recommended and `none` accepted. Its Revisions list SHALL say
+that revision 2 adds `forge.audit` and that only that key needs answering.
+With `forge.audit: zizmor`, its Decision SHALL fix:
+1. a workflow job runs zizmor on pull requests, through `zizmorcore/zizmor-action` pinned by SHA (rule 3), with its online audits using the job's `GITHUB_TOKEN`;
+2. a finding is silenced only by an inline `# zizmor: ignore[<audit>]` comment that gives its reason; the agent proposes it, a person merges it (ADR-0019 rule 4, ADR-0022). A `zizmor.yml` that loosens a policy is not a way to silence;
+3. every action is pinned by hash, including GitHub's own (`actions/*`), whatever zizmor's default policy allows.
+
+Its stage table SHALL gain an `audit` stage that exists when `forge.audit` is
+not `none`. The section on what the tools do not catch SHALL list, for
+zizmor, which of rules 1 to 5 it covers and which stay with review (rule 1
+and rule 4). The Consequences SHALL no longer say that no tool enforces rules
+3 to 5.
+
+#### Scenario: Revision 2
+- **WHEN** ADR-0011 is read straight from governance after this change
+- **THEN** it holds `revision: 2`, an empty `forge.audit`, and a Revisions line naming `forge.audit` as the key to answer
+
+#### Scenario: An agent meets a finding
+- **WHEN** zizmor reports `template-injection` on a workflow an agent wrote
+- **THEN** ADR-0011 tells the agent to fix the step, or to propose an inline ignore with its reason for a person to merge, not to add the ignore and merge it
+
+#### Scenario: Rules still left to review
+- **WHEN** the section on what the tools do not catch is read
+- **THEN** it names rule 1 (deploy only from the default branch) and rule 4 (no secret in a log) as not covered by zizmor
