@@ -13,4 +13,4 @@
 ## 3. Catalog
 
 - [x] 3.1 Run `openspec validate add-tools-adr --strict`; verify it passes
-- [ ] 3.2 Open the pull request; verify its diff holds ADR-0025, the schema line, its README entry and this change, and nothing else
+- [x] 3.2 Open the pull request; verify its diff holds ADR-0025, the schema line, its README entry and this change, and nothing else
