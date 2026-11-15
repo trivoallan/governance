@@ -55,6 +55,36 @@ test('ADR missing', () => {
   assert.match(r.stderr, /docs\/adr\/\*\/ADR-0006-\*\.md/);
 });
 
+// trivoallan/governance#113: ontrack keeps the repository's own ADRs in
+// docs/adr/local/, numbered apart from any package's.
+test('a local ADR with the same number is not this package\'s', () => {
+  const dir = repo({ traits: '    tool: none' });
+  mkdirSync(join(dir, 'docs/adr/local'), { recursive: true });
+  writeFileSync(join(dir, 'docs/adr/local/ADR-0006-own.md'), '---\nstatus: accepted\n---\n');
+  const r = check(dir);
+  assert.doesNotMatch(r.stderr, /several files match/);
+  assert.equal(r.status, 0, r.stderr);
+});
+
+// Installed under an alias, the script reads docs/adr/<alias>/ and nothing else.
+// Built here: node does not strip types under node_modules.
+test('installed, only the namespace of its alias is read', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'gc-test-'));
+  const pkg = join(dir, 'node_modules', 'aliased');
+  const tsc = spawnSync(join(modules, '.bin', 'tsc'), ['--outDir', join(pkg, 'dist')], { cwd: join(here, '..'), encoding: 'utf8' });
+  assert.equal(tsc.status, 0, tsc.stdout);
+  writeFileSync(join(pkg, 'package.json'), '{"type":"module"}');
+  symlinkSync(join(modules, 'zod'), join(dir, 'node_modules', 'zod'));
+  const run = () => spawnSync(process.execPath, [join(pkg, 'dist', 'governance-check.js'), 'ADR-0006'], { cwd: dir, encoding: 'utf8' });
+  const adr = '---\nadr: ADR-0006\nstatus: accepted\ntraits:\n  commits:\n    tool: none\n---\n';
+  mkdirSync(join(dir, 'docs/adr/other'), { recursive: true });
+  writeFileSync(join(dir, 'docs/adr/other/ADR-0006-x.md'), adr);
+  assert.match(run().stderr, /no file matches docs\/adr\/aliased\/ADR-0006-\*\.md/);
+  mkdirSync(join(dir, 'docs/adr/aliased'), { recursive: true });
+  writeFileSync(join(dir, 'docs/adr/aliased/ADR-0006-commits.md'), adr);
+  assert.doesNotMatch(run().stderr, /several files match|no file matches/);
+});
+
 test('no check for that ADR', () => {
   const dir = repo({ traits: '    tool: none' });
   const r = spawnSync(process.execPath, [script, 'ADR-0003'], { cwd: dir, encoding: 'utf8' });

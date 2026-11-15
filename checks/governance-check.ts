@@ -3,7 +3,8 @@
 // Runs the check governance ships for one ADR, from the consuming repository's
 // root, as called by that ADR's `check:` line through `ontrack check`.
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { join, dirname, delimiter } from 'node:path';
+import { join, dirname, basename, delimiter } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -17,12 +18,22 @@ type Trait = string | string[];
 type Traits = Record<string, Trait>;
 type Check = (root: string, file: string, opts: Options) => number;
 
-// The single repository copy of an ADR, under a namespace directory.
+// The directory under docs/adr/ that holds the repository's copies of this
+// package's ADRs: the alias the package is installed under, read from this
+// script's own path, node_modules/<alias>/dist/. Empty when the script runs
+// from elsewhere (a linked package, governance's own tests).
+const pkg = dirname(dirname(fileURLToPath(import.meta.url)));
+const NAMESPACE = basename(dirname(pkg)) === 'node_modules' ? basename(pkg) : '';
+
+// The single repository copy of an ADR. With a known namespace, only that
+// directory is read. Without one, every directory but `local`, which ontrack
+// reserves for the repository's own ADRs and their own numbering.
 function findAdr(root: string, number: string): string {
   const base = join(root, 'docs', 'adr');
-  const pattern = `docs/adr/*/${number}-*.md`;
+  const pattern = `docs/adr/${NAMESPACE || '*'}/${number}-*.md`;
   const dirs = existsSync(base)
-    ? readdirSync(base, { withFileTypes: true }).filter((d) => d.isDirectory())
+    ? readdirSync(base, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && (NAMESPACE ? d.name === NAMESPACE : d.name !== 'local'))
     : [];
   const hits = dirs.flatMap((d) =>
     readdirSync(join(base, d.name))
