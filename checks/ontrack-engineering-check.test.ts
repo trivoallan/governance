@@ -287,9 +287,9 @@ test('wiring: a list where one value is expected fails, every entry reported', (
 });
 
 test('wiring: trait not set', () => {
-  const r = run(wired({ adrs: { 'ADR-0017-agent-tooling.md': '  agent:\n    host:' } }), 'ADR-0017');
+  const r = run(wired({ adrs: { 'ADR-0018-dependencies.md': '  dependencies:\n    updater:\n    automerge: none' } }), 'ADR-0018');
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /agent\.host is not set/);
+  assert.match(r.stderr, /dependencies\.updater is not set/);
 });
 
 test('wiring: arc42 under another root', () => {
@@ -471,7 +471,6 @@ const rows: [string, Files, Files][] = [
     { ...arc42('docs/'), 'docs/architecture/model/system.c4': 'x\n' }],
   ['ADR-0012', delivery('release-please', 'container', 'deploy/'),
     { '.github/workflows/release.yml': 'uses: googleapis/release-please-action@abc\n', 'app/Dockerfile': 'FROM x\n', 'deploy/k.yaml': 'x\n' }],
-  ['ADR-0017', { 'ADR-0017-agent-tooling.md': '  agent:\n    host: claude-code' }, { '.claude/settings.json': '{}\n' }],
 ];
 for (const [number, adrs, files] of rows) {
   test(`wiring: ${number} ${Object.values(adrs)[0].split('\n')[1].trim()} passes`, () => {
@@ -889,9 +888,9 @@ test('coverage threshold in npm test is the one ADR-0007 rules', () => {
 
 // --- ADR-0022: where the review happens, read with ADR-0017's agent host and, in CI, the ruleset
 
-const reviewAdr = (by: string, approvals: string, host?: string): Files => ({
+const reviewAdr = (by: string, approvals: string, hosts?: string, key = 'hosts'): Files => ({
   'ADR-0022-review-and-merge.md': `  review:\n    by: ${by}\n    approvals: ${approvals}`,
-  ...(host === undefined ? {} : { 'ADR-0017-agent-tooling.md': `  agent:\n    host: ${host}` }),
+  ...(hosts === undefined ? {} : { 'ADR-0017-agent-tooling.md': `  agent:\n    ${key}: ${hosts}` }),
 });
 const settings = (permissions: object) => ({ '.claude/settings.json': `${JSON.stringify({ permissions })}\n` });
 const bothDenied = settings({ deny: ['Bash(gh pr merge:*)', 'Bash(gh pr review:*)'] });
@@ -914,7 +913,7 @@ const prRule = (parameters: object) => ({ type: 'pull_request', parameters });
 const peerRule = prRule({ required_approving_review_count: 1, dismiss_stale_reviews_on_push: true, require_last_push_approval: true });
 
 test('ADR-0022: merge denied', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), files: bothDenied }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), files: bothDenied }));
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /ADR-0022: review\.by is maintainer, \.claude\/settings\.json denies Bash\(gh pr merge:\*\)/);
   assert.match(r.stdout, /denies Bash\(gh pr review:\*\)/);
@@ -922,37 +921,196 @@ test('ADR-0022: merge denied', () => {
 });
 
 test('ADR-0022: space form of the rule passes', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), files: settings({ deny: ['Read(./.env)', 'Bash(gh pr merge *)', 'Bash(gh pr review *)'] }) }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), files: settings({ deny: ['Read(./.env)', 'Bash(gh pr merge *)', 'Bash(gh pr review *)'] }) }));
   assert.equal(r.status, 0, r.stderr);
 });
 
 test('ADR-0022: maintainer without the review deny', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), files: settings({ deny: ['Bash(gh pr merge:*)'] }) }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), files: settings({ deny: ['Bash(gh pr merge:*)'] }) }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /permissions\.deny has no Bash\(gh pr review entry/);
 });
 
 test('ADR-0022: peer needs no merge deny', () => {
-  const r = local(wired({ adrs: reviewAdr('peer', '1', 'claude-code'), files: settings({ deny: ['Bash(gh pr review:*)'] }) }));
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[claude-code]'), files: settings({ deny: ['Bash(gh pr review:*)'] }) }));
   assert.equal(r.status, 0, r.stderr);
 });
 
 test('ADR-0022: merge only asked', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), files: settings({ deny: ['Bash(gh pr review:*)'], ask: ['Bash(gh pr merge:*)'] }) }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), files: settings({ deny: ['Bash(gh pr review:*)'], ask: ['Bash(gh pr merge:*)'] }) }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /permissions\.deny has no Bash\(gh pr merge entry/);
 });
 
 test('ADR-0022: review only asked', () => {
-  const r = local(wired({ adrs: reviewAdr('peer', '1', 'claude-code'), files: settings({ ask: ['Bash(gh pr review:*)'] }) }));
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[claude-code]'), files: settings({ ask: ['Bash(gh pr review:*)'] }) }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /permissions\.deny has no Bash\(gh pr review entry/);
 });
 
 test('ADR-0022: no agent host', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'none') }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[]') }));
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /^ADR-0022: review\.by is maintainer, but ADR-0017 agent\.host is none, no deny to check$/m);
+  assert.match(r.stdout, /^ADR-0022: review\.by is maintainer, but ADR-0017 agent\.hosts is empty, no deny to check$/m);
+});
+
+test('ADR-0022: revision 1 key in ADR-0017', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code', 'host'), files: bothDenied }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /agent\.host became agent\.hosts \(a list\) in ADR-0017 revision 2; write agent\.hosts: \[claude-code\]/);
+});
+
+const opencode = (permissions: object[], path = 'opencode.json') => ({ [path]: `${JSON.stringify({ permissions })}\n` });
+const ocDeny = (resource: string) => ({ action: 'shell', resource, effect: 'deny' });
+const ocBoth = [ocDeny('gh pr merge *'), ocDeny('gh pr review *')];
+
+test('ADR-0022: opencode denies review and merge', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[opencode]'), files: opencode(ocBoth) }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /opencode\.json denies gh pr merge with \{"action":"shell","resource":"gh pr merge \*","effect":"deny"\}/);
+  assert.match(r.stdout, /opencode\.json denies gh pr review with/);
+});
+
+test('ADR-0022: opencode peer needs only the review deny', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files: opencode([ocDeny('gh pr review *')]) }));
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: opencode maintainer without the merge deny', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[opencode]'), files: opencode([ocDeny('gh pr review *')]) }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no rule in opencode\.json denies gh pr merge$/m);
+});
+
+test('ADR-0022: opencode action read as a pattern', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[opencode]'), files: opencode([{ action: 'sh*', resource: 'gh pr *', effect: 'deny' }]) }));
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: a later opencode allow defeats the deny', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[opencode]'), files: opencode([...ocBoth, { action: '*', resource: '*', effect: 'allow' }]) }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /opencode\.json rule \{"action":"\*","resource":"\*","effect":"allow"\} decides gh pr review/);
+});
+
+test('ADR-0022: an opencode deny for one flag only fails', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files: opencode([ocDeny('gh pr review * --approve')]) }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no rule in opencode\.json denies gh pr review$/m);
+});
+
+test('ADR-0022: no opencode rule applies', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files: { 'opencode.json': '{}\n' } }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no rule in opencode\.json denies gh pr review/);
+});
+
+test('ADR-0022: .opencode config overrides the root', () => {
+  const files = { ...opencode(ocBoth), ...opencode([{ action: 'shell', resource: 'gh *', effect: 'allow' }], '.opencode/opencode.json') };
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[opencode]'), files }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /\.opencode\/opencode\.json rule .* decides gh pr review/);
+});
+
+test('ADR-0022: opencode V1 permission object', () => {
+  const files = { 'opencode.json': `${JSON.stringify({ permission: { bash: { 'gh pr review *': 'deny' } } })}\n` };
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /opencode\.json holds the V1 key permission; convert it to the V2 permissions array/);
+});
+
+test('ADR-0022: opencode jsonc refused', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files: opencode(ocBoth, 'opencode.jsonc') }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /opencode\.jsonc is tracked, but the check reads only opencode\.json/);
+});
+
+test('ADR-0022: opencode config malformed', () => {
+  for (const [text, message] of [['{ x\n', /opencode\.json is not valid JSON/], ['null\n', /opencode\.json is not a JSON object/], ['{"permissions":{}}\n', /opencode\.json permissions is not an array/]] as const) {
+    const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]'), files: { 'opencode.json': text } }));
+    assert.notEqual(r.status, 0, text);
+    assert.match(r.stderr, message);
+  }
+});
+
+test('ADR-0022: no opencode config tracked', () => {
+  const r = local(wired({ adrs: reviewAdr('peer', '1', '[opencode]') }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no tracked opencode\.json or \.opencode\/opencode\.json/);
+});
+
+test('ADR-0022: one host of two fails', () => {
+  const files = { ...bothDenied, 'opencode.json': '{}\n' };
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code, opencode]'), files }));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /\.claude\/settings\.json denies Bash\(gh pr merge:\*\)/);
+  assert.match(r.stderr, /but no rule in opencode\.json denies gh pr review/);
+});
+
+test('ADR-0022: unknown host has no deny to check', () => {
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[cursor]') }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /cursor is not a host governance knows, no deny to check/);
+});
+
+// --- ADR-0017: the agent hosts and each one's committed settings
+
+const agentAdr = (hosts: string, key = 'hosts'): Files => ({ 'ADR-0017-agent-tooling.md': `  agent:\n    ${key}: ${hosts}` });
+
+test('ADR-0017: both hosts wired', () => {
+  const r = run(wired({ adrs: agentAdr('[claude-code, opencode]'), files: { '.claude/settings.json': '{}\n', 'opencode.json': '{}\n' } }), 'ADR-0017');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /agent\.hosts holds claude-code, found \.claude\/settings\.json/);
+  assert.match(r.stdout, /agent\.hosts holds opencode, found opencode\.json/);
+});
+
+test('ADR-0017: opencode config under .opencode/', () => {
+  const r = run(wired({ adrs: agentAdr('[opencode]'), files: { '.opencode/opencode.json': '{}\n' } }), 'ADR-0017');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0017: one host file missing', () => {
+  const r = run(wired({ adrs: agentAdr('[claude-code, opencode]'), files: { '.claude/settings.json': '{}\n' } }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /holds claude-code, found \.claude\/settings\.json/);
+  assert.match(r.stderr, /holds opencode, but no tracked file matching opencode\.json or \.opencode\/opencode\.json/);
+});
+
+test('ADR-0017: revision 1 key', () => {
+  for (const [value, list] of [['claude-code', '[claude-code]'], ['none', '[]'], ['', '[]']]) {
+    const r = run(wired({ adrs: agentAdr(value, 'host') }), 'ADR-0017');
+    assert.notEqual(r.status, 0, value);
+    assert.ok(r.stderr.includes(`agent.host became agent.hosts (a list) in ADR-0017 revision 2; write agent.hosts: ${list}`), r.stderr);
+  }
+});
+
+test('ADR-0017: no host', () => {
+  const r = run(wired({ adrs: agentAdr('[]') }), 'ADR-0017');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ADR-0017: agent\.hosts is empty, nothing to check$/m);
+});
+
+test('ADR-0017: hosts not set', () => {
+  const r = run(wired({ adrs: agentAdr('') }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /agent\.hosts is not set/);
+});
+
+test('ADR-0017: unknown host', () => {
+  const r = run(wired({ adrs: agentAdr('[claude-code, cursor]') }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /agent\.hosts has an unknown value: cursor$/m);
+});
+
+test('ADR-0017: hosts not a list', () => {
+  const r = run(wired({ adrs: agentAdr('claude-code') }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /agent\.hosts is not a list/);
+});
+
+test('ADR-0017: untracked opencode config', () => {
+  const r = run(wired({ adrs: agentAdr('[opencode]'), untracked: { 'opencode.json': '{}\n' } }), 'ADR-0017');
+  assert.notEqual(r.status, 0);
 });
 
 test('ADR-0022: ADR-0017 missing', () => {
@@ -962,7 +1120,7 @@ test('ADR-0022: ADR-0017 missing', () => {
 });
 
 test('ADR-0022: agent merges', () => {
-  const r = local(wired({ adrs: reviewAdr('agent', '0', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('agent', '0', '[claude-code]') }));
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /^ADR-0022: review\.by is agent, nothing to check$/m);
 });
@@ -974,64 +1132,64 @@ test('ADR-0022: leftover merge_by', () => {
 });
 
 test('ADR-0022: by not set', () => {
-  const r = local(wired({ adrs: reviewAdr('', '0', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('', '0', '[claude-code]') }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /review\.by is not set/);
 });
 
 test('ADR-0022: approvals not set', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '', '[claude-code]') }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /review\.approvals is not set/);
 });
 
 test('ADR-0022: unknown value', () => {
-  const r = local(wired({ adrs: reviewAdr('bot', '0', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('bot', '0', '[claude-code]') }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /review\.by has an unknown value: bot/);
 });
 
 test('ADR-0022: approvals not a number', () => {
   for (const v of ['two', '1.5', '-1']) {
-    const r = local(wired({ adrs: reviewAdr('peer', v, 'claude-code') }));
+    const r = local(wired({ adrs: reviewAdr('peer', v, '[claude-code]') }));
     assert.notEqual(r.status, 0, v);
     assert.match(r.stderr, /review\.approvals is not a whole number/, v);
   }
 });
 
 test('ADR-0022: peer with zero approvals', () => {
-  const r = local(wired({ adrs: reviewAdr('peer', '0', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('peer', '0', '[claude-code]') }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /review\.by is peer, so review\.approvals must be 1 or more, not 0/);
 });
 
 test('ADR-0022: maintainer with approvals', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '1', 'claude-code') }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '1', '[claude-code]') }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /review\.by is maintainer, so review\.approvals must be 0, not 1/);
 });
 
 test('ADR-0022: settings not committed', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), untracked: bothDenied }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), untracked: bothDenied }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /\.claude\/settings\.json is not tracked/);
 });
 
 test('ADR-0022: settings not JSON', () => {
-  const r = local(wired({ adrs: reviewAdr('maintainer', '0', 'claude-code'), files: { '.claude/settings.json': '{ deny\n' } }));
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[claude-code]'), files: { '.claude/settings.json': '{ deny\n' } }));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
 });
 
 test('ADR-0022: peer ruleset complete in CI', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '1', 'none') }), [{ type: 'required_status_checks', parameters: {} }, peerRule]);
+  const r = ci(wired({ adrs: reviewAdr('peer', '1', '[]') }), [{ type: 'required_status_checks', parameters: {} }, peerRule]);
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /the ruleset on main requires a pull request with 1 approval/);
   assert.match(r.stdout, /bypass list is not verified/);
 });
 
 test('ADR-0022: rules from several rulesets combine', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '2', 'none') }), [
+  const r = ci(wired({ adrs: reviewAdr('peer', '2', '[]') }), [
     prRule({ required_approving_review_count: 2 }),
     prRule({ required_approving_review_count: 1, dismiss_stale_reviews_on_push: true, require_last_push_approval: true }),
   ]);
@@ -1039,49 +1197,49 @@ test('ADR-0022: rules from several rulesets combine', () => {
 });
 
 test('ADR-0022: peer ruleset without last-push approval', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '1', 'none') }), [prRule({ required_approving_review_count: 1, dismiss_stale_reviews_on_push: true })]);
+  const r = ci(wired({ adrs: reviewAdr('peer', '1', '[]') }), [prRule({ required_approving_review_count: 1, dismiss_stale_reviews_on_push: true })]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /does not require approval of the most recent push/);
 });
 
 test('ADR-0022: peer ruleset keeps stale approvals', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '1', 'none') }), [prRule({ required_approving_review_count: 1, require_last_push_approval: true })]);
+  const r = ci(wired({ adrs: reviewAdr('peer', '1', '[]') }), [prRule({ required_approving_review_count: 1, require_last_push_approval: true })]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /does not dismiss stale approvals on push/);
 });
 
 test('ADR-0022: no pull request rule in CI', () => {
-  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', 'none') }), [{ type: 'deletion' }]);
+  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', '[]') }), [{ type: 'deletion' }]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /no ruleset requires a pull request on main/);
 });
 
 test('ADR-0022: maintainer ruleset asks for an approval', () => {
-  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', 'none') }), [prRule({ required_approving_review_count: 1 })]);
+  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', '[]') }), [prRule({ required_approving_review_count: 1 })]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /a maintainer cannot approve their own pull request/);
 });
 
 test('ADR-0022: maintainer ruleset in CI', () => {
-  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', 'none') }), [prRule({ required_approving_review_count: 0 })]);
+  const r = ci(wired({ adrs: reviewAdr('maintainer', '0', '[]') }), [prRule({ required_approving_review_count: 0 })]);
   assert.equal(r.status, 0, r.stderr);
 });
 
 test('ADR-0022: ruleset count differs from the ADR', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '2', 'none') }), [peerRule]);
+  const r = ci(wired({ adrs: reviewAdr('peer', '2', '[]') }), [peerRule]);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /requires 1 approval\(s\) where review\.approvals rules 2/);
 });
 
 test('ADR-0022: rules unreadable in CI', () => {
-  const r = ci(wired({ adrs: reviewAdr('peer', '1', 'none') }), null);
+  const r = ci(wired({ adrs: reviewAdr('peer', '1', '[]') }), null);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /gh api repos\/o\/r failed: HTTP 403/);
 });
 
 test('ADR-0022: gh missing in CI', () => {
   // An empty PATH dir: barePath holds /usr/bin, where CI runners install gh.
-  const dir = wired({ adrs: reviewAdr('peer', '1', 'none') });
+  const dir = wired({ adrs: reviewAdr('peer', '1', '[]') });
   const empty = join(dir, '.empty-bin');
   mkdirSync(empty);
   const r = runWith(dir, ['ADR-0022'], { PATH: empty, GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'o/r' });

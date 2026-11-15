@@ -156,9 +156,13 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 - **THEN** it contains `forge.gate` and `forge.audit`, and no `forge.vendor`
 
 ### Requirement: ADR-0017 asks which agent host the repository uses
-ADR-0017 SHALL ask `agent.host` (`claude-code`, `none`), recommending
-`claude-code`. Its Decision SHALL fix, for every repository that rules
-`claude-code`:
+ADR-0017 SHALL ask `agent.hosts`, a list whose values are `claude-code` and
+`opencode`, recommending `[claude-code]`. `[]` SHALL say that the repository
+declares no agent tooling. ADR-0017 SHALL be at `revision: 2`. Its Revisions
+list SHALL say that `agent.host` became `agent.hosts`, and that a repository
+re-answers by writing its former value as a one-item list, or `[]` for `none`.
+
+Its Decision SHALL fix, for every repository whose list holds `claude-code`:
 - skills arrive as plugins from the repository's own marketplace,
   `marketplace/.claude-plugin/marketplace.json`, named distinctly from any
   upstream marketplace, declared in `.claude/settings.json` through
@@ -171,16 +175,48 @@ ADR-0017 SHALL ask `agent.host` (`claude-code`, `none`), recommending
 - an unpinned source, a `package.json` key and `npx -y` are forbidden;
 - skills listed by an OpenSpec schema are installed only on explicit
   request, as ADR-0016 rule 3 says.
-The list of plugins SHALL live in the repository's marketplace and
-`.claude/settings.json`, not in a trait.
+
+Its Decision SHALL fix, for every repository whose list holds `opencode`:
+- the project configuration is committed as `opencode.json` at the root,
+  and `.opencode/opencode.json` only when the repository needs one;
+- every npm entry under `plugins` names an exact version
+  (`<package>@<x.y.z>`), and every Git entry a full commit hash; a range, a
+  tag or a bare name is forbidden;
+- a local plugin under `.opencode/plugins/` is committed and reviewed like
+  code;
+- a vendored skill goes under `.claude/skills/<name>/` under the same rule
+  as for `claude-code`, which opencode also reads, so a repository with
+  both hosts keeps one copy;
+- skills listed by an OpenSpec schema are installed only on explicit
+  request, as ADR-0016 rule 3 says.
+
+ADR-0017 SHALL say that opencode reads `AGENTS.md` and not `CLAUDE.md`, so
+the rules ontrack writes reach both hosts. The list of plugins SHALL live in
+each host's own files, not in a trait.
+
+ADR-0017 SHALL ship with `check: npx --no-install ontrack-engineering-check ADR-0017`.
+Its how-to-rule block SHALL say:
+- that the line runs once the ADR is `accepted`;
+- which file each host requires (`.claude/settings.json`; `opencode.json` or
+  `.opencode/opencode.json`), and that the check reads neither;
+- that `[]` has nothing to check;
+- that an unknown host and the revision 1 key `agent.host` fail.
 
 #### Scenario: One trait
 - **WHEN** the `traits:` block of ADR-0017 is read
-- **THEN** it holds only `agent.host`
+- **THEN** it holds only `agent.hosts`, and no `agent.host`
 
 #### Scenario: Pinned entries
-- **WHEN** a repository has ruled ADR-0017 `accepted` with `agent.host: claude-code`
+- **WHEN** a repository has ruled ADR-0017 `accepted` with `claude-code` in `agent.hosts`
 - **THEN** every plugin entry in its `marketplace/.claude-plugin/marketplace.json` has a `sha` of 40 lowercase hexadecimal characters, and every marketplace in `extraKnownMarketplaces` is a `directory` source inside the repository
+
+#### Scenario: Pinned opencode plugins
+- **WHEN** a repository has ruled ADR-0017 `accepted` with `opencode` in `agent.hosts`
+- **THEN** every string or `package` entry under `plugins` in its `opencode.json` is a local path, a `<package>@<x.y.z>` exact version, or a Git specification ending in a 40-character commit hash
+
+#### Scenario: Re-answering revision 2
+- **WHEN** a repository that ruled `agent.host: claude-code` reads ADR-0017's Revisions list
+- **THEN** it learns to write `agent.hosts: [claude-code]`
 
 ### Requirement: ADR-0018 asks what keeps dependencies current
 ADR-0018 SHALL ask `dependencies.updater` (`dependabot`, `renovate`,
@@ -372,8 +408,8 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 - **THEN** they state that no surdesrails SDR asks this question
 
 ### Requirement: Wiring ADRs ship their check
-ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0017, ADR-0018, ADR-0021 and
-ADR-0024 SHALL
+ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0018, ADR-0021 and ADR-0024
+SHALL
 each ship with `check: npx --no-install ontrack-engineering-check <number>`, at their
 current `revision`. Each how-to-rule block SHALL say that the line runs once
 the ADR is `accepted`, which files the check looks for, that it checks
@@ -709,9 +745,16 @@ beside each value of ADR-0011's `forge.gate`:
 - with `blocking`, the pipeline and that reading;
 - with `informative`, the maintainer alone decides on a red.
 
-It SHALL name `CODEOWNERS` as outside its question. With
-`agent.host: claude-code` (ADR-0017), it SHALL show the `.claude/settings.json`
-deny entries each value needs. It SHALL keep
+It SHALL name `CODEOWNERS` as outside its question. For each host of
+ADR-0017's `agent.hosts`, it SHALL show the deny entries each value needs:
+- for `claude-code`, the `.claude/settings.json` entries;
+- for `opencode`, the `shell` deny rules for `gh pr review *` and, with
+  `maintainer`, `gh pr merge *`, placed last in the `permissions` array of
+  `opencode.json`, since opencode applies the last rule that matches.
+
+ADR-0022 SHALL be at `revision: 3`. Its `Revision 3:` entry SHALL say that
+the denies are required on each host of `agent.hosts`, and that the keys are
+unchanged. It SHALL keep
 `check: npx --no-install governance-check ADR-0022`. Its how-to-rule block
 SHALL say:
 - what the check reads;
@@ -725,7 +768,7 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 
 #### Scenario: Two traits, revision 2
 - **WHEN** ADR-0022's frontmatter is read as shipped
-- **THEN** its `traits:` block holds exactly `review.by` and `review.approvals`, both with empty values, with `status: proposed` and `revision: 2`
+- **THEN** its `traits:` block holds exactly `review.by` and `review.approvals`, both with empty values, with `status: proposed` and `revision: 3`
 
 #### Scenario: Approvals follow where the review happens
 - **WHEN** ADR-0022's Decision is read
@@ -770,6 +813,10 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 #### Scenario: Original to governance
 - **WHEN** ADR-0022's References are read
 - **THEN** they say it is original to governance and hold the key table
+
+#### Scenario: opencode denies shown
+- **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `opencode`
+- **THEN** it shows the `shell` deny rules for `gh pr review *` and `gh pr merge *`, and says that they go last in `permissions`
 
 ### Requirement: ADR-0011 revision 4 moves review to ADR-0022
 ADR-0011 SHALL NOT ask `forge.review`. Removing the key SHALL raise ADR-0011

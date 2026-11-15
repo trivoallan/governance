@@ -124,8 +124,8 @@ only thing that holds it back. It buys attribution, not enforcement.
 Either satisfies the four rules. The machine account is simpler to run from
 a local session; the App leaves no long-lived token behind.
 
-**With `agent.host: claude-code`** ([ADR-0017](ADR-0017-agent-tooling.md)),
-the sandbox keeps the maintainer's credential files out of the agent's
+**With `claude-code`** in [ADR-0017](ADR-0017-agent-tooling.md)'s
+`agent.hosts`, the sandbox keeps the maintainer's credential files out of the agent's
 shell commands, and permission rules keep them out of its Read tool. Both
 are needed: a `sandbox.filesystem.denyRead` entry does not stop the Read
 tool, and a `Read(...)` deny rule is merged into the sandbox. In
@@ -144,6 +144,11 @@ system keyring, as it does by default on macOS, a file rule does not reach
 it: run the agent where the maintainer's credentials do not exist (a
 container, another OS user, a cloud session), and hand it the agent's
 token, for example as `GH_TOKEN`.
+
+**With `opencode`** in `agent.hosts`, shell commands run without a
+sandbox: a permission rule can keep a path out of its read tool, but a
+shell command still reads the file. Run the agent where the maintainer's credentials do not exist,
+as above, and hand it the agent's token.
 
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
@@ -257,7 +262,7 @@ maintainers, as ADR-0022 says.
 - Original to governance; no surdesrails SDR asks this question.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0015](ADR-0015-secrets.md): where the agent's token is stored.
-- [ADR-0017](ADR-0017-agent-tooling.md): `agent.host`, which decides how the credentials are kept apart.
+- [ADR-0017](ADR-0017-agent-tooling.md): `agent.hosts`, which decides how the credentials are kept apart.
 - [ADR-0018](ADR-0018-dependencies.md): Dependabot, the other bypass actor under `peer`.
 - [ADR-0022](ADR-0022-review-and-merge.md): where the review happens, which `own` lets be an approval.
 - GitHub: [approving a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews), [creating rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository), [rules API](https://docs.github.com/en/rest/repos/rules), [installation tokens](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app), [commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification), [terms of service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service). Claude Code: [sandboxing](https://code.claude.com/docs/en/sandboxing), [settings](https://code.claude.com/docs/en/settings-reference). Read on 2026-11-15.

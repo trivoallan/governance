@@ -144,8 +144,8 @@ trait is not set.
 - **THEN** the output says `ADR-0018: dependencies.updater is foo, nothing to check` and that trait does not fail
 
 #### Scenario: Trait not set
-- **WHEN** ADR-0017 has `host:` with no value
-- **THEN** the check exits non-zero and standard error says `agent.host` is not set
+- **WHEN** ADR-0018 has `updater:` with no value
+- **THEN** the check exits non-zero and standard error says `dependencies.updater` is not set
 
 ### Requirement: Wiring rows
 governance SHALL ship these rows. Workflows are the tracked files matching
@@ -163,7 +163,6 @@ governance SHALL ship these rows. Workflows are the tracked files matching
 | ADR-0012 | `delivery.release_tool = release-please` | contains | a workflow holds `googleapis/release-please-action` |
 | ADR-0012 | `delivery.target = container` | exists | a file named `Dockerfile` or `Containerfile` |
 | ADR-0012 | `deployment.manifests = <relative path>` | path | a file under that path |
-| ADR-0017 | `agent.host = claude-code` | exists | `.claude/settings.json` |
 | ADR-0018 | `dependencies.updater = dependabot` | exists | `.github/dependabot.yml` or `.github/dependabot.yaml` |
 | ADR-0018 | `dependencies.updater = renovate` | exists | `renovate.json`, `renovate.json5`, `.renovaterc`, `.renovaterc.json`, `.github/renovate.json` or `.github/renovate.json5` |
 | ADR-0018 | `dependencies.automerge = patch` or `minor`, when `dependencies.updater` is `dependabot` | contains | a workflow holds `dependabot/fetch-metadata` |
@@ -490,7 +489,7 @@ pass, including unforeseen values of a wiring key, SHALL still pass.
 
 ### Requirement: ADR-0022 check
 `governance-check ADR-0022` SHALL read `review.by` and `review.approvals`
-from ADR-0022, and `agent.host` from the repository's copy of ADR-0017.
+from ADR-0022, and `agent.hosts` from the repository's copy of ADR-0017.
 - When ADR-0022 still holds `review.merge_by`, it SHALL exit non-zero and say the key was replaced by `review.by`.
 - When `review.by` or `review.approvals` is absent or empty, it SHALL exit non-zero and say which one is not set.
 - When `review.approvals` is not a whole number of `0` or more, it SHALL exit non-zero and say so.
@@ -500,11 +499,29 @@ from ADR-0022, and `agent.host` from the repository's copy of ADR-0017.
 When `review.by` is `maintainer` or `peer`, it SHALL run two parts and
 report both. It SHALL exit `0` only when neither fails.
 
-**Deny part.**
-- When ADR-0017 is missing, not accepted, or superseded, or `agent.host` is empty, `none` or a value other than `claude-code`, the deny part SHALL print that it has nothing to check and give the reason.
-- Otherwise it SHALL read the tracked `.claude/settings.json`. That file's `permissions.deny` array SHALL hold an entry that starts with `Bash(gh pr review`, and, with `maintainer`, an entry that starts with `Bash(gh pr merge`.
-- It SHALL fail, naming the file, when that file is not tracked, is not valid JSON, or lacks a required entry.
-- An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy it, and `.claude/settings.local.json` SHALL NOT be read.
+**Deny part.** The commands to deny are `gh pr review`, and with
+`maintainer` also `gh pr merge`.
+- When ADR-0017 is missing, not accepted, or superseded, or `agent.hosts` is absent or `[]`, the deny part SHALL print that it has no deny to check and give the reason.
+- When the accepted ADR-0017 still holds its revision 1 key `agent.host`, the deny part SHALL fail and say that `agent.host` became `agent.hosts` in ADR-0017 revision 2.
+- Otherwise it SHALL check each host in `agent.hosts`, report each command on each host, and fail when one fails. A host value it does not know SHALL be reported as having no deny to check.
+
+For `claude-code`, it SHALL read the tracked `.claude/settings.json`. That
+file's `permissions.deny` array SHALL hold, for each command, an entry that
+starts with `Bash(` followed by the command. It SHALL fail, naming the file,
+when that file is not tracked, is not valid JSON, or lacks a required entry.
+An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy it,
+and `.claude/settings.local.json` SHALL NOT be read.
+
+For `opencode`, it SHALL read the tracked `opencode.json` and
+`.opencode/opencode.json`, in that order, and join their `permissions`
+arrays in that order:
+- A rule SHALL apply when its `action`, read as a pattern, matches `shell`, and its `resource`, read as a pattern, matches the command. In a pattern, `*` matches any run of characters, `?` matches one character, and the pattern matches the whole value. A pattern ending in ` *` also matches the command without arguments.
+- A command passes only when, for the command alone and for the command followed by ` 1`, the last rule that applies has `effect: deny`.
+- No applicable rule, or a last applicable rule of `allow` or `ask`, SHALL fail. The failure SHALL name the rule that decides, or say that none applies.
+- A tracked `opencode.jsonc` or `.opencode/opencode.jsonc` SHALL fail, and say that the check reads only `opencode.json`.
+- A file holding the V1 key `permission` SHALL fail, and say to convert it to the V2 `permissions` array.
+- A file that is not valid JSON or not a JSON object, or whose `permissions` is not an array, SHALL fail and name the file. When no opencode file is tracked, the failure SHALL name both paths.
+- `policies` SHALL NOT be read.
 
 **Ruleset part.**
 - Outside GitHub Actions, it SHALL print `ADR-0022: ruleset not read outside CI` and SHALL NOT fail.
@@ -515,15 +532,15 @@ report both. It SHALL exit `0` only when neither fails.
 - It SHALL NOT read the bypass list, and SHALL say in its output that the bypass list is not verified.
 
 #### Scenario: Merge denied
-- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, the tracked `.claude/settings.json` has `"deny": ["Bash(gh pr merge:*)", "Bash(gh pr review:*)"]` under `permissions`, and the check runs outside CI
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[claude-code]`, the tracked `.claude/settings.json` has `"deny": ["Bash(gh pr merge:*)", "Bash(gh pr review:*)"]` under `permissions`, and the check runs outside CI
 - **THEN** the check names both entries, prints `ADR-0022: ruleset not read outside CI`, and exits `0`
 
 #### Scenario: Maintainer without the review deny
-- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, and `permissions.deny` holds only `Bash(gh pr merge:*)`
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[claude-code]`, and `permissions.deny` holds only `Bash(gh pr merge:*)`
 - **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr review` entry
 
 #### Scenario: Peer needs no merge deny
-- **WHEN** `review.by` is `peer`, `host` is `claude-code`, and `permissions.deny` holds only `Bash(gh pr review:*)`
+- **WHEN** `review.by` is `peer`, `hosts` is `[claude-code]`, and `permissions.deny` holds only `Bash(gh pr review:*)`
 - **THEN** the deny part passes
 
 #### Scenario: Merge only asked
@@ -535,11 +552,11 @@ report both. It SHALL exit `0` only when neither fails.
 - **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr review` entry
 
 #### Scenario: No agent host
-- **WHEN** `review.by` is `maintainer`, ADR-0017 rules `agent.host: none`, and the check runs outside CI
-- **THEN** the check prints `ADR-0022: review.by is maintainer, but ADR-0017 agent.host is none, no deny to check` and exits `0`
+- **WHEN** `review.by` is `maintainer`, ADR-0017 rules `agent.hosts: []`, and the check runs outside CI
+- **THEN** the check prints `ADR-0022: review.by is maintainer, but ADR-0017 agent.hosts is empty, no deny to check` and exits `0`
 
 #### Scenario: Agent host not ruled yet
-- **WHEN** `review.by` is `maintainer` and ADR-0017 is `proposed` with `agent.host: claude-code` already written
+- **WHEN** `review.by` is `maintainer` and ADR-0017 is `proposed` with `agent.hosts: [claude-code]` already written
 - **THEN** the deny part prints that ADR-0017 is not accepted, no deny to check
 
 #### Scenario: Agent merges
@@ -551,7 +568,7 @@ report both. It SHALL exit `0` only when neither fails.
 - **THEN** the check exits non-zero and says `review.merge_by` was replaced by `review.by`
 
 #### Scenario: Settings not committed
-- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, and `.claude/settings.json` exists but is not tracked
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[claude-code]`, and `.claude/settings.json` exists but is not tracked
 - **THEN** the check exits non-zero and names `.claude/settings.json`
 
 #### Scenario: Peer ruleset complete in CI
@@ -589,6 +606,38 @@ report both. It SHALL exit `0` only when neither fails.
 #### Scenario: Rules unreadable in CI
 - **WHEN** the check runs in GitHub Actions and `gh api` fails
 - **THEN** the check exits non-zero and shows `gh`'s error
+
+#### Scenario: Revision 1 key in ADR-0017
+- **WHEN** `review.by` is `maintainer` and the accepted ADR-0017 has `agent.host: claude-code`
+- **THEN** the check exits non-zero and says `agent.host` became `agent.hosts` in ADR-0017 revision 2
+
+#### Scenario: opencode denies review and merge
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[opencode]`, and the tracked `opencode.json` has the rules `{ "action": "shell", "resource": "gh pr merge *", "effect": "deny" }` and the same for `gh pr review *`
+- **THEN** the deny part passes and names both rules
+
+#### Scenario: opencode peer needs only the review deny
+- **WHEN** `review.by` is `peer`, `hosts` is `[opencode]`, and `opencode.json` denies only `gh pr review *`
+- **THEN** the deny part passes
+
+#### Scenario: A later allow defeats the deny
+- **WHEN** the same `opencode.json` adds `{ "action": "*", "resource": "*", "effect": "allow" }` after the deny rules
+- **THEN** the check exits non-zero and names the `allow` rule as the one that decides
+
+#### Scenario: A deny for one flag only
+- **WHEN** `review.by` is `peer` and `opencode.json` denies only `gh pr review * --approve`
+- **THEN** the check exits non-zero and says no rule denies `gh pr review`
+
+#### Scenario: .opencode config overrides the root
+- **WHEN** `opencode.json` denies both commands and the tracked `.opencode/opencode.json` allows `gh *`
+- **THEN** the check exits non-zero
+
+#### Scenario: V1 permission object
+- **WHEN** the tracked `opencode.json` has `"permission": { "bash": { "gh pr review *": "deny" } }`
+- **THEN** the check exits non-zero and says to convert `permission` to the V2 `permissions` array
+
+#### Scenario: One host of two fails
+- **WHEN** `hosts` is `[claude-code, opencode]`, `.claude/settings.json` denies both commands, and the tracked `opencode.json` has no `permissions`
+- **THEN** the check exits non-zero, reports the `claude-code` entries as passing, and names `opencode.json` as failing
 
 ### Requirement: ADR-0023 check
 `governance-check ADR-0023` SHALL read `license.spdx` from ADR-0023.
@@ -858,3 +907,45 @@ The check SHALL read the files only, and SHALL NOT call the network.
 #### Scenario: Default branch not main
 - **WHEN** `origin/HEAD` points to `trunk`, ADR-0008 has `docs.channels: [main]`, and the workflow holding `actions/deploy-pages` runs on `push: branches: [trunk]`
 - **THEN** the `docs.channels` line passes
+
+### Requirement: ADR-0017 check
+`ontrack-engineering-check ADR-0017` SHALL read `agent.hosts` from ADR-0017, a list
+whose values are `claude-code` and `opencode`.
+- When ADR-0017 holds the revision 1 key `agent.host`, whatever its value, the check SHALL exit non-zero. Its message SHALL say that `agent.host` became `agent.hosts`, a list, in revision 2, and SHALL show the list to write: `[<value>]` for `claude-code`, `[]` for `none` or an empty value.
+- When `agent.hosts` is absent, the check SHALL exit non-zero and say it is not set.
+- When `agent.hosts` is not a list, or holds a value other than `claude-code` or `opencode`, the check SHALL exit non-zero and name the value.
+- When `agent.hosts` is `[]`, the check SHALL print `ADR-0017: agent.hosts is empty, nothing to check` and exit `0`.
+- For `claude-code`, a tracked `.claude/settings.json` SHALL be required.
+- For `opencode`, a tracked `opencode.json` or `.opencode/opencode.json` SHALL be required.
+- The check SHALL report every host in one run, and SHALL exit `0` only when every declared host's file is tracked.
+
+The check SHALL NOT read the files it requires. A plugin entry without a pin
+passes it, and review catches it.
+
+#### Scenario: Both hosts wired
+- **WHEN** ADR-0017 has `agent.hosts: [claude-code, opencode]` and the repository tracks `.claude/settings.json` and `opencode.json`
+- **THEN** the check exits `0` and names both files
+
+#### Scenario: One host's file missing
+- **WHEN** ADR-0017 has `agent.hosts: [claude-code, opencode]` and the repository tracks `.claude/settings.json` only
+- **THEN** the check exits non-zero, names `opencode.json` and `.opencode/opencode.json` for `opencode`, and names `.claude/settings.json` as found for `claude-code`
+
+#### Scenario: Revision 1 key
+- **WHEN** ADR-0017 has `agent.host: claude-code` and no `agent.hosts`
+- **THEN** the check exits non-zero and standard error says `agent.host` became `agent.hosts` in revision 2, and to write `agent.hosts: [claude-code]`
+
+#### Scenario: Revision 1 none
+- **WHEN** ADR-0017 has `agent.host: none`
+- **THEN** the check exits non-zero and its message says to write `agent.hosts: []`
+
+#### Scenario: No host
+- **WHEN** ADR-0017 has `agent.hosts: []`
+- **THEN** the check prints that `agent.hosts` is empty, nothing to check, and exits `0`
+
+#### Scenario: Unknown host
+- **WHEN** ADR-0017 has `agent.hosts: [cursor]`
+- **THEN** the check exits non-zero and says `agent.hosts` has an unknown value: `cursor`
+
+#### Scenario: Untracked opencode config
+- **WHEN** ADR-0017 has `agent.hosts: [opencode]` and `opencode.json` exists but is not tracked
+- **THEN** the check exits non-zero
