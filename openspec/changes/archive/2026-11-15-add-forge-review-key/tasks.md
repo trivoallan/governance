@@ -15,5 +15,5 @@
 
 ## 3. Verification
 
-- [ ] 3.1 Run `npm test` (coverage at or above ADR-0007's target) and `openspec validate add-forge-review-key --strict`, and verify both pass, then that CI passes on the pull request.
+- [x] 3.1 Run `npm test` (coverage at or above ADR-0007's target) and `openspec validate add-forge-review-key --strict`, and verify both pass, then that CI passes on the pull request.
 - [ ] 3.2 Verify `ontrack plan` reports ADR-0011 as `revised` in a repository that ruled revision 2.
