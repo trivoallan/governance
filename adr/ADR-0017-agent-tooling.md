@@ -3,14 +3,14 @@ adr: ADR-0017
 slug: agent-tooling
 title: Agent tooling
 status: proposed
-revision: 1
+revision: 2
 date:
 authors: []
 supersedes: []
 check: npx --no-install ontrack-engineering-check ADR-0017
 traits:
   agent:
-    host:
+    hosts:
 ---
 
 # Agent tooling
@@ -41,10 +41,12 @@ the network on each run can change between two sessions; a skill committed
 to the repository can pre-approve tools through its `allowed-tools` field.
 What reaches the repository, from where, and pinned how, is the question.
 
-governance targets **Claude Code** first. While this key is empty, an agent
-does not know whether the repository expects Claude Code's project
-settings at all, and installs skills however the last guide it read
-suggested.
+governance targets **Claude Code** first, and covers **opencode** too:
+one repository can be worked on with both, by different contributors.
+While this key is empty, an agent does not know which hosts' project
+settings the repository expects, and installs skills however the last
+guide it read suggested. Both hosts read `AGENTS.md`, where ontrack writes
+the rules this repository accepted; opencode does not read `CLAUDE.md`.
 
 ## Decision
 
@@ -52,14 +54,18 @@ suggested.
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `agent.host` | `claude-code` | the agent governance's ADRs are written for, and the one whose project settings can declare and pin the skills a repository relies on |
+| `agent.hosts` | `[claude-code]` | the agent governance's ADRs are written for, and the one whose project settings can declare and pin the skills a repository relies on |
 
-`none` says the repository declares no agent tooling: the rules below do
-not apply, and the `Suggested skills` lines are only reading material.
+List every host the repository's contributors work with: a team where
+some use Claude Code and others opencode rules
+`[claude-code, opencode]`, and the rules of both apply. `[]` says the
+repository declares no agent tooling: the rules below do not apply, and
+the `Suggested skills` lines are only reading material.
 
-**What governance fixes when you rule `claude-code`.** The list of plugins
-lives in the repository's own files, not in a trait: Claude Code reads
-them, and a trait copying them would drift.
+The list of plugins lives in each host's own files, not in a trait: the
+host reads them, and a trait copying them would drift.
+
+**What governance fixes when the list holds `claude-code`.**
 
 1. **Plugins first, through the repository's own marketplace.** The
    repository keeps a marketplace in `marketplace/.claude-plugin/marketplace.json`,
@@ -79,7 +85,8 @@ them, and a trait copying them would drift.
 3. **Vendor as a last resort.** A skill that no marketplace publishes is
    copied into `.claude/skills/<name>/`, fetched at a tag, checked against a
    hash, and committed. The pull request that adds it is reviewed like code,
-   `allowed-tools` included.
+   `allowed-tools` included. opencode reads `.claude/skills/` too, so a
+   repository with both hosts keeps one copy.
 4. **Forbidden:** an entry with no `sha`, a third-party marketplace enabled
    directly, a skill
    declared through a `package.json` key (it would reach every repository
@@ -104,11 +111,45 @@ enabled plugins with one name conflict. The `marketplace/` path is resolved
 against the repository's main checkout, so every worktree shares it.
 Neither the marketplace nor vendored skills load in cloud sessions.
 
+**What governance fixes when the list holds `opencode`.**
+
+1. **The configuration is committed** as `opencode.json` at the root, and
+   as `.opencode/opencode.json` only when the repository needs one.
+   opencode also accepts `opencode.jsonc`, but the ADR-0022 check reads
+   only `opencode.json`.
+2. **Pin every plugin.** Each entry under `plugins` names an npm package
+   at an exact version (`opencode-acme-plugin@1.2.0`), or a Git
+   specification ending in a full 40-character commit hash. opencode
+   checks any other form for updates at startup. A range, a tag or a bare
+   name is forbidden. Updating a plugin means changing a version or a hash
+   in a pull request.
+3. **A local plugin** under `.opencode/plugins/` is committed, and the
+   pull request that adds it is reviewed like code.
+4. **Vendor as a last resort**, as for `claude-code`: a skill goes under
+   `.claude/skills/<name>/`, which opencode reads. `.opencode/skills/` is
+   for a skill only opencode uses.
+5. **Skills an OpenSpec schema lists** are installed only on explicit
+   request in the session, as [ADR-0016](ADR-0016-changes.md) rule 3 says.
+
+`opencode.json` (the versions are examples; write the ones you reviewed):
+
+```json
+{
+  "plugins": [
+    "opencode-acme-plugin@1.2.0",
+    "@acme/opencode-plugin@0.4.1"
+  ]
+}
+```
+
+opencode installs these plugins on startup: there is no per-contributor
+install step.
+
 **Departing from a rule** (vendoring everything to work offline, say) is
 declared in your own ADR, with its reason.
 
-**What the two files look like** (the SHAs are examples; write the
-commits you reviewed). `marketplace/.claude-plugin/marketplace.json`:
+**What the two Claude Code files look like** (the SHAs are examples; write
+the commits you reviewed). `marketplace/.claude-plugin/marketplace.json`:
 
 ```json
 {
@@ -183,25 +224,28 @@ adr: ADR-0017
 slug: agent-tooling
 title: Agent tooling
 status: accepted
-revision: 1
+revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
 check: npx --no-install ontrack-engineering-check ADR-0017
 traits:
   agent:
-    host: claude-code
+    hosts: [claude-code]
 ---
 ```
 
 **The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
-runs it from your repository's root. It reads the keys you ruled and checks
-only that the files they imply are committed, not what those files say:
+runs it from your repository's root. It reads `agent.hosts` and checks
+only that each host's settings file is committed, not what it says:
 
-- `agent.host`: with `claude-code`, `.claude/settings.json`. It does not
-  read the file: an entry with no `sha` passes, and review catches it.
+- `claude-code`: `.claude/settings.json`;
+- `opencode`: `opencode.json` or `.opencode/opencode.json`.
 
-Any other value has nothing to check, and passes.
+It reads neither file: an entry with no `sha` or no exact version passes,
+and review catches it. `[]` has nothing to check. A host it does not know
+fails, and so does the revision 1 key `agent.host`, with the line to write
+in its place.
 
 The Alternatives Considered below were weighed by governance without
 knowing your context. Weighing them against yours is still to do, and it is
@@ -225,7 +269,10 @@ what makes a decision different from an accepted default.
 - Pinned SHAs go stale; someone has to bump them, by hand or with a tool.
 - The repository maintains a marketplace file of its own, one entry per
   plugin.
-- The policy is Claude Code's. Another agent host needs its own ADR.
+- The policy covers Claude Code and opencode only. A third host is a
+  revision of this ADR.
+- A repository with both hosts maintains two sets of settings, and the
+  same plugin may not exist for both.
 
 ### Neutral
 
@@ -245,6 +292,12 @@ Less to maintain: declare each upstream marketplace with a commit SHA as
 its `ref`. But an upstream entry that points at another repository without
 a `sha` still follows that repository's head, and the consuming repository
 cannot fix someone else's marketplace file.
+
+### One ADR per agent host
+
+Keeps each host's rules apart, but `AGENTS.md` and `.claude/skills/` are
+shared by both, and ADR-0022 would have to read one ADR per host to find
+the deny.
 
 ### Vendor every skill
 
@@ -270,17 +323,24 @@ sessions are guaranteed the same tools.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on, and why `Suggested skills` lines change no `revision`.
 - [ADR-0016](ADR-0016-changes.md): skills listed by an OpenSpec schema.
 - Claude Code documentation: [plugins for a team](https://code.claude.com/docs/en/plugins/org.md), [marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference.md) and [skills](https://code.claude.com/docs/en/skills.md), read on 2026-11-14.
+- opencode documentation: [config](https://opencode.ai/docs/config/), [plugins](https://opencode.ai/docs/plugins/), [skills](https://opencode.ai/docs/skills/) and [instructions](https://opencode.ai/docs/instructions/), read on 2026-11-15.
 
 **The key.**
 
 | Key | What it holds | Allowed values |
 | --- | --- | --- |
-| `agent.host` | the agent whose project settings this repository uses | `claude-code`, `none` |
+| `agent.hosts` | the agents whose project settings this repository uses | a list of `claude-code`, `opencode`; `[]` for none |
 
-**What the check does not see.** It refuses an empty or unknown
-`agent.host`. It reads neither `.claude/settings.json` nor the marketplace file: an entry
-with no `sha` passes it, and review catches it.
+**What the check does not see.** It refuses an empty key, a value that is
+not a list, and an unknown host. It reads neither the settings files nor the
+marketplace file: an entry with no `sha` or no exact version passes it, and
+review catches it.
 
 **An empty key is not an answer**: this one is required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
+
+**Revisions.** What changed in the question at each revision, and what
+a repository that already ruled must re-answer.
+
+- Revision 2: `agent.host` (one value) became `agent.hosts`, a list of `claude-code` and `opencode`, with rules for `opencode`. Re-answer: write your former value as a one-item list (`agent.hosts: [claude-code]`), or `agent.hosts: []` for `none`; add `opencode` if contributors use it.

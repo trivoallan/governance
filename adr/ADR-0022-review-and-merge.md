@@ -3,7 +3,7 @@ adr: ADR-0022
 slug: review-and-merge
 title: Review and merge
 status: proposed
-revision: 2
+revision: 3
 date:
 authors: []
 supersedes: []
@@ -121,9 +121,11 @@ control but the maintainer's reading. With `blocking`, the pipeline and
 that reading. With `informative`, the pipeline reports and the maintainer
 alone decides what to do with a red.
 
-**With `agent.host: claude-code`** ([ADR-0017](ADR-0017-agent-tooling.md)),
-`.claude/settings.json` denies what the agent may not do. With
-`maintainer`:
+**Each agent host denies what the agent may not do**, in its committed
+settings, for every host in [ADR-0017](ADR-0017-agent-tooling.md)'s
+`agent.hosts`.
+
+With `claude-code`, `.claude/settings.json`. With `maintainer`:
 
 ```json
 {
@@ -136,6 +138,21 @@ alone decides what to do with a red.
 With `peer`, only `"Bash(gh pr review:*)"`: denying the merge would block
 the merge rule 3 allows. The agent comments on its own pull request with
 `gh pr comment`, which the deny leaves open.
+
+With `opencode`, `opencode.json`. opencode applies the last rule that
+matches, so the denies go **last** in `permissions`, after any broader
+`allow`. With `maintainer`:
+
+```json
+{
+  "permissions": [
+    { "action": "shell", "resource": "gh pr review *", "effect": "deny" },
+    { "action": "shell", "resource": "gh pr merge *", "effect": "deny" }
+  ]
+}
+```
+
+With `peer`, only the `gh pr review *` rule.
 
 If the GitHub MCP server is installed, deny its review and merge tools as
 well, under the names your configuration gives the server (for example
@@ -173,7 +190,7 @@ adr: ADR-0022
 slug: review-and-merge
 title: Review and merge
 status: accepted
-revision: 2
+revision: 3
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
@@ -191,12 +208,24 @@ runs it from your repository's root:
 - It fails when the two keys disagree: `maintainer` or `agent` with
   `approvals` other than `0`, `peer` with `0`. With `agent`, there is
   nothing else to check.
-- With `maintainer` or `peer`, and ADR-0017's `agent.host: claude-code`,
-  the committed `.claude/settings.json` holds, under `permissions.deny`, an
-  entry that starts with `Bash(gh pr review`, and with `maintainer` one
-  that starts with `Bash(gh pr merge`. The same entry under `allow` or
-  `ask` fails, and `.claude/settings.local.json` is not read. With any
-  other host, or no ADR-0017, there is no deny to check.
+- With `maintainer` or `peer`, it checks each host of ADR-0017's
+  `agent.hosts`, and fails if one fails. The commands to deny are
+  `gh pr review`, and with `maintainer` also `gh pr merge`:
+  - with `claude-code`, the committed `.claude/settings.json` holds, under
+    `permissions.deny`, an entry that starts with `Bash(` and the command.
+    The same entry under `allow` or `ask` fails, and
+    `.claude/settings.local.json` is not read;
+  - with `opencode`, it reads the committed `opencode.json`, then
+    `.opencode/opencode.json`, joins their `permissions` in that order, and
+    replays them as opencode does: for the command alone and with an
+    argument, the last rule whose `action` matches `shell` and whose
+    `resource` matches the command must be a `deny`. A later `allow`, no
+    rule at all, an `opencode.jsonc`, or the V1 `permission` object fails.
+    `policies` and the rules outside the repository (global, agent-level)
+    are not read;
+  - with `agent.hosts: []`, or no accepted ADR-0017, there is no deny to
+    check. ADR-0017 still holding its revision 1 key `agent.host` fails,
+    with the line to write.
 - In GitHub Actions only, it reads the rules active on the default branch
   through `gh api`, and fails unless they require a pull request with
   exactly `review.approvals` approvals and, with `peer`, dismiss stale
@@ -209,9 +238,9 @@ runs it from your repository's root:
 
 **The check denies nothing itself, and the deny has a ceiling.** It
 protects against an agent that approves or merges by mistake, not against
-one working around the rule. Claude Code matches the entry inside a
-compound command (`cd x && gh pr merge 1`), but a rule matches command
-text, and its documentation says deny rules are not a security boundary:
+one working around the rule. Claude Code and opencode both match the entry
+inside a compound command (`cd x && gh pr merge 1`), but a rule matches
+command text, and Claude Code's documentation says deny rules are not a security boundary:
 `gh api` on the review or merge endpoint, `/usr/bin/gh pr merge` and a
 push to the default branch do not match. The ruleset above closes the
 merge; nothing closes an approval made under a teammate's token except the
@@ -289,9 +318,9 @@ extra step proves nothing the merge does not already prove.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
 - [ADR-0009](ADR-0009-branching.md): one change, one branch, one pull request.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the required checks a merge waits for.
-- [ADR-0017](ADR-0017-agent-tooling.md): `agent.host`, which decides what the check reads.
+- [ADR-0017](ADR-0017-agent-tooling.md): `agent.hosts`, which decides what the check reads.
 - [ADR-0018](ADR-0018-dependencies.md) and [ADR-0019](ADR-0019-vulnerabilities.md): the two cases this ADR generalises.
-- Claude Code: [permissions](https://code.claude.com/docs/en/permissions). GitHub: [about rulesets](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets), [available rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch), [approving a pull request](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews). Read on 2026-11-15.
+- Claude Code: [permissions](https://code.claude.com/docs/en/permissions). opencode: [permissions](https://opencode.ai/docs/permissions/), and its source (`anomalyco/opencode`, branch `dev`: `packages/core/src/permission.ts`, `util/wildcard.ts`, `config.ts`) for the order rules are joined and evaluated in. GitHub: [about rulesets](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets), [available rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [rules for a branch](https://docs.github.com/en/rest/repos/rules#get-rules-for-a-branch), [approving a pull request](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews). Read on 2026-11-15.
 
 **The keys.**
 
@@ -308,3 +337,4 @@ ADR-0001 for the check command.
 a repository that already ruled must re-answer.
 
 - Revision 2: `review.merge_by` is replaced by `review.by` and `review.approvals`, which also take over ADR-0011's `forge.review`. The agent never approves; with `peer` it may merge once GitHub accepts it. Re-answer both keys and delete `review.merge_by`: `forge.review: author` with `merge_by: person` becomes `maintainer` with `approvals: 0`; `forge.review: peer` becomes `peer` with the approvals your ruleset requires, at least `1`; `merge_by: agent` becomes `agent` with `approvals: 0`. Add the `Bash(gh pr review:*)` deny.
+- Revision 3: the denies are required on each host of ADR-0017's `agent.hosts`, and the Decision shows the opencode rules. The keys are unchanged: nothing to re-answer; a repository whose `agent.hosts` holds `opencode` adds the denies to `opencode.json`.
