@@ -37,12 +37,13 @@ unless the table says it is original:
 | ADR-0023 | license | none (original to governance) | proposed |
 | ADR-0024 | code-scanning | none (original to governance) | proposed |
 | ADR-0025 | tools | none (original to governance) | proposed |
+| ADR-0026 | agent-identity | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the twenty-five files in the table, with the slugs shown
+- **THEN** they are exactly the twenty-six files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
@@ -155,9 +156,15 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 - **THEN** it contains `forge.gate` and `forge.audit`, and no `forge.vendor`
 
 ### Requirement: ADR-0017 asks which agent host the repository uses
-ADR-0017 SHALL ask `agent.host` (`claude-code`, `none`), recommending
-`claude-code`. Its Decision SHALL fix, for every repository that rules
-`claude-code`:
+ADR-0017 SHALL ask `agent.hosts`, a list whose values are `claude-code`,
+`opencode` and `copilot`, recommending `[claude-code]`. `[]` SHALL say that the repository
+declares no agent tooling. ADR-0017 SHALL be at `revision: 3`. Its Revisions
+list SHALL say that `agent.host` became `agent.hosts`, and that a repository
+re-answers by writing its former value as a one-item list, or `[]` for `none`;
+and that revision 3 adds `copilot`, with nothing to re-answer for a
+repository whose contributors do not use Copilot CLI.
+
+Its Decision SHALL fix, for every repository whose list holds `claude-code`:
 - skills arrive as plugins from the repository's own marketplace,
   `marketplace/.claude-plugin/marketplace.json`, named distinctly from any
   upstream marketplace, declared in `.claude/settings.json` through
@@ -170,16 +177,80 @@ ADR-0017 SHALL ask `agent.host` (`claude-code`, `none`), recommending
 - an unpinned source, a `package.json` key and `npx -y` are forbidden;
 - skills listed by an OpenSpec schema are installed only on explicit
   request, as ADR-0016 rule 3 says.
-The list of plugins SHALL live in the repository's marketplace and
-`.claude/settings.json`, not in a trait.
+
+Its Decision SHALL fix, for every repository whose list holds `opencode`:
+- the project configuration is committed as `opencode.json` at the root,
+  and `.opencode/opencode.json` only when the repository needs one;
+- every npm entry under `plugins` names an exact version
+  (`<package>@<x.y.z>`), and every Git entry a full commit hash; a range, a
+  tag or a bare name is forbidden;
+- a local plugin under `.opencode/plugins/` is committed and reviewed like
+  code;
+- a vendored skill goes under `.claude/skills/<name>/` under the same rule
+  as for `claude-code`, which opencode also reads, so a repository with
+  both hosts keeps one copy;
+- skills listed by an OpenSpec schema are installed only on explicit
+  request, as ADR-0016 rule 3 says.
+
+Its Decision SHALL fix, for every repository whose list holds `copilot`,
+which means GitHub Copilot CLI:
+- the Claude Code rules on the marketplace, `.claude/settings.json`, pinning,
+  vendoring and forbidden sources apply, because Copilot CLI reads
+  `extraKnownMarketplaces`, `enabledPlugins` and `hooks` from
+  `.claude/settings.json`, the marketplace it points at, and
+  `.claude/skills/`;
+- each contributor trusts the folder in Copilot, after which Copilot CLI
+  installs every enabled plugin at the commit its entry pins, with no
+  install step;
+- a committed `.github/copilot/settings.json` holds neither `enabledPlugins`
+  nor `extraKnownMarketplaces`, since it takes precedence over
+  `.claude/settings.json`;
+- Copilot CLI does not read `permissions`, so a rule that must hold for it
+  is a hook.
+It SHALL name the Copilot CLI version and date these statements were read
+from, and SHALL name Copilot's cloud coding agent and Copilot in VS Code as
+not covered by `copilot`.
+
+ADR-0017 SHALL say that opencode reads `AGENTS.md` and not `CLAUDE.md`, so
+the rules ontrack writes reach both hosts. The list of plugins SHALL live in
+each host's own files, not in a trait.
+
+ADR-0017 SHALL ship with `check: npx --no-install ontrack-engineering-check ADR-0017`.
+Its how-to-rule block SHALL say:
+- that the line runs once the ADR is `accepted`;
+- which file each host requires (`.claude/settings.json` for `claude-code` and
+  for `copilot`; `opencode.json` or `.opencode/opencode.json`), and that the
+  check reads none of them;
+- that `[]` has nothing to check;
+- that an unknown host and the revision 1 key `agent.host` fail.
 
 #### Scenario: One trait
 - **WHEN** the `traits:` block of ADR-0017 is read
-- **THEN** it holds only `agent.host`
+- **THEN** it holds only `agent.hosts`, and no `agent.host`
 
 #### Scenario: Pinned entries
-- **WHEN** a repository has ruled ADR-0017 `accepted` with `agent.host: claude-code`
+- **WHEN** a repository has ruled ADR-0017 `accepted` with `claude-code` in `agent.hosts`
 - **THEN** every plugin entry in its `marketplace/.claude-plugin/marketplace.json` has a `sha` of 40 lowercase hexadecimal characters, and every marketplace in `extraKnownMarketplaces` is a `directory` source inside the repository
+
+#### Scenario: Pinned opencode plugins
+- **WHEN** a repository has ruled ADR-0017 `accepted` with `opencode` in `agent.hosts`
+- **THEN** every string or `package` entry under `plugins` in its `opencode.json` is a local path, a `<package>@<x.y.z>` exact version, or a Git specification ending in a 40-character commit hash
+
+#### Scenario: Re-answering revision 2
+- **WHEN** a repository that ruled `agent.host: claude-code` reads ADR-0017's Revisions list
+- **THEN** it learns to write `agent.hosts: [claude-code]`
+
+#### Scenario: Contributor using Copilot CLI
+- **WHEN** a repository rules `agent.hosts: [claude-code, copilot]` and a contributor works with Copilot CLI
+- **THEN** ADR-0017 tells them to trust the folder in Copilot, says the enabled plugins then install at their pinned commits with nothing else to run, and says `permissions` in `.claude/settings.json` does not bind their sessions
+
+#### Scenario: Copilot settings file
+- **WHEN** a repository whose `agent.hosts` holds `copilot` commits a `.github/copilot/settings.json`
+- **THEN** ADR-0017 forbids `enabledPlugins` and `extraKnownMarketplaces` in it
+
+#### Scenario: Re-answering revision 3
+- **WHEN** a repository that ruled `agent.hosts: [claude-code]` reads ADR-0017's Revisions list after revision 3
+- **THEN** it learns that nothing is to re-answer unless its contributors use Copilot CLI, in which case it adds `copilot`
 
 ### Requirement: ADR-0018 asks what keeps dependencies current
 ADR-0018 SHALL ask `dependencies.updater` (`dependabot`, `renovate`,
@@ -371,8 +442,8 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 - **THEN** they state that no surdesrails SDR asks this question
 
 ### Requirement: Wiring ADRs ship their check
-ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0017, ADR-0018, ADR-0021 and
-ADR-0024 SHALL
+ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0018, ADR-0021 and ADR-0024
+SHALL
 each ship with `check: npx --no-install ontrack-engineering-check <number>`, at their
 current `revision`. Each how-to-rule block SHALL say that the line runs once
 the ADR is `accepted`, which files the check looks for, that it checks
@@ -708,9 +779,22 @@ beside each value of ADR-0011's `forge.gate`:
 - with `blocking`, the pipeline and that reading;
 - with `informative`, the maintainer alone decides on a red.
 
-It SHALL name `CODEOWNERS` as outside its question. With
-`agent.host: claude-code` (ADR-0017), it SHALL show the `.claude/settings.json`
-deny entries each value needs. It SHALL keep
+It SHALL name `CODEOWNERS` as outside its question. For each host of
+ADR-0017's `agent.hosts`, it SHALL show the deny entries each value needs:
+- for `claude-code`, the `.claude/settings.json` entries;
+- for `copilot`, the `PreToolUse` hook in `.claude/settings.json`: one
+  entry matching the `Bash` tool, holding a command hook per command that
+  exits `2` with a message on standard error when the tool input contains
+  `gh pr review` and, with `maintainer`, `gh pr merge`; and that Copilot
+  CLI ignores the `claude-code` deny entries, while Claude Code honours the
+  hook too;
+- for `opencode`, the `shell` deny rules for `gh pr review *` and, with
+  `maintainer`, `gh pr merge *`, placed last in the `permissions` array of
+  `opencode.json`, since opencode applies the last rule that matches.
+
+ADR-0022 SHALL be at `revision: 3`. Its `Revision 3:` entry SHALL say that
+the denies are required on each host of `agent.hosts`, and that the keys are
+unchanged. It SHALL keep
 `check: npx --no-install governance-check ADR-0022`. Its how-to-rule block
 SHALL say:
 - what the check reads;
@@ -724,7 +808,7 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 
 #### Scenario: Two traits, revision 2
 - **WHEN** ADR-0022's frontmatter is read as shipped
-- **THEN** its `traits:` block holds exactly `review.by` and `review.approvals`, both with empty values, with `status: proposed` and `revision: 2`
+- **THEN** its `traits:` block holds exactly `review.by` and `review.approvals`, both with empty values, with `status: proposed` and `revision: 3`
 
 #### Scenario: Approvals follow where the review happens
 - **WHEN** ADR-0022's Decision is read
@@ -769,6 +853,14 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 #### Scenario: Original to governance
 - **WHEN** ADR-0022's References are read
 - **THEN** they say it is original to governance and hold the key table
+
+#### Scenario: opencode denies shown
+- **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `opencode`
+- **THEN** it shows the `shell` deny rules for `gh pr review *` and `gh pr merge *`, and says that they go last in `permissions`
+
+#### Scenario: Copilot hooks shown
+- **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `copilot`
+- **THEN** it shows the `PreToolUse` hook with a `gh pr review` command hook and, with `maintainer`, a `gh pr merge` one, and says Copilot CLI ignores `permissions.deny`
 
 ### Requirement: ADR-0011 revision 4 moves review to ADR-0022
 ADR-0011 SHALL NOT ask `forge.review`. Removing the key SHALL raise ADR-0011
@@ -835,3 +927,62 @@ choose it. Older majors and a version picker SHALL stay out of the key.
 #### Scenario: Feature not yet released
 - **WHEN** an agent adds a feature and its pages while the latest release lacks the feature
 - **THEN** ADR-0008 tells it to write the pages in the same pull request, not after the release
+
+### Requirement: ADR-0026 asks under whose identity the agent acts
+ADR-0026 "Agent identity" SHALL ask, for a repository kept by one person with
+a coding agent, under whose GitHub identity the agent acts, through one trait,
+`agent.identity`, with the values `maintainer` and `own` and the recommended
+value `maintainer`. It SHALL say that `own` is the stronger answer and when it
+is worth its setup: when the history must tell the agent from the person, or
+when the person's review must be an approval GitHub enforces. When the
+repository rules `own`, its Decision SHALL fix four rules:
+1. the agent acts under its own GitHub identity, a GitHub App or a machine account with the write role, and its commits, pushes, pull requests and comments are recorded under it;
+2. its credentials are kept apart: the session that runs the agent reaches the agent's token and not the maintainer's `gh` session or SSH key, and the token is stored as ADR-0015 says secrets are;
+3. ADR-0022 is ruled `review.by: peer` with `review.approvals: 1`: the maintainer's approval of the agent's latest push is the review, and the agent merges once GitHub accepts the merge;
+4. a `Co-Authored-By` trailer labels a commit and is not an identity.
+
+It SHALL say that the ruleset is ADR-0022's `peer` ruleset, with the
+repository admin role added to its bypass list in the mode "For pull requests
+only", so the maintainer's own pull requests merge without an approval nobody
+can give, and SHALL state that this bypass also lets the maintainer merge the
+agent's pull request unapproved. It SHALL say that `own` with
+`review.by: maintainer` records the agent apart but leaves the merge held by
+the deny entry alone. It SHALL compare a GitHub App and a machine account by
+what each costs to set up and to keep. It SHALL ship without a `check:` line,
+and SHALL say that the identity and the token's isolation are not verified,
+and that ADR-0022's check reads the ruleset's approvals but not its bypass
+list. Its Alternatives Considered SHALL hold, each with its cost:
+`maintainer`; the agent approving the maintainer's pull requests; every change
+going through the agent; a `Co-Authored-By` trailer alone; `CODEOWNERS` with a
+required code owner review.
+
+ADR-0022 SHALL link ADR-0026 where it says an agent's act cannot be told
+apart, SHALL name the repository admin role under ADR-0026's `own` beside
+Dependabot in its bypass list, and its alternative "One required approval for
+a single maintainer" SHALL say that ADR-0026 makes it workable. ADR-0018
+SHALL name the same exception where it says no other actor goes in the bypass
+list. Neither SHALL change `revision:`.
+
+#### Scenario: One trait
+- **WHEN** ADR-0026's frontmatter is read as shipped
+- **THEN** it holds `agent.identity` with an empty value, `status: proposed`, `revision: 1` and no `check:` line
+
+#### Scenario: Agent at a green pull request with its own identity
+- **WHEN** a repository rules `agent.identity: own` and `review.by: peer`, and the agent's pull request is green but unapproved
+- **THEN** ADR-0026 says GitHub refuses the merge until the maintainer approves the latest push, and that the agent merges after
+
+#### Scenario: The maintainer's own pull request
+- **WHEN** the maintainer opens a pull request without the agent, under `agent.identity: own`
+- **THEN** ADR-0026 says the maintainer merges it as the bypass actor, and states that this bypass also lets the maintainer merge the agent's pull request unapproved
+
+#### Scenario: Bypass list read the same way everywhere
+- **WHEN** ADR-0018, ADR-0022 and ADR-0026 are read for who sits in the bypass list under `peer`
+- **THEN** all three name Dependabot, and the repository admin role only under `agent.identity: own`
+
+#### Scenario: CODEOWNERS left out
+- **WHEN** ADR-0026's Alternatives Considered are read
+- **THEN** `CODEOWNERS` is there, with the reason it adds no enforcement while the maintainer is the only account that approves
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0026's References are read
+- **THEN** they say it is original to governance and hold the key table
