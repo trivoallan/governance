@@ -9,7 +9,7 @@ name: apply
 # nothing and runs nothing from the pull request: it reads the reviews, and
 # fires the routine only when the head commit is approved.
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] the called workflow checks out and runs nothing from the pull request
     types: [labeled]
 
 permissions: {}

@@ -158,8 +158,12 @@ other repositories run (`governance-check`), so a red pipeline must block
 the merge. The workflows exist, and a ruleset requires `test` on `main`.
 
 `forge.audit: zizmor` adopted as recommended, on 2026-11-15. The workflows
-were cleared of its findings before this ruling. No job runs zizmor on
-pull requests yet, which rule 1 asks: it is tracked as an issue.
+were cleared of its findings before this ruling. `apply.yml`, added since,
+is triggered by `pull_request_target`, which zizmor reports: the finding is
+silenced inline, because the workflow it calls checks out and runs nothing
+from the pull request. The `zizmor` job of
+`.github/workflows/zizmor.yml` runs it on every pull request, with the
+version `mise.toml` pins ([ADR-0025](ADR-0025-tools.md)).
 
 **Departure: `forge.review: author`, not `peer`.** One person alone has
 write access to this repository, so there is no peer to ask. With
@@ -177,8 +181,9 @@ write access to this repository, so there is no peer to ask. With
 
 - A change is read by its author alone: what the pipeline does not test,
   nothing checks.
-- Until a job runs zizmor on every pull request, the audit runs only where
-  someone has zizmor installed.
+- The `zizmor` job is not a required check: the ruleset requires `test`
+  and `scan` only, so its failure shows on the pull request and does not
+  block the merge.
 - Pinning actions by SHA makes updates a deliberate chore unless ADR-0018's
   tool proposes them.
 
