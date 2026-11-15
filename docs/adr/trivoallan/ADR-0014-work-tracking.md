@@ -10,7 +10,7 @@ supersedes: []
 traits:
   tracking:
     tool: github-issues
-    project: trivoallan/governance
+    project: trivoallan/ontrack-engineering
 ---
 
 # Work tracking
@@ -79,15 +79,16 @@ including `proposed` and `rejected`:
    offline. An agent that cannot read the tracker never invents a
    reference.
 
-Adopted as recommended: issues live in `trivoallan/governance`, next to
-the code and the pull requests.
+Adopted as recommended: issues live in `trivoallan/ontrack-engineering`,
+next to the code and the pull requests. The repository was named
+`trivoallan/governance` until 2026-11-15; GitHub redirects the old name.
 
 ## Consequences
 
 ### Positive
 
-- Every change points to the issue it serves, as `trivoallan/governance#N`,
-  or says it serves none.
+- Every change points to the issue it serves, as
+  `trivoallan/ontrack-engineering#N`, or says it serves none.
 - Tracker content cannot steer an agent, and the token cannot leak into the
   repository.
 

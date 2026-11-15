@@ -114,7 +114,7 @@ deployment:
 ```yaml
 tracking:
   tool: github-issues
-  project: trivoallan/governance
+  project: trivoallan/ontrack-engineering
 ```
 
 ### Secrets (trivoallan/ADR-0015-secrets)
