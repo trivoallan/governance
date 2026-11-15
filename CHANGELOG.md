@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/trivoallan/governance/compare/v0.5.0...v0.5.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **checks:** read an ADR only in the package's own namespace ([#115](https://github.com/trivoallan/governance/issues/115)) ([1cb5705](https://github.com/trivoallan/governance/commit/1cb5705157c81d8cee566115d21b5521671c753a)), closes [#113](https://github.com/trivoallan/governance/issues/113)
+
 ## [0.5.0](https://github.com/trivoallan/governance/compare/v0.4.0...v0.5.0) (2026-11-15)
 
 
