@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.6.0](https://github.com/trivoallan/ontrack-engineering/compare/v0.5.1...v0.6.0) (2026-11-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **adr:** a repository that rules changes.framework openspec and left a complete change in openspec/changes/ fails its ADR-0016 check until it archives it.
+* **adr:** agent.host became agent.hosts. The ADR-0017 and ADR-0022 checks fail on the old key until a repository writes
+* **adr:** a repository whose docs.tool is not none must answer docs.channels, or its ADR-0008 check fails.
+* **adr:** repositories that ruled ADR-0022 revision 1 or ADR-0011 revision 3 re-answer review.by and review.approvals.
+* consumers point their alias at @trivoallan/ontrack-engineering; @trivoallan/ontrack-governance stays at 0.5.1, deprecated.
+
+### Features
+
+* **adr:** add ADR-0026 agent identity ([#130](https://github.com/trivoallan/ontrack-engineering/issues/130)) ([8fc23c5](https://github.com/trivoallan/ontrack-engineering/commit/8fc23c5096fdd4b4cccbe1baa63ae457cf3b4647))
+* **adr:** archive a change in the pull request that completes it ([#138](https://github.com/trivoallan/ontrack-engineering/issues/138)) ([c24f79b](https://github.com/trivoallan/ontrack-engineering/commit/c24f79b7d34f9da5f3b14aa1b38c29e3a3da32c5))
+* **adr:** ask docs.channels in ADR-0008 ([#132](https://github.com/trivoallan/ontrack-engineering/issues/132)) ([0ceac5c](https://github.com/trivoallan/ontrack-engineering/commit/0ceac5c70c310864d02ed770fe0ab4c9c2932fe8))
+* **adr:** ask review.by and review.approvals in ADR-0022 ([#128](https://github.com/trivoallan/ontrack-engineering/issues/128)) ([39b1623](https://github.com/trivoallan/ontrack-engineering/commit/39b16230b94ace64ca21fa93ad6752a2e708980a))
+* **adr:** cover GitHub Copilot CLI with agent.hosts copilot in ADR-0017 revision 3 ([#137](https://github.com/trivoallan/ontrack-engineering/issues/137)) ([9c9cd87](https://github.com/trivoallan/ontrack-engineering/commit/9c9cd873f0b49579cdd401ed15e1ac458c480f07))
+* **adr:** cover opencode with agent.hosts in ADR-0017 revision 2 ([#135](https://github.com/trivoallan/ontrack-engineering/issues/135)) ([c832333](https://github.com/trivoallan/ontrack-engineering/commit/c83233303d2bd928144d127ebc43fa9fd2853ace))
+* **checks:** rename the check command to ontrack-engineering-check ([#131](https://github.com/trivoallan/ontrack-engineering/issues/131)) ([6a45b49](https://github.com/trivoallan/ontrack-engineering/commit/6a45b49955b603a197fa0054ad12dcbd6dc1c323))
+* **checks:** run pinned tools from mise and check ADR-0001 and ADR-0025 ([#123](https://github.com/trivoallan/ontrack-engineering/issues/123)) ([3f5781b](https://github.com/trivoallan/ontrack-engineering/commit/3f5781b73565132bad1cd03265fb00dcec9d127e))
+* publish the package as @trivoallan/ontrack-engineering ([#125](https://github.com/trivoallan/ontrack-engineering/issues/125)) ([477ebf0](https://github.com/trivoallan/ontrack-engineering/commit/477ebf01bd1fe5d9ec6c22471ca4e02627a6a6d7))
+
 ## [0.5.1](https://github.com/trivoallan/governance/compare/v0.5.0...v0.5.1) (2026-11-15)
 
 
