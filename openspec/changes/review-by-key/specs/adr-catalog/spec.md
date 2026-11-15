@@ -100,7 +100,7 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 
 #### Scenario: Schema accepts the key
 - **WHEN** a ruled ADR-0022 holds `review.by: peer`
-- **THEN** the schema in `adr/.mdschema.yml` accepts it, refuses any value other than `maintainer`, `peer` or `agent`, and refuses `review.merge_by`
+- **THEN** the schema in `adr/.mdschema.yml` accepts it and refuses any value other than `maintainer`, `peer` or `agent`. A leftover `review.merge_by` is refused by the ADR-0022 check, since the schema tolerates keys it does not list
 
 #### Scenario: Schema types the approvals
 - **WHEN** a ruled ADR-0022 holds `review.approvals: two`

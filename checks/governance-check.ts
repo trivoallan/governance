@@ -452,36 +452,107 @@ function changes(root: string, file: string): number {
 }
 
 // ADR-0022 reads ADR-0017: the deny list it looks for belongs to the agent host.
-const Review = z.object({ merge_by: z.enum(['person', 'agent']) });
+// `approvals` arrives as text from readTraits; the regex keeps "2.5" and "-1" out.
+const Review = z.object({
+  by: z.enum(['maintainer', 'peer', 'agent']),
+  approvals: one().regex(/^\d+$/, 'a whole number').transform(Number),
+});
 const SETTINGS = '.claude/settings.json';
 const MERGE = 'Bash(gh pr merge';
+const APPROVE = 'Bash(gh pr review';
 
 function review(root: string, file: string): number {
-  const { merge_by } = traitsOf(Review, 'ADR-0022', 'review', file, readFileSync(file, 'utf8'));
-  const name = `ADR-0022: review.merge_by is ${merge_by}`;
-  if (merge_by === 'agent') {
+  const text = readFileSync(file, 'utf8');
+  if (readTraits(text, 'review')?.merge_by !== undefined) {
+    throw new CheckError(`ADR-0022: review.merge_by was replaced by review.by and review.approvals in revision 2; answer them and remove review.merge_by from ${file}`);
+  }
+  const { by, approvals } = traitsOf(Review, 'ADR-0022', 'review', file, text);
+  const name = `ADR-0022: review.by is ${by}`;
+  if (by === 'peer' && approvals < 1) throw new CheckError(`${name}, so review.approvals must be 1 or more, not ${approvals}`);
+  if (by !== 'peer' && approvals !== 0) throw new CheckError(`${name}, so review.approvals must be 0, not ${approvals}`);
+  if (by === 'agent') {
     console.log(`${name}, nothing to check`);
     return 0;
   }
+  // Both parts run, so one run shows every problem.
+  const denied = denies(root, name, by === 'maintainer' ? [APPROVE, MERGE] : [APPROVE]);
+  const ruled = ruleset(root, name, by, approvals);
+  return denied && ruled ? 0 : 1;
+}
+
+function denies(root: string, name: string, required: string[]): boolean {
   const host = toolAnswer(root, 'ADR-0017', 'agent', 'host');
   if (host.value !== 'claude-code') {
     const why = host.found ? `ADR-0017 agent.host is ${host.value || '(not set)'}` : 'ADR-0017 is not in this repository';
-    console.log(`${name}, but ${why}, nothing to check`);
-    return 0;
+    console.log(`${name}, but ${why}, no deny to check`);
+    return true;
   }
+  const fail = (msg: string) => { console.error(`${name}, but ${msg}`); return false; };
   // Tracked only, as wiring rows: a deny never committed protects one machine.
-  if (!tracked(root).includes(SETTINGS)) throw new CheckError(`${name}, but ${SETTINGS} is not tracked`);
+  if (!tracked(root).includes(SETTINGS)) return fail(`${SETTINGS} is not tracked`);
   let deny: unknown;
   try {
     deny = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.permissions?.deny;
   } catch {
-    throw new CheckError(`${name}, but ${SETTINGS} is not valid JSON`);
+    return fail(`${SETTINGS} is not valid JSON`);
   }
-  // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
-  const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(MERGE)) : undefined;
-  if (!entry) throw new CheckError(`${name}, but ${SETTINGS} permissions.deny has no ${MERGE} entry`);
-  console.log(`${name}, ${SETTINGS} denies ${entry}`);
-  return 0;
+  let ok = true;
+  for (const p of required) {
+    // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
+    const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(p)) : undefined;
+    if (entry) console.log(`${name}, ${SETTINGS} denies ${entry}`);
+    else ok = fail(`${SETTINGS} permissions.deny has no ${p} entry`);
+  }
+  return ok;
+}
+
+// The pull_request rule GitHub applies to the default branch, read in CI only:
+// locally, whether gh is signed in would decide the verdict.
+type PullRequestRule = { required_approving_review_count?: number; dismiss_stale_reviews_on_push?: boolean; require_last_push_approval?: boolean };
+
+function ruleset(root: string, name: string, by: string, approvals: number): boolean {
+  if (process.env.GITHUB_ACTIONS !== 'true') {
+    console.log('ADR-0022: ruleset not read outside CI');
+    return true;
+  }
+  const fail = (msg: string) => { console.error(`${name}, but ${msg}`); return false; };
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!repo) return fail('GITHUB_REPOSITORY is not set, so the ruleset cannot be read');
+  const gh = (...args: string[]) => {
+    const r = spawnSync('gh', ['api', ...args], { cwd: root, encoding: 'utf8' });
+    if ((r.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') throw new CheckError(`${name}, but gh is not installed, so the ruleset cannot be read`);
+    if (r.error) throw r.error;
+    if (r.status !== 0) throw new CheckError(`${name}, but gh api ${args[0]} failed: ${r.stderr.trim()}`);
+    return r.stdout.trim();
+  };
+  const branch = gh(`repos/${repo}`, '--jq', '.default_branch');
+  // ponytail: first page only (30 rules); add --paginate --slurp if a branch ever carries more.
+  let rules: unknown;
+  try {
+    rules = JSON.parse(gh(`repos/${repo}/rules/branches/${branch}`));
+  } catch (e) {
+    if (e instanceof CheckError) throw e;
+    return fail(`gh api returned rules that are not JSON`);
+  }
+  console.log('ADR-0022: the ruleset\'s bypass list is not verified (reading it needs admin rights)');
+  // Several rulesets may each add a pull_request rule: GitHub applies the strictest of each setting.
+  const prs = (Array.isArray(rules) ? rules : [])
+    .filter((r) => r?.type === 'pull_request')
+    .map((r) => (r.parameters ?? {}) as PullRequestRule);
+  if (!prs.length) return fail(`no ruleset requires a pull request on ${branch}`);
+  const count = Math.max(...prs.map((p) => p.required_approving_review_count ?? 0));
+  let ok = true;
+  if (count !== approvals) {
+    ok = fail(by === 'maintainer'
+      ? `the ruleset on ${branch} requires ${count} approval(s), and a maintainer cannot approve their own pull request`
+      : `the ruleset on ${branch} requires ${count} approval(s) where review.approvals rules ${approvals}`);
+  }
+  if (by === 'peer') {
+    if (!prs.some((p) => p.dismiss_stale_reviews_on_push)) ok = fail(`the ruleset on ${branch} does not dismiss stale approvals on push`);
+    if (!prs.some((p) => p.require_last_push_approval)) ok = fail(`the ruleset on ${branch} does not require approval of the most recent push`);
+  }
+  if (ok) console.log(`${name}, the ruleset on ${branch} requires a pull request with ${count} approval(s)`);
+  return ok;
 }
 
 // ADR-0023: the root manifests declare the ruled licence, and a licence file sits at the root.
@@ -543,6 +614,11 @@ const ForgeAudit = z.object({ audit: one() });
 
 function forge(root: string, file: string, opts: Options): number {
   let failed = forgeGate(root, file, opts) !== 0;
+  // Revision 4 moved the key to ADR-0022; a leftover still reads as an answer to an agent.
+  if (readTraits(readFileSync(file, 'utf8'), 'forge')?.review !== undefined) {
+    console.error('ADR-0011: forge.review moved to ADR-0022 review.by; answer it there and remove it here');
+    failed = true;
+  }
   let audit: string;
   try {
     ({ audit } = traitsOf(ForgeAudit, 'ADR-0011', 'forge', file, readFileSync(file, 'utf8')));
