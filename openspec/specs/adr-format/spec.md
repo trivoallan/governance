@@ -134,11 +134,11 @@ the SDR it was adapted from and that SDR's revision.
 `status` is `accepted` or `rejected`, `date` is set, no trait key that is
 present is empty, the sections above are present, and the sentence
 `Everything below disappears when you rule` is gone. It checks the
-consuming repository's ruled ADRs, so a question ADR as governance ships it
-SHALL fail it; ADR-0001 SHALL pass it.
+consuming repository's ruled ADRs, through `governance-check ADR-0001`, so a
+question ADR as governance ships it SHALL fail it; ADR-0001 SHALL pass it.
 
 #### Scenario: Ruled file passes
-- **WHEN** `npx @jackchuka/mdschema@0.15.1 check '*.md'` runs on a ruled ADR with every trait filled
+- **WHEN** `mdschema check --schema adr/.mdschema.yml` runs on a ruled ADR with every trait filled
 - **THEN** it reports no error
 
 #### Scenario: Half-ruled file is named
@@ -146,7 +146,7 @@ SHALL fail it; ADR-0001 SHALL pass it.
 - **THEN** the check reports that file and the empty key
 
 #### Scenario: Shipped question fails
-- **WHEN** the check runs on a question ADR straight from governance
+- **WHEN** the schema is applied to a question ADR straight from governance
 - **THEN** it reports the `proposed` status and the empty traits
 
 ### Requirement: Suggested skills line
@@ -178,7 +178,7 @@ traits, and the ADR's text is not changed by the value a repository rules.
 - **THEN** it holds `check: npx --no-install governance-check ADR-0006`
 
 #### Scenario: Schema accepts the key
-- **WHEN** `npx @jackchuka/mdschema@0.15.1 check '*.md'` runs on a ruled ADR-0006 that keeps its `check:` line
+- **WHEN** `mdschema check --schema adr/.mdschema.yml` runs on a ruled ADR-0006 that keeps its `check:` line
 - **THEN** it reports no error about `check`
 
 ### Requirement: Revisions list
