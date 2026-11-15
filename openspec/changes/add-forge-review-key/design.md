@@ -27,8 +27,10 @@ re-answer in its closing Revisions list.
 ADR-0011 through `forge.gate`. A revision lets adopters rule again on a
 question they know, rather than receive one more.
 
-**The key is `forge.review`, with `peer` and `author`.** Two values suffice:
-the difference that matters is whether someone other than the author
+**The key is `forge.review`, with `peer`, `author` and `agent`.** Three
+values: `agent` is the case between the two others, a reader that did not
+write the change and is not a person. The difference that matters is
+whether someone other than the author
 reviews.
 
 - *Rejected: a count of reviewers.* It asks a finer question than any
@@ -43,8 +45,8 @@ pipeline the control; `informative` with `author` leaves the author as the
 sole decider of a pipeline that only reports. The ADR makes the
 consequences visible without prescribing a tool's behaviour.
 
-**The schema entry is an enum.** `traits.forge.review` takes `peer` or
-`author`, optional like its neighbours so an older ruled copy still
+**The schema entry is an enum.** `traits.forge.review` takes `peer`,
+`author` or `agent`, optional like its neighbours so an older ruled copy still
 validates.
 
 ## Risks / Trade-offs

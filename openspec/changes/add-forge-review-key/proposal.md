@@ -22,7 +22,10 @@ apply a proposal they wrote by hand.
   says who can accept a change:
   - `peer`: a person with write access other than the author.
   - `author`: the author's own review is enough.
-- The Decision recommends `peer`, and says `author` is tenable when one
+  - `agent`: the review of an agent that did not write the change is
+    enough.
+- The Decision recommends `peer`, says `agent` gives a sole writer a
+  second reader, and says `author` is tenable when one
   person alone has write access.
 - The ADR states what `author` means beside each value of `forge.gate`:
   - `none` with `author`: no control at all.

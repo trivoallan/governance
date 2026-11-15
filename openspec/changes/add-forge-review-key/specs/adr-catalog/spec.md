@@ -4,8 +4,9 @@
 
 ### Requirement: ADR-0011 asks who can accept a change
 ADR-0011 SHALL ask `forge.review`, with the values `peer` (a person with
-write access other than the author) and `author` (the author's own review is
-enough), and SHALL recommend `peer`, saying `author` is tenable when one
+write access other than the author), `author` (the author's own review is
+enough) and `agent` (the review of an agent that did not write the change
+is enough), and SHALL recommend `peer`, saying `author` is tenable when one
 person has write access. Adding the key SHALL raise ADR-0011 to revision 3,
 with a `Revision 3:` entry naming `forge.review` as the one key to answer.
 The sentence on who reviews a change proposed elsewhere SHALL remain
@@ -25,7 +26,7 @@ unchanged.
 
 #### Scenario: Schema accepts the key
 - **WHEN** a ruled ADR-0011 holds `forge.review: author`
-- **THEN** the schema in `adr/.mdschema.yml` accepts it, and refuses any value other than `peer` or `author`
+- **THEN** the schema in `adr/.mdschema.yml` accepts it, and refuses any value other than `peer`, `author` or `agent`
 
 ### Requirement: ADR-0011 states review beside the gate
 ADR-0011 SHALL state what `forge.review: author` means with each value of
