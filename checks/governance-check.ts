@@ -3,7 +3,7 @@
 // Runs the check governance ships for one ADR, from the consuming repository's
 // root, as called by that ADR's `check:` line through `ontrack check`.
 import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { join, dirname, basename, delimiter } from 'node:path';
+import { join, dirname, basename, delimiter, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
@@ -45,6 +45,9 @@ function findAdr(root: string, number: string): string {
   return hits[0];
 }
 
+// How a message names another ADR of this package: <namespace>/<number> once installed.
+const ref = (number: string) => (NAMESPACE ? `${NAMESPACE}/${number}` : number);
+
 // A scalar as ontrack reads it: trailing ` # comment` cut, one pair of quotes removed.
 function scalar(raw: string): string {
   let v = raw.replace(/\s+#.*$/, '').trim();
@@ -83,6 +86,59 @@ function readTraits(text: string, group: string): Traits | null {
       : v;
   }
   return traits;
+}
+
+// A top-level key of the frontmatter (`status`, `adr`, `supersedes`): a scalar,
+// a flow list, or a block list of `- item` lines; undefined when absent.
+function frontKey(text: string, key: string): Trait | undefined {
+  const lines = text.split(/\r?\n/);
+  const end = lines[0] === '---' ? lines.indexOf('---', 1) : -1;
+  if (end === -1) return undefined;
+  const front = lines.slice(1, end);
+  const i = front.findIndex((l) => l.startsWith(`${key}:`));
+  if (i === -1) return undefined;
+  const v = scalar(front[i].slice(key.length + 1));
+  if (v.startsWith('[') && v.endsWith(']')) return v.slice(1, -1).split(',').map((s) => scalar(s)).filter(Boolean);
+  if (v) return v;
+  const items: string[] = [];
+  for (const l of front.slice(i + 1)) {
+    const m = l.match(/^\s*-\s*(.*)$/);
+    if (!m) break;
+    items.push(scalar(m[1]));
+  }
+  return items.length ? items : '';
+}
+
+// Every ADR file under docs/adr/, flat or in a namespace directory.
+function adrFiles(root: string): string[] {
+  const base = join(root, 'docs', 'adr');
+  if (!existsSync(base)) return [];
+  return readdirSync(base, { withFileTypes: true }).flatMap((d) => {
+    if (d.isFile() && d.name.endsWith('.md')) return [join(base, d.name)];
+    if (!d.isDirectory()) return [];
+    return readdirSync(join(base, d.name)).filter((f) => f.endsWith('.md')).map((f) => join(base, d.name, f));
+  });
+}
+
+// The accepted ADR whose `supersedes:` names `file`, as ontrack reads it: a plain
+// name (`adr:` value or file name) within the same directory, `<dir>/<name>` across.
+function supersededBy(root: string, file: string): string | undefined {
+  const dir = basename(dirname(file));
+  const names = new Set([basename(file, '.md'), frontKey(readFileSync(file, 'utf8'), 'adr')].filter((n) => typeof n === 'string' && n));
+  for (const other of adrFiles(root)) {
+    if (other === file) continue;
+    const text = readFileSync(other, 'utf8');
+    if (frontKey(text, 'status') !== 'accepted') continue;
+    const sup = frontKey(text, 'supersedes');
+    const otherDir = dirname(other) === join(root, 'docs', 'adr') ? '' : basename(dirname(other));
+    for (const entry of Array.isArray(sup) ? sup : sup ? [sup] : []) {
+      const e = entry.replace(/\.md$/, '');
+      const cut = e.lastIndexOf('/');
+      const [d, n] = cut === -1 ? [otherDir, e] : [e.slice(0, cut), e.slice(cut + 1)];
+      if (d === dir && names.has(n)) return `${otherDir ? `${otherDir}/` : ''}${basename(other, '.md')}`;
+    }
+  }
+  return undefined;
 }
 
 // --- Trait schemas (ADR-0005): each check declares the shape of the keys it reads.
@@ -331,11 +387,45 @@ function wiring(number: string, entries: Entry[]): Check {
 
 // --- Checks that run a tool on the branch, as ADR-0006 runs commitlint.
 
-// The repository's own copy first, then PATH. Its report goes straight to our output.
+// Traits that name a tool outside the package manager (ADR-0025). The value is the
+// binary, `none` names nothing; `known` are the values governance's checks run.
+// Not a trait: the list follows from those ADRs' answers, as TOOLS below.
+const PINNED: [adr: string, group: string, key: string, known: string[]][] = [
+  ['ADR-0015', 'secrets', 'guard', ['gitleaks']],
+  ['ADR-0011', 'forge', 'audit', ['zizmor']],
+];
+
+const isEnoent = (e: Error | undefined) => (e as NodeJS.ErrnoException | undefined)?.code === 'ENOENT';
+
+// `mise which <name>` from the repository's root: the binary mise.toml and mise.lock pin.
+// Fails closed: an untrusted mise.toml, an undeclared or uninstalled tool, all give `error`.
+function miseWhich(root: string, name: string): { path?: string; error?: string; noMise?: true } {
+  const r = spawnSync('mise', ['-C', root, 'which', name], { cwd: root, encoding: 'utf8' });
+  if (isEnoent(r.error)) return { noMise: true };
+  if (r.error) throw r.error;
+  return r.status === 0 && r.stdout.trim() ? { path: r.stdout.trim() } : { error: r.stderr.trim() || `mise does not find ${name}` };
+}
+
+const HINT = 'run `mise trust && mise install --locked` in this repository';
+
+// A pinned tool (one PINNED names) never comes from node_modules/.bin, where any npm
+// package's bin may sit: from mise when ADR-0025 rules it, else from PATH. Any other
+// tool: the repository's own copy first, then PATH. Its report goes straight to our output.
 function runTool(root: string, name: string, args: string[], trait: string): number {
-  const PATH = [join(root, 'node_modules', '.bin'), process.env.PATH].join(delimiter);
-  const r = spawnSync(name, args, { cwd: root, stdio: 'inherit', env: { ...process.env, PATH } });
-  if ((r.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') throw new CheckError(`${trait}, but ${name} is not installed (looked in node_modules/.bin and on PATH)`);
+  const pinned = PINNED.some(([, , , known]) => known.includes(name));
+  let bin = name;
+  let where = 'on PATH';
+  if (pinned && toolAnswer(root, 'ADR-0025', 'tools', 'manager').value === 'mise') {
+    const m = miseWhich(root, name);
+    if (m.noMise) throw new CheckError(`${trait}, but mise is not installed (${ref('ADR-0025')} tools.manager: mise); install mise, then ${HINT}`);
+    if (!m.path) throw new CheckError(`${trait}, but mise does not provide ${name} (${ref('ADR-0025')} tools.manager: mise): ${m.error}\nPin ${name} in mise.toml and mise.lock, then ${HINT}`);
+    bin = m.path;
+    where = `at ${m.path}`;
+  }
+  const PATH = pinned ? process.env.PATH : [join(root, 'node_modules', '.bin'), process.env.PATH].join(delimiter);
+  if (!pinned) where = 'in node_modules/.bin and on PATH';
+  const r = spawnSync(bin, args, { cwd: root, stdio: 'inherit', env: { ...process.env, PATH } });
+  if (isEnoent(r.error)) throw new CheckError(`${trait}, but ${name} is not installed (looked ${where})`);
   if (r.error) throw r.error;
   return r.status ?? 1;
 }
@@ -355,8 +445,10 @@ const TOOLS: [adr: string, group: string, key: string, prefixes: Record<string, 
   ['ADR-0018', 'dependencies', 'updater', { dependabot: 'dependabot/', renovate: 'renovate/' }],
 ];
 
-// What ADR `adr` answers for `key`; `found` is false when no file matches (several files still throw).
-function toolAnswer(root: string, adr: string, group: string, key: string): { found: boolean; value?: unknown } {
+// What ADR `adr` answers for `key`, counted only when its copy is accepted and no
+// accepted ADR supersedes it; `why` says otherwise. `found` is false when no file
+// matches (several files still throw).
+function toolAnswer(root: string, adr: string, group: string, key: string): { found: boolean; value?: unknown; why?: string } {
   let file: string;
   try {
     file = findAdr(root, adr);
@@ -364,7 +456,12 @@ function toolAnswer(root: string, adr: string, group: string, key: string): { fo
     if (e instanceof CheckError && /no file matches/.test(e.message)) return { found: false };
     throw e;
   }
-  return { found: true, value: readTraits(readFileSync(file, 'utf8'), group)?.[key] };
+  const text = readFileSync(file, 'utf8');
+  const status = frontKey(text, 'status');
+  if (status !== 'accepted') return { found: true, why: `${ref(adr)} is ${status || 'without a status'}, not accepted` };
+  const by = supersededBy(root, file);
+  if (by) return { found: true, why: `${ref(adr)} is superseded by ${by}` };
+  return { found: true, value: readTraits(text, group)?.[key] };
 }
 
 function branching(root: string, file: string, { branch }: Options): number {
@@ -388,14 +485,16 @@ function branching(root: string, file: string, { branch }: Options): number {
   if (row) {
     const [adr, group, key, toolPrefixes] = row;
     const [tool, prefix] = Object.entries(toolPrefixes).find(([, p]) => name.startsWith(p)) ?? [];
-    const { found, value } = toolAnswer(root, adr, group, key);
+    const { found, value, why } = toolAnswer(root, adr, group, key);
     if (typeof value === 'string' && Object.hasOwn(toolPrefixes, value) && toolPrefixes[value] === prefix) {
-      console.log(`ADR-0009: ${name} is a tool branch (${adr} ${group}.${key}: ${value}), nothing to check`);
+      console.log(`ADR-0009: ${name} is a tool branch (${ref(adr)} ${group}.${key}: ${value}), nothing to check`);
       return 0;
     }
-    hint = found
-      ? ` (not exempt: ${adr} ${group}.${key} is not ${tool})`
-      : ` (not exempt: no ${adr} in docs/adr/*/ rules ${group}.${key})`;
+    hint = why
+      ? ` (not exempt: ${why})`
+      : found
+        ? ` (not exempt: ${ref(adr)} ${group}.${key} is not ${tool})`
+        : ` (not exempt: no ${ref(adr)} in docs/adr/*/ rules ${group}.${key})`;
   }
   const form = new RegExp(`^(?:${prefixes.map(esc).join('|')})/[a-z0-9]+(?:-[a-z0-9]+)*$`);
   if (form.test(name)) {
@@ -483,7 +582,8 @@ function review(root: string, file: string): number {
 function denies(root: string, name: string, required: string[]): boolean {
   const host = toolAnswer(root, 'ADR-0017', 'agent', 'host');
   if (host.value !== 'claude-code') {
-    const why = host.found ? `ADR-0017 agent.host is ${host.value || '(not set)'}` : 'ADR-0017 is not in this repository';
+    const adr17 = ref('ADR-0017');
+    const why = host.why ?? (host.found ? `${adr17} agent.host is ${host.value || '(not set)'}` : `${adr17} is not in this repository`);
     console.log(`${name}, but ${why}, no deny to check`);
     return true;
   }
@@ -646,7 +746,82 @@ function forge(root: string, file: string, opts: Options): number {
   return failed ? 1 : 0;
 }
 
+// ADR-0025: the tools the repository's answers name, and whether its manager pins them.
+const Tools = z.object({ manager: z.enum(['mise', 'aqua', 'script', 'none']) });
+
+function tools(root: string, file: string): number {
+  const { manager } = traitsOf(Tools, 'ADR-0025', 'tools', file, readFileSync(file, 'utf8'));
+  const name = `ADR-0025: tools.manager is ${manager}`;
+  console.log(name);
+  let failed = false;
+  const named: string[] = [];
+  for (const [adr, group, key, known] of PINNED) {
+    const at = `${ref(adr)} ${group}.${key}`;
+    const a = toolAnswer(root, adr, group, key);
+    if (!a.found || a.why) {
+      console.log(`  ${at}: ${a.why ?? `no ${ref(adr)} in this repository`}, names no tool here`);
+      continue;
+    }
+    if (typeof a.value !== 'string' || !a.value || a.value === 'none') {
+      console.log(`  ${at} is ${typeof a.value === 'string' && a.value ? a.value : 'not set'}, names no tool`);
+      continue;
+    }
+    const tool = a.value;
+    named.push(tool);
+    if (manager !== 'mise') {
+      console.log(`  ${tool} (${at})`);
+      continue;
+    }
+    const m = miseWhich(root, tool);
+    if (m.noMise) throw new CheckError(`${name}, but mise is not installed`);
+    if (m.path) console.log(`  ${tool} (${at}): ${m.path}`);
+    else if (known.includes(tool)) {
+      console.error(`${name}, but mise does not find ${tool} (${at}): ${m.error}\nPin ${tool} in mise.toml and mise.lock, then ${HINT}`);
+      failed = true;
+    } else {
+      console.log(`  ${tool} (${at}): note: mise does not find it; its binary may have another name, its pin is left to review`);
+    }
+  }
+  if ((manager === 'script' || manager === 'aqua') && named.length) console.log(`ADR-0025: with ${manager}, the pins of the tools above are not verified`);
+  if (manager === 'none' && named.length) {
+    console.error(`${name}, but ${named.join(', ')} ${named.length > 1 ? 'are' : 'is'} named: none is an answer only when no accepted ADR names such a tool`);
+    failed = true;
+  }
+  return failed ? 1 : 0;
+}
+
+// ADR-0001: the schema governance ships, run by the mdschema governance depends on, on
+// the repository's ruled copies of this package's ADRs (those beside its ADR-0001).
+const Format = z.object({ format: one() });
+
+function adrs(root: string, file: string): number {
+  const { format } = traitsOf(Format, 'ADR-0001', 'record-architecture-decisions', file, readFileSync(file, 'utf8'));
+  const name = `ADR-0001: record-architecture-decisions.format is ${format}`;
+  if (format !== 'nygard') {
+    console.log(`${name}, nothing to check`);
+    return 0;
+  }
+  const dir = dirname(file);
+  const ruled = readdirSync(dir).filter((f) => f.endsWith('.md'))
+    .map((f) => join(dir, f))
+    .filter((f) => frontKey(readFileSync(f, 'utf8'), 'status') !== 'proposed');
+  if (!ruled.length) {
+    console.log(`${name}, but no ADR is ruled yet, nothing to check`);
+    return 0;
+  }
+  // From governance's own package, never the repository's node_modules/.bin nor PATH.
+  const manifest = createRequire(import.meta.url).resolve('@jackchuka/mdschema/package.json');
+  const cli = join(dirname(manifest), JSON.parse(readFileSync(manifest, 'utf8')).bin.mdschema);
+  const files = ruled.map((f) => relative(root, f));
+  console.log(`${name}, checking ${files.length} ruled ADR(s) against ${relative(root, join(pkg, 'adr', '.mdschema.yml'))}`);
+  const r = spawnSync(process.execPath, [cli, 'check', '--schema', join(pkg, 'adr', '.mdschema.yml'), ...files], { cwd: root, stdio: 'inherit' });
+  if (r.error) throw r.error;
+  return r.status ?? 1;
+}
+
 const CHECKS: Record<string, Check> = {
+  'ADR-0001': adrs,
+  'ADR-0025': tools,
   'ADR-0011': forge,
   'ADR-0022': review,
   'ADR-0023': license,

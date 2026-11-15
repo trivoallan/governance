@@ -403,16 +403,20 @@ function branched({ adrs, files = {}, branch, commits = [] }: { adrs: Files; fil
   return dir;
 }
 
-// A stand-in for `name` in the repository's node_modules/.bin: it logs its
-// arguments to <dir>/.fake-<name>.log and exits with $FAKE_EXIT_<first argument>.
-function stub(dir: string, name: string) {
-  const bin = join(dir, 'node_modules', '.bin');
+// A stand-in for `name`, in the repository's node_modules/.bin, or in <dir>/.tools
+// for a tool that must come from PATH (see onTools): it logs its arguments to
+// <dir>/.fake-<name>.log and exits with $FAKE_EXIT_<first argument>.
+function stub(dir: string, name: string, at = join('node_modules', '.bin')) {
+  const bin = join(dir, at);
   mkdirSync(bin, { recursive: true });
   writeFileSync(join(bin, name), `#!/bin/sh\necho "$@" >> "${join(dir, `.fake-${name}.log`)}"\neval "exit \\\${FAKE_EXIT_$1:-0}"\n`, { mode: 0o755 });
   return () => readFileSync(join(dir, `.fake-${name}.log`), 'utf8');
 }
 
 // GITHUB_HEAD_REF cleared so a CI run of these tests does not leak into them.
+// A PATH with <dir>/.tools first, then git and node only.
+const onTools = (dir: string) => [join(dir, '.tools'), barePath].join(':');
+
 const runWith = (cwd: string, args: string[], env: Record<string, string> = {}) =>
   spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '', ...env } });
 
@@ -420,10 +424,18 @@ const branchingAdr = (prefixes: string) => ({ 'ADR-0009-branching.md': `  branch
 const secretsAdr = (guard: string) => ({ 'ADR-0015-secrets.md': `  secrets:\n    storage: keychain\n    guard: ${guard}` });
 const changesAdr = (framework: string, schema: string) => ({ 'ADR-0016-changes.md': `  changes:\n    framework: ${framework}\n    schema: ${schema}` });
 
-test('tool: installed in the repository is the one run', () => {
+// A decoy in node_modules/.bin, as any npm package's bin could be: it exits 99.
+function decoy(dir: string, name: string) {
+  const bin = join(dir, 'node_modules', '.bin');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, name), '#!/bin/sh\nexit 99\n', { mode: 0o755 });
+}
+
+test('tool: an npm bin does not stand in for a pinned tool', () => {
   const dir = branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x' });
-  const log = stub(dir, 'gitleaks');
-  const r = runWith(dir, ['ADR-0015'], { PATH: barePath });
+  decoy(dir, 'gitleaks');
+  const log = stub(dir, 'gitleaks', '.tools');
+  const r = runWith(dir, ['ADR-0015'], { PATH: onTools(dir) });
   assert.equal(r.status, 0, r.stderr);
   assert.match(log(), /^git --log-opts=origin\/HEAD\.\.HEAD --redact --verbose --no-banner$/m);
 });
@@ -564,7 +576,7 @@ test('ADR-0009: rejected ADR exempts nothing', () => {
   const r = runWith(branched({ adrs: branchingAdr('[feat]'), files }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /dependabot\/x is not <prefix>/);
-  assert.match(r.stderr, /ADR-0018 dependencies\.updater is not dependabot/);
+  assert.match(r.stderr, /not exempt: ADR-0018 is rejected, not accepted/);
 });
 
 test('ADR-0009: duplicate tool ADR fails a tool branch only', () => {
@@ -595,8 +607,8 @@ test('ADR-0009: prefixes not set', () => {
 
 test('ADR-0015: gitleaks status passed through, --from honoured', () => {
   const dir = branched({ adrs: secretsAdr('gitleaks'), branch: 'feat/x' });
-  const log = stub(dir, 'gitleaks');
-  const r = runWith(dir, ['ADR-0015', '--from', 'develop'], { FAKE_EXIT_git: '1' });
+  const log = stub(dir, 'gitleaks', '.tools');
+  const r = runWith(dir, ['ADR-0015', '--from', 'develop'], { PATH: onTools(dir), FAKE_EXIT_git: '1' });
   assert.equal(r.status, 1);
   assert.match(log(), /--log-opts=develop\.\.HEAD/);
 });
@@ -1025,7 +1037,7 @@ const tagged = pinned.replace('@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.
 
 // A zizmor stand-in: logs its arguments, prints a version, exits $FAKE_ZIZMOR_EXIT.
 function fakeZizmor(dir: string) {
-  const bin = join(dir, 'node_modules', '.bin');
+  const bin = join(dir, '.tools');
   mkdirSync(bin, { recursive: true });
   writeFileSync(join(bin, 'zizmor'), `#!/bin/sh\necho "$@" >> "${join(dir, '.zizmor.log')}"\n[ "$1" = --version ] && { echo "zizmor 0.0.0-fake"; exit 0; }\nexit \${FAKE_ZIZMOR_EXIT:-0}\n`, { mode: 0o755 });
   return () => readFileSync(join(dir, '.zizmor.log'), 'utf8');
@@ -1034,7 +1046,7 @@ function fakeZizmor(dir: string) {
 test('ADR-0011: audit runs zizmor offline, without config, on the committed workflows', () => {
   const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned, '.github/workflows/b.yaml': pinned }, untracked: { '.github/workflows/scratch.yml': tagged } });
   const log = fakeZizmor(dir);
-  const r = runWith(dir, ['ADR-0011'], { PATH: barePath });
+  const r = runWith(dir, ['ADR-0011'], { PATH: onTools(dir) });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /zizmor 0\.0\.0-fake/);
   assert.match(r.stdout, /ruleset that makes the pipeline required is not verified/);
@@ -1048,7 +1060,7 @@ test('ADR-0011: audit runs zizmor offline, without config, on the committed work
 test('ADR-0011: a zizmor finding fails the check', () => {
   const dir = wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': tagged } });
   fakeZizmor(dir);
-  const r = runWith(dir, ['ADR-0011'], { PATH: barePath, FAKE_ZIZMOR_EXIT: '14' });
+  const r = runWith(dir, ['ADR-0011'], { PATH: onTools(dir), FAKE_ZIZMOR_EXIT: '14' });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /ADR-0011: forge\.audit is zizmor, and zizmor reported findings no inline ignore covers/);
 });
@@ -1167,4 +1179,219 @@ test('ADR-0024: fail_on not set', () => {
   const r = run(wired({ adrs: scanAdr('none', '') }), 'ADR-0024');
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /code_scanning\.fail_on is not set/);
+});
+
+// --- Answers read from another ADR: accepted and not superseded (adr-checks)
+
+const adrText = (adr: string, status: string, traits: string, extra = '') =>
+  `---\nadr: ${adr}\nstatus: ${status}\n${extra}traits:\n${traits}\n---\n\n# ADR\n`;
+
+test('answer: a proposed copy does not count', () => {
+  const files = { 'docs/adr/trivoallan/ADR-0012-delivery.md': adrText('ADR-0012', 'proposed', '  delivery:\n    release_tool: release-please') };
+  const r = runWith(branched({ adrs: branchingAdr('[feat]'), files }), ['ADR-0009', '--branch', 'release-please--branches--main']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /not exempt: ADR-0012 is proposed, not accepted/);
+});
+
+test('answer: a local ADR supersedes the package\'s', () => {
+  const files = { 'docs/adr/local/ADR-0003-updates.md': adrText('ADR-0003', 'accepted', '  updates:\n    bot: none', 'supersedes: [trivoallan/ADR-0018-dependencies]\n') };
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /not exempt: ADR-0018 is superseded by local\/ADR-0003-updates/);
+});
+
+test('answer: a block list, by adr value, from the same directory', () => {
+  const files = { 'docs/adr/trivoallan/ADR-0026-x.md': adrText('ADR-0026', 'accepted', '  x:\n    y: z', 'supersedes:\n  - ADR-0018\n') };
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.match(r.stderr, /superseded by trivoallan\/ADR-0026-x/);
+});
+
+test('answer: a superseding ADR that is not accepted supersedes nothing', () => {
+  const files = { 'docs/adr/local/ADR-0003-updates.md': adrText('ADR-0003', 'proposed', '  updates:\n    bot: none', 'supersedes: [trivoallan/ADR-0018-dependencies]\n') };
+  const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0022: agent host not ruled yet', () => {
+  const files = { 'docs/adr/trivoallan/ADR-0017-agent-tooling.md': adrText('ADR-0017', 'proposed', '  agent:\n    host: claude-code') };
+  const r = local(wired({ adrs: reviewAdr('maintainer', '0'), files }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /but ADR-0017 is proposed, not accepted, no deny to check/);
+});
+
+// --- Pinned tools from mise (ADR-0025)
+
+const toolsAdr = (manager: string): Files => ({ 'ADR-0025-tools.md': `  tools:\n    manager: ${manager}` });
+
+// A mise stand-in in <dir>/.tools: `mise -C <root> which <tool>` prints <dir>/.mise/<tool>
+// when that file exists, and fails as mise does otherwise.
+function fakeMise(dir: string) {
+  mkdirSync(join(dir, '.tools'), { recursive: true });
+  writeFileSync(join(dir, '.tools', 'mise'), `#!/bin/sh\n[ "$3" = which ] || exit 2\nf="${join(dir, '.mise')}/$4"\n[ -x "$f" ] && { echo "$f"; exit 0; }\necho "mise ERROR $4 is not a mise bin" >&2\nexit 1\n`, { mode: 0o755 });
+}
+const miseTool = (dir: string, name: string) => stub(dir, name, '.mise');
+
+test('tool: a pinned tool is resolved by mise', () => {
+  const dir = branched({ adrs: { ...secretsAdr('gitleaks'), ...toolsAdr('mise') }, branch: 'feat/x' });
+  fakeMise(dir);
+  const fromMise = miseTool(dir, 'gitleaks');
+  decoy(dir, 'gitleaks');
+  writeFileSync(join(dir, '.tools', 'gitleaks'), '#!/bin/sh\nexit 98\n', { mode: 0o755 });
+  const r = runWith(dir, ['ADR-0015'], { PATH: onTools(dir) });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(fromMise(), /^git --log-opts=/m);
+});
+
+test('tool: a pinned tool missing from mise is not taken from PATH', () => {
+  const dir = wired({ adrs: { ...forgeAdr('blocking', 'zizmor'), ...toolsAdr('mise') }, files: { '.github/workflows/ci.yml': pinned } });
+  fakeMise(dir);
+  const log = fakeZizmor(dir);
+  const r = runWith(dir, ['ADR-0011'], { PATH: onTools(dir) });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /forge\.audit is zizmor, but mise does not provide zizmor/);
+  assert.match(r.stderr, /mise install --locked/);
+  assert.throws(log);
+});
+
+test('tool: mise ruled but not installed', () => {
+  const dir = branched({ adrs: { ...secretsAdr('gitleaks'), ...toolsAdr('mise') } });
+  const r = runWith(dir, ['ADR-0015'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /but mise is not installed/);
+});
+
+test('tool: manager not ruled, the pinned tool comes from PATH', () => {
+  const files = { 'docs/adr/trivoallan/ADR-0025-tools.md': adrText('ADR-0025', 'proposed', '  tools:\n    manager: mise') };
+  const dir = branched({ adrs: secretsAdr('gitleaks'), files, branch: 'feat/x' });
+  const log = stub(dir, 'gitleaks', '.tools');
+  const r = runWith(dir, ['ADR-0015'], { PATH: onTools(dir) });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(log(), /^git /m);
+});
+
+test('ADR-0025: every tool pinned', () => {
+  const dir = wired({ adrs: { ...toolsAdr('mise'), ...secretsAdr('gitleaks'), ...forgeAdr('blocking', 'zizmor') } });
+  fakeMise(dir);
+  miseTool(dir, 'gitleaks');
+  miseTool(dir, 'zizmor');
+  const r = runWith(dir, ['ADR-0025'], { PATH: onTools(dir) });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /gitleaks \(ADR-0015 secrets\.guard\): .*\.mise\/gitleaks/);
+  assert.match(r.stdout, /zizmor \(ADR-0011 forge\.audit\): .*\.mise\/zizmor/);
+});
+
+test('ADR-0025: a known tool not pinned fails', () => {
+  const dir = wired({ adrs: { ...toolsAdr('mise'), ...forgeAdr('blocking', 'zizmor') } });
+  fakeMise(dir);
+  const r = runWith(dir, ['ADR-0025'], { PATH: onTools(dir) });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /mise does not find zizmor \(ADR-0011 forge\.audit\)/);
+  assert.match(r.stderr, /mise install --locked/);
+  assert.match(r.stdout, /ADR-0015 secrets\.guard: no ADR-0015 in this repository, names no tool here/);
+});
+
+test('ADR-0025: an unforeseen tool not found is a note', () => {
+  const dir = wired({ adrs: { ...toolsAdr('mise'), ...secretsAdr('trufflehog'), ...forgeAdr('blocking', 'none') } });
+  fakeMise(dir);
+  const r = runWith(dir, ['ADR-0025'], { PATH: onTools(dir) });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /trufflehog \(ADR-0015 secrets\.guard\): note: mise does not find it/);
+  assert.match(r.stdout, /ADR-0011 forge\.audit is none, names no tool/);
+});
+
+test('ADR-0025: a superseded ADR names no tool', () => {
+  const files = { 'docs/adr/local/ADR-0003-secrets.md': adrText('ADR-0003', 'accepted', '  s:\n    g: x', 'supersedes: [trivoallan/ADR-0015-secrets]\n') };
+  const dir = wired({ adrs: { ...toolsAdr('mise'), ...secretsAdr('gitleaks') }, files });
+  fakeMise(dir);
+  const r = runWith(dir, ['ADR-0025'], { PATH: onTools(dir) });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /ADR-0015 is superseded by local\/ADR-0003-secrets, names no tool here/);
+});
+
+test('ADR-0025: script lists without verifying', () => {
+  const r = runWith(wired({ adrs: { ...toolsAdr('script'), ...secretsAdr('gitleaks') } }), ['ADR-0025'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ {2}gitleaks \(ADR-0015 secrets\.guard\)$/m);
+  assert.match(r.stdout, /with script, the pins of the tools above are not verified/);
+});
+
+test('ADR-0025: none while a tool is named', () => {
+  const r = runWith(wired({ adrs: { ...toolsAdr('none'), ...secretsAdr('gitleaks') } }), ['ADR-0025'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /none is an answer only when no accepted ADR names such a tool/);
+});
+
+test('ADR-0025: none with no tool named passes', () => {
+  const r = runWith(wired({ adrs: { ...toolsAdr('none'), ...secretsAdr('none') } }), ['ADR-0025'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0025: mise not installed', () => {
+  const r = runWith(wired({ adrs: { ...toolsAdr('mise'), ...secretsAdr('gitleaks') } }), ['ADR-0025'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /tools\.manager is mise, but mise is not installed/);
+});
+
+test('ADR-0025: manager not set', () => {
+  const r = runWith(wired({ adrs: toolsAdr('') }), ['ADR-0025'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /tools\.manager is not set/);
+});
+
+// --- ADR-0001: the shipped schema on the ruled copies
+
+const own = (name: string) => readFileSync(join(here, '..', 'docs', 'adr', 'trivoallan', name), 'utf8');
+const adr1 = { 'docs/adr/trivoallan/ADR-0001-record-architecture-decisions.md': own('ADR-0001-record-architecture-decisions.md') };
+const adr6 = (text = own('ADR-0006-commits.md')) => ({ 'docs/adr/trivoallan/ADR-0006-commits.md': text });
+const proposed9 = { 'docs/adr/trivoallan/ADR-0009-branching.md': readFileSync(join(here, '..', 'adr', 'ADR-0009-branching.md'), 'utf8') };
+
+test('ADR-0001: ruled ADRs pass, a proposed one is skipped', () => {
+  const dir = wired({ adrs: {}, files: { ...adr1, ...adr6(), ...proposed9 } });
+  const r = runWith(dir, ['ADR-0001'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /checking 2 ruled ADR\(s\)/);
+});
+
+test('ADR-0001: a half-ruled ADR is refused and named', () => {
+  const dir = wired({ adrs: {}, files: { ...adr1, ...adr6(own('ADR-0006-commits.md').replace('tool: commitlint', 'tool:')) } });
+  const r = runWith(dir, ['ADR-0001'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout + r.stderr, /ADR-0006-commits\.md/);
+  assert.match(r.stdout + r.stderr, /commits\.tool/);
+});
+
+test('ADR-0001: a decoy mdschema does not stand in, nothing is copied', () => {
+  const dir = wired({ adrs: {}, files: { ...adr1, ...adr6(own('ADR-0006-commits.md').replace('tool: commitlint', 'tool:')) } });
+  mkdirSync(join(dir, 'node_modules', '.bin'), { recursive: true });
+  writeFileSync(join(dir, 'node_modules', '.bin', 'mdschema'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+  const before = git(dir, 'status', '--porcelain');
+  const r = runWith(dir, ['ADR-0001'], { PATH: [join(dir, 'node_modules', '.bin'), barePath].join(':') });
+  assert.notEqual(r.status, 0);
+  assert.equal(git(dir, 'status', '--porcelain'), before);
+});
+
+test('ADR-0001: another format has nothing to check', () => {
+  const dir = wired({ adrs: { 'ADR-0001-record-architecture-decisions.md': '  record-architecture-decisions:\n    format: madr' } });
+  const r = runWith(dir, ['ADR-0001'], { PATH: barePath });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /format is madr, nothing to check/);
+});
+
+test('ADR-0001: format not set', () => {
+  const r = runWith(wired({ adrs: { 'ADR-0001-record-architecture-decisions.md': '  record-architecture-decisions:\n    format:' } }), ['ADR-0001'], { PATH: barePath });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /record-architecture-decisions\.format is not set/);
+});
+
+// Installed under an alias, a message naming another ADR carries the namespace.
+test('installed, another ADR is named <namespace>/<number>', () => {
+  const dir = branched({ adrs: {}, files: { 'docs/adr/aliased/ADR-0009-branching.md': adrText('ADR-0009', 'accepted', '  branching:\n    prefixes: [feat]') } });
+  const pkg = join(dir, 'node_modules', 'aliased');
+  const tsc = spawnSync(join(modules, '.bin', 'tsc'), ['--outDir', join(pkg, 'dist')], { cwd: join(here, '..'), encoding: 'utf8' });
+  assert.equal(tsc.status, 0, tsc.stdout);
+  writeFileSync(join(pkg, 'package.json'), '{"type":"module"}');
+  symlinkSync(join(modules, 'zod'), join(dir, 'node_modules', 'zod'));
+  const r = spawnSync(process.execPath, [join(pkg, 'dist', 'governance-check.js'), 'ADR-0009', '--branch', 'dependabot/x'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '' } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no aliased\/ADR-0018 in docs\/adr\/\*\/ rules dependencies\.updater/);
 });

@@ -3,10 +3,11 @@ adr: ADR-0001
 slug: record-architecture-decisions
 title: Record architecture decisions
 status: accepted
-revision: 3
+revision: 4
 date: 2026-11-14
 authors: [Tristan Rivoallan]
 supersedes: []
+check: npx --no-install governance-check ADR-0001
 traits:
   record-architecture-decisions:
     format: nygard
@@ -121,23 +122,14 @@ only when there is something to rule on again. Each ADR above revision 1
 ends with a **Revisions** list that says what changed and what to re-answer:
 read it before ruling again.
 
-**7. `mdschema` attests, it refuses nothing.** The `.mdschema.yml` shipped
+**7. `mdschema` refuses a half-ruled ADR.** The `.mdschema.yml` shipped
 next to these ADRs checks that a ruled ADR carries its verdict: status
 decided, date set, no trait key left empty, the sections above present, and
-the how-to-rule block gone. `ontrack plan` lists the ADRs but not this
-file, so copy it yourself, then run it, from your repository's root:
-
-```bash
-cp node_modules/trivoallan/adr/.mdschema.yml docs/adr/trivoallan/
-( cd docs/adr/trivoallan && npx @jackchuka/mdschema@0.15.1 check '*.md' )
-```
-
-Replace `trivoallan` with the alias you installed governance under.
-
-It names what is missing and stops there. If `npx` answers
-`sh: mdschema: command not found`, take the standalone binary from the
-releases of [its repository](https://github.com/jackchuka/mdschema) and run
-`mdschema check '*.md'` from the same directory.
+the how-to-rule block gone. This ADR's own `check:` line runs it:
+`ontrack check` calls `governance-check ADR-0001`, which runs the mdschema
+governance depends on, with that schema, on every copy of these ADRs that
+is no longer `proposed`. It fails and names the file and the key. Nothing
+is copied into your repository and nothing is installed by hand.
 
 **8. A `check:` line says when your work departs from a decision.** An ADR
 may carry, in its frontmatter, a `check:` key holding one shell command.
@@ -177,9 +169,9 @@ not depend on any network: the record lives where the decision applies.
 
 ### Negative
 
-- Three conventions, one of them tooled: `mdschema` checks a ruled ADR, but
-  nothing runs it. Not a commit, not a pull request. If nobody types the
-  command, nothing looks at your ADRs.
+- Three conventions, one of them tooled: `mdschema` checks a ruled ADR when
+  `ontrack check` runs. If nothing runs `ontrack check`, in a pull request or
+  elsewhere, nothing looks at your ADRs.
 - governance adapts surdesrails and will drift from it. Nothing detects
   when an SDR it adapts changes: the only link is the source line in each
   ADR's References, read by hand.
@@ -236,3 +228,4 @@ a repository that already ruled must re-answer.
 
 - Revision 2: rule 4's freeze applies to a repository's verdict, and governance changes the ADRs it ships only through `revision`; a `Suggested skills` line changes no revision. No key changed: nothing to re-answer.
 - Revision 3: rule 8 describes `check:` lines, rule 4 lets a ruled ADR receive one, and rule 6 says a `check:` line and its scripts change no revision. No key changed: nothing to re-answer.
+- Revision 4: rule 7 runs the schema through this ADR's `check:` line, which refuses a half-ruled ADR, in place of a command typed by hand after copying `.mdschema.yml`. No key changed: nothing to re-answer.

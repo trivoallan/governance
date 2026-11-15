@@ -142,8 +142,11 @@ A version goes through two environments, in order, both on the tag:
 1. **`github`**: release-please's tag and GitHub release. Installing from
    Git at that tag (`#vX.Y.Z`) keeps working.
 2. **`npm`**: the same version, published to npmjs as
-   `@trivoallan/ontrack-governance`. `governance` is taken on npm by an
-   unrelated package, hence the scoped name. Publishing means removing
+   `@trivoallan/ontrack-engineering`. `governance` is taken on npm by an
+   unrelated package, hence the scoped name. Versions up to 0.5.1 were
+   published as `@trivoallan/ontrack-governance`, renamed on 2026-11-15
+   because the package holds a repository's engineering decisions, not
+   governance in the organisation-wide sense. Publishing means removing
    `"private": true` from `package.json`, publishing with `--access public`,
    and a release job that authenticates by npm trusted publishing (OIDC),
    so no npm token is stored anywhere. The ontrack namespace stays `trivoallan`, because it
@@ -157,7 +160,7 @@ A version goes through two environments, in order, both on the tag:
 ### Positive
 
 - Consumers install a named version from npm (`npm i -D
-  trivoallan@npm:@trivoallan/ontrack-governance`), or from Git at its tag, instead of whatever
+  trivoallan@npm:@trivoallan/ontrack-engineering`), or from Git at its tag, instead of whatever
   `main` holds.
 - Each version comes with a changelog generated from the commit messages
   that commitlint already checks (ADR-0006).
@@ -173,6 +176,9 @@ A version goes through two environments, in order, both on the tag:
 - The package name changes, so the README's install lines change, and
   existing consumers installed as `trivoallan@git+…` keep working only from
   Git.
+- Consumers of `@trivoallan/ontrack-governance` must point their alias at
+  `@trivoallan/ontrack-engineering`; the old name stays deprecated at
+  0.5.1.
 - A badly typed squash message produces a wrong version, now published to a
   registry that does not let a version be reused.
 - A release is not finished when its tag exists: its highlights are still
