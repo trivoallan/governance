@@ -18,5 +18,5 @@
 
 - [x] 3.1 Check that `add-ci-gate` is merged and `.github/workflows/ci.yml` has its `npm ci` step; stop here if not (merged: `ci.yml` has the `npm ci` step)
 - [x] 3.2 In `ci.yml`, add `npm install --global npm@12.2.2` before the install with a comment (why, and that nothing updates it), and change `npm ci` to `npm ci --strict-allow-scripts`; verify `actionlint` reports no error and `act -l` still lists the single job `test` (actionlint passes, `act -l` lists `test` only; zizmor flags the global install as `adhoc-packages`, so an inline ignore with its reason is proposed for the person to merge, per ADR-0011 rule 2)
-- [ ] 3.3 Open the pull request (`build:` type, no scope); verify the `test` log shows npm `12.2.2` running `npm ci --strict-allow-scripts` and the check passes
+- [x] 3.3 Open the pull request (`build:` type, no scope); verify the `test` log shows npm `12.2.2` running `npm ci --strict-allow-scripts` and the check passes (#100: `test` installs npm 12.2.2, then `npm ci --strict-allow-scripts` runs with npm 12's `npm notice run` output; every check passes. The setup-node step, still on npm 11, shows the `EBADDEVENGINES` warning)
 - [x] 3.4 Run `openspec validate adopt-npm-12-cooldown --strict`; verify it passes
