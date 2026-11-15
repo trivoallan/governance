@@ -458,8 +458,61 @@ function review(root: string, file: string): number {
   return 0;
 }
 
+// ADR-0023: the root manifests declare the ruled licence, and a licence file sits at the root.
+const License = z.object({ spdx: one() });
+const LICENSE_FILES = ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'COPYING'];
+
+// `license` under [project]: a string, or { text = "..." }.
+// ponytail: line match, no TOML parser (one runtime dependency); a multiline inline table reads as absent.
+function pyprojectLicense(text: string): string | undefined {
+  let inProject = false;
+  for (const line of text.split(/\r?\n/)) {
+    const table = line.match(/^\s*\[([^\]]*)\]\s*$/);
+    if (table) {
+      inProject = table[1].trim() === 'project';
+      continue;
+    }
+    const m = inProject && line.match(/^\s*license\s*=\s*(?:\{\s*text\s*=\s*)?(["'])(.*?)\1/);
+    if (m) return m[2];
+  }
+  return undefined;
+}
+
+function license(root: string, file: string): number {
+  const { spdx } = traitsOf(License, 'ADR-0023', 'license', file, readFileSync(file, 'utf8'));
+  const files = tracked(root);
+  let failed = false;
+  const fail = (msg: string) => { console.error(`ADR-0023: ${msg}`); failed = true; };
+  const manifests = ['package.json', 'pyproject.toml'].filter((m) => files.includes(m));
+  if (!manifests.length) console.log('ADR-0023: no root manifest (package.json, pyproject.toml) is tracked');
+  for (const m of manifests) {
+    const text = readFileSync(join(root, m), 'utf8');
+    let declared: unknown;
+    if (m === 'package.json') {
+      try {
+        declared = JSON.parse(text)?.license;
+      } catch {
+        fail(`${m} is not valid JSON`);
+        continue;
+      }
+    } else {
+      declared = pyprojectLicense(text);
+    }
+    if (typeof declared !== 'string' || !declared) fail(`${m} has no license field; license.spdx rules ${spdx}`);
+    else if (declared !== spdx) fail(`${m} has license ${declared} where license.spdx rules ${spdx}`);
+    else console.log(`ADR-0023: ${m} declares ${spdx}`);
+  }
+  if (spdx !== 'UNLICENSED') {
+    const found = LICENSE_FILES.find((f) => files.includes(f));
+    if (found) console.log(`ADR-0023: license.spdx is ${spdx}, ${found} found`);
+    else fail(`license.spdx is ${spdx}, but no tracked ${LICENSE_FILES.slice(0, -1).join(', ')} or ${LICENSE_FILES.at(-1)} at the root`);
+  }
+  return failed ? 1 : 0;
+}
+
 const CHECKS: Record<string, Check> = {
   'ADR-0022': review,
+  'ADR-0023': license,
   'ADR-0006': commits,
   'ADR-0009': branching,
   'ADR-0015': secrets,

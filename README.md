@@ -2,9 +2,9 @@
 
 **Opinionated ADRs you import, overrule where you disagree, and check in CI.**
 
-The 22 questions I answer for every Python or TypeScript repository I keep
+The 23 questions I answer for every Python or TypeScript repository I keep
 on GitHub (commits, branching, delivery, supply chain, agent tooling), each
-with the answer I recommend and why; 12 of them come with a check.
+with the answer I recommend and why; 13 of them come with a check.
 
 governance is an [ontrack](https://github.com/trivoallan/ontrack) source:
 an npm package of ADRs that your repository imports and rules on, one
@@ -15,7 +15,7 @@ question at a time.
 | Domain | What you gain | What `governance-check` verifies |
 | --- | --- | --- |
 | **Workflow** (0006, 0009, 0014, 0016) | One convention for commits and branch names, refused at the gate instead of argued in review | the branch's commits pass commitlint; the branch name has an accepted prefix; OpenSpec uses the schema you chose |
-| **Delivery** (0011, 0012) | A pipeline designed once (stages, a blocking gate, releases cut from tags) that your agent writes from the rules | a workflow exists; release-please runs in one; a Dockerfile if you ship a container |
+| **Delivery** (0011, 0012, 0023) | A pipeline designed once (stages, a blocking gate, releases cut from tags) that your agent writes from the rules, and a licence others can reuse the code under | a workflow exists; release-please runs in one; a Dockerfile if you ship a container; the root manifest declares the ruled licence and a licence file is committed |
 | **Supply chain** (0015, 0018, 0019, 0020, 0021) | Current practice, by name: gitleaks before every commit, dependencies admitted by a person with install scripts ignored, a CycloneDX SBOM scanned by Grype, SLSA Build Level 2 provenance | gitleaks finds no secret on the branch; Dependabot is configured, and so is its automerge; the publishing workflow emits provenance |
 | **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |
 | **Code** (0004, 0005, 0007, 0013) | Validation at every boundary (`zod` or `pydantic`), and a test coverage target you set | nothing is verified |
@@ -50,6 +50,7 @@ doesn't fit your repository.
 - [ADR-0020](adr/ADR-0020-adding-dependencies.md) Adding a dependency
 - [ADR-0021](adr/ADR-0021-build-provenance.md) Build provenance
 - [ADR-0022](adr/ADR-0022-review-and-merge.md) Review and merge
+- [ADR-0023](adr/ADR-0023-license.md) License
 
 ### Not covered
 
