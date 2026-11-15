@@ -48,7 +48,7 @@
 ## 3. Specs and follow-up
 
 - [x] 3.1 Run `openspec validate docs-channels --strict` and fix any finding.
-- [ ] 3.2 Open the pull request as `feat(adr)!:` on a `feat/` branch (ADR-0009). Before the first push, rename the branch from `tritri/multi-version-doc-df1884`. In the description, say:
+- [x] 3.2 Open the pull request as `feat(adr)!:` on a `feat/` branch (ADR-0009). Before the first push, rename the branch from `tritri/multi-version-doc-df1884`. In the description, say:
   - governance's own copy takes revision 3 with no key;
   - trivoallan/ontrack must answer `[release, main]` and rebuild `docs.yml` after it imports the release.
 
