@@ -512,6 +512,16 @@ when that file is not tracked, is not valid JSON, or lacks a required entry.
 An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy it,
 and `.claude/settings.local.json` SHALL NOT be read.
 
+For `copilot`, it SHALL read the tracked `.claude/settings.json`. That
+file's `hooks.PreToolUse` array SHALL hold, for each command, an entry whose
+`matcher` is absent, empty, `*`, or a pattern that matches `Bash`, and whose
+`hooks` array holds an item with `type: "command"` and a `command` that
+contains the command. It SHALL fail, naming the file, when that file is not
+tracked, is not valid JSON, or lacks a required hook, and the failure SHALL
+say that Copilot CLI ignores `permissions.deny`. A `permissions` entry SHALL
+NOT satisfy it, `.claude/settings.local.json` SHALL NOT be read, and the
+hook SHALL NOT be run.
+
 For `opencode`, it SHALL read the tracked `opencode.json` and
 `.opencode/opencode.json`, in that order, and join their `permissions`
 arrays in that order:
@@ -638,6 +648,26 @@ arrays in that order:
 #### Scenario: One host of two fails
 - **WHEN** `hosts` is `[claude-code, opencode]`, `.claude/settings.json` denies both commands, and the tracked `opencode.json` has no `permissions`
 - **THEN** the check exits non-zero, reports the `claude-code` entries as passing, and names `opencode.json` as failing
+
+#### Scenario: Copilot hooks block review and merge
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[copilot]`, and the tracked `.claude/settings.json` has, under `hooks.PreToolUse`, a `Bash` entry whose command hooks contain `gh pr review` and `gh pr merge`
+- **THEN** the deny part passes and names the `Bash` matcher for both commands
+
+#### Scenario: Copilot with deny entries only
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[copilot]`, and `.claude/settings.json` holds both commands under `permissions.deny` and no hook
+- **THEN** the check exits non-zero, says `hooks.PreToolUse` has no `gh pr review` hook on Bash, and says Copilot CLI ignores `permissions.deny`
+
+#### Scenario: Copilot peer needs only the review hook
+- **WHEN** `review.by` is `peer`, `hosts` is `[copilot]`, and the only hook contains `gh pr review`
+- **THEN** the deny part passes
+
+#### Scenario: Copilot hook on another tool
+- **WHEN** `hosts` is `[copilot]` and the only hooks containing the commands sit under a `matcher` of `Edit`
+- **THEN** the check exits non-zero
+
+#### Scenario: Claude Code and Copilot together
+- **WHEN** `review.by` is `maintainer`, `hosts` is `[claude-code, copilot]`, and `.claude/settings.json` holds both deny entries and both hooks
+- **THEN** the deny part passes and reports the deny entries for `claude-code` and the hooks for `copilot`
 
 ### Requirement: ADR-0023 check
 `governance-check ADR-0023` SHALL read `license.spdx` from ADR-0023.
@@ -910,12 +940,12 @@ The check SHALL read the files only, and SHALL NOT call the network.
 
 ### Requirement: ADR-0017 check
 `ontrack-engineering-check ADR-0017` SHALL read `agent.hosts` from ADR-0017, a list
-whose values are `claude-code` and `opencode`.
+whose values are `claude-code`, `opencode` and `copilot`.
 - When ADR-0017 holds the revision 1 key `agent.host`, whatever its value, the check SHALL exit non-zero. Its message SHALL say that `agent.host` became `agent.hosts`, a list, in revision 2, and SHALL show the list to write: `[<value>]` for `claude-code`, `[]` for `none` or an empty value.
 - When `agent.hosts` is absent, the check SHALL exit non-zero and say it is not set.
-- When `agent.hosts` is not a list, or holds a value other than `claude-code` or `opencode`, the check SHALL exit non-zero and name the value.
+- When `agent.hosts` is not a list, or holds a value other than `claude-code`, `opencode` or `copilot`, the check SHALL exit non-zero and name the value.
 - When `agent.hosts` is `[]`, the check SHALL print `ADR-0017: agent.hosts is empty, nothing to check` and exit `0`.
-- For `claude-code`, a tracked `.claude/settings.json` SHALL be required.
+- For `claude-code` and for `copilot`, a tracked `.claude/settings.json` SHALL be required.
 - For `opencode`, a tracked `opencode.json` or `.opencode/opencode.json` SHALL be required.
 - The check SHALL report every host in one run, and SHALL exit `0` only when every declared host's file is tracked.
 

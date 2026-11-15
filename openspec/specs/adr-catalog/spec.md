@@ -156,11 +156,13 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
 - **THEN** it contains `forge.gate` and `forge.audit`, and no `forge.vendor`
 
 ### Requirement: ADR-0017 asks which agent host the repository uses
-ADR-0017 SHALL ask `agent.hosts`, a list whose values are `claude-code` and
-`opencode`, recommending `[claude-code]`. `[]` SHALL say that the repository
-declares no agent tooling. ADR-0017 SHALL be at `revision: 2`. Its Revisions
+ADR-0017 SHALL ask `agent.hosts`, a list whose values are `claude-code`,
+`opencode` and `copilot`, recommending `[claude-code]`. `[]` SHALL say that the repository
+declares no agent tooling. ADR-0017 SHALL be at `revision: 3`. Its Revisions
 list SHALL say that `agent.host` became `agent.hosts`, and that a repository
-re-answers by writing its former value as a one-item list, or `[]` for `none`.
+re-answers by writing its former value as a one-item list, or `[]` for `none`;
+and that revision 3 adds `copilot`, with nothing to re-answer for a
+repository whose contributors do not use Copilot CLI.
 
 Its Decision SHALL fix, for every repository whose list holds `claude-code`:
 - skills arrive as plugins from the repository's own marketplace,
@@ -190,6 +192,25 @@ Its Decision SHALL fix, for every repository whose list holds `opencode`:
 - skills listed by an OpenSpec schema are installed only on explicit
   request, as ADR-0016 rule 3 says.
 
+Its Decision SHALL fix, for every repository whose list holds `copilot`,
+which means GitHub Copilot CLI:
+- the Claude Code rules on the marketplace, `.claude/settings.json`, pinning,
+  vendoring and forbidden sources apply, because Copilot CLI reads
+  `extraKnownMarketplaces`, `enabledPlugins` and `hooks` from
+  `.claude/settings.json`, the marketplace it points at, and
+  `.claude/skills/`;
+- each contributor trusts the folder in Copilot, after which Copilot CLI
+  installs every enabled plugin at the commit its entry pins, with no
+  install step;
+- a committed `.github/copilot/settings.json` holds neither `enabledPlugins`
+  nor `extraKnownMarketplaces`, since it takes precedence over
+  `.claude/settings.json`;
+- Copilot CLI does not read `permissions`, so a rule that must hold for it
+  is a hook.
+It SHALL name the Copilot CLI version and date these statements were read
+from, and SHALL name Copilot's cloud coding agent and Copilot in VS Code as
+not covered by `copilot`.
+
 ADR-0017 SHALL say that opencode reads `AGENTS.md` and not `CLAUDE.md`, so
 the rules ontrack writes reach both hosts. The list of plugins SHALL live in
 each host's own files, not in a trait.
@@ -197,8 +218,9 @@ each host's own files, not in a trait.
 ADR-0017 SHALL ship with `check: npx --no-install ontrack-engineering-check ADR-0017`.
 Its how-to-rule block SHALL say:
 - that the line runs once the ADR is `accepted`;
-- which file each host requires (`.claude/settings.json`; `opencode.json` or
-  `.opencode/opencode.json`), and that the check reads neither;
+- which file each host requires (`.claude/settings.json` for `claude-code` and
+  for `copilot`; `opencode.json` or `.opencode/opencode.json`), and that the
+  check reads none of them;
 - that `[]` has nothing to check;
 - that an unknown host and the revision 1 key `agent.host` fail.
 
@@ -217,6 +239,18 @@ Its how-to-rule block SHALL say:
 #### Scenario: Re-answering revision 2
 - **WHEN** a repository that ruled `agent.host: claude-code` reads ADR-0017's Revisions list
 - **THEN** it learns to write `agent.hosts: [claude-code]`
+
+#### Scenario: Contributor using Copilot CLI
+- **WHEN** a repository rules `agent.hosts: [claude-code, copilot]` and a contributor works with Copilot CLI
+- **THEN** ADR-0017 tells them to trust the folder in Copilot, says the enabled plugins then install at their pinned commits with nothing else to run, and says `permissions` in `.claude/settings.json` does not bind their sessions
+
+#### Scenario: Copilot settings file
+- **WHEN** a repository whose `agent.hosts` holds `copilot` commits a `.github/copilot/settings.json`
+- **THEN** ADR-0017 forbids `enabledPlugins` and `extraKnownMarketplaces` in it
+
+#### Scenario: Re-answering revision 3
+- **WHEN** a repository that ruled `agent.hosts: [claude-code]` reads ADR-0017's Revisions list after revision 3
+- **THEN** it learns that nothing is to re-answer unless its contributors use Copilot CLI, in which case it adds `copilot`
 
 ### Requirement: ADR-0018 asks what keeps dependencies current
 ADR-0018 SHALL ask `dependencies.updater` (`dependabot`, `renovate`,
@@ -748,6 +782,12 @@ beside each value of ADR-0011's `forge.gate`:
 It SHALL name `CODEOWNERS` as outside its question. For each host of
 ADR-0017's `agent.hosts`, it SHALL show the deny entries each value needs:
 - for `claude-code`, the `.claude/settings.json` entries;
+- for `copilot`, the `PreToolUse` hook in `.claude/settings.json`: one
+  entry matching the `Bash` tool, holding a command hook per command that
+  exits `2` with a message on standard error when the tool input contains
+  `gh pr review` and, with `maintainer`, `gh pr merge`; and that Copilot
+  CLI ignores the `claude-code` deny entries, while Claude Code honours the
+  hook too;
 - for `opencode`, the `shell` deny rules for `gh pr review *` and, with
   `maintainer`, `gh pr merge *`, placed last in the `permissions` array of
   `opencode.json`, since opencode applies the last rule that matches.
@@ -817,6 +857,10 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 #### Scenario: opencode denies shown
 - **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `opencode`
 - **THEN** it shows the `shell` deny rules for `gh pr review *` and `gh pr merge *`, and says that they go last in `permissions`
+
+#### Scenario: Copilot hooks shown
+- **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `copilot`
+- **THEN** it shows the `PreToolUse` hook with a `gh pr review` command hook and, with `maintainer`, a `gh pr merge` one, and says Copilot CLI ignores `permissions.deny`
 
 ### Requirement: ADR-0011 revision 4 moves review to ADR-0022
 ADR-0011 SHALL NOT ask `forge.review`. Removing the key SHALL raise ADR-0011
