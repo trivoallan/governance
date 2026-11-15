@@ -45,8 +45,10 @@ None.
 
 ## Impact
 
-- Edited: `.github/workflows/ci.yml` (one step). No new dependency:
-  `openspec` is already a devDependency installed by `npm ci`.
+- Edited: `.github/workflows/ci.yml` (one step).
+- New devDependency, admitted under ADR-0020: `@fission-ai/openspec`
+  `1.13.1`, pinned exactly, so `npm ci` installs the CLI the step runs.
+  Until now the CLI came from each contributor's `PATH`, and CI had none.
 - `actions/checkout` already fetches the full history (`fetch-depth: 0`, for
   the ADR-0006 step), so the base branch is there to diff against.
 - Pull requests that touch no change (Dependabot, release-please) get an
