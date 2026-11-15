@@ -767,6 +767,95 @@ test('ADR-0022: settings not JSON', () => {
   assert.match(r.stderr, /\.claude\/settings\.json is not valid JSON/);
 });
 
+// --- ADR-0023: the licence the manifest declares and the file at the root
+
+const licenseAdr = (spdx: string): Files => ({ 'ADR-0023-license.md': `  license:\n    spdx: ${spdx}` });
+const pkg = (license?: string) => ({ 'package.json': `${JSON.stringify(license === undefined ? { name: 'x' } : { name: 'x', license })}\n` });
+
+test('ADR-0023: ruled and wired', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), LICENSE: 'MIT License\n' } }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /package\.json declares MIT/);
+  assert.match(r.stdout, /LICENSE found/);
+});
+
+test('ADR-0023: manifest disagrees', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('ISC'), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json has license ISC where license\.spdx rules MIT/);
+});
+
+test('ADR-0023: MIT-0 is not MIT', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT-0'), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: manifest without a licence field', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg(), LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json has no license field/);
+});
+
+test('ADR-0023: no licence file', () => {
+  const r = run(wired({ adrs: licenseAdr('Apache-2.0'), files: { 'pyproject.toml': '[project]\nname = "x"\nlicense = "Apache-2.0"\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /no tracked LICENSE, LICENSE\.md, LICENSE\.txt or COPYING at the root/);
+});
+
+test('ADR-0023: licence file in a subfolder does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), 'docs/LICENSE': 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: untracked licence file does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: pkg('MIT'), untracked: { LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0023: private repository', () => {
+  const r = run(wired({ adrs: licenseAdr('UNLICENSED'), files: pkg('UNLICENSED') }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('ADR-0023: value not set', () => {
+  const r = run(wired({ adrs: licenseAdr(''), files: pkg('MIT') }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /license\.spdx is not set/);
+});
+
+test('ADR-0023: pyproject.toml string and table forms', () => {
+  for (const line of ['license = "MIT"', "license = 'MIT'", 'license = { text = "MIT" }']) {
+    const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'pyproject.toml': `[project]\nname = "x"\n${line}\n\n[tool.x]\nlicense = "other"\n`, 'LICENSE.md': 'x\n' } }), 'ADR-0023');
+    assert.equal(r.status, 0, `${line}: ${r.stderr}`);
+    assert.match(r.stdout, /pyproject\.toml declares MIT/);
+  }
+});
+
+test('ADR-0023: pyproject.toml licence outside [project] does not count', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'pyproject.toml': '[project]\nname = "x"\n\n[tool.x]\nlicense = "MIT"\n', LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /pyproject\.toml has no license field/);
+});
+
+test('ADR-0023: both manifests checked', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { ...pkg('MIT'), 'pyproject.toml': '[project]\nlicense = "Apache-2.0"\n', COPYING: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /package\.json declares MIT/);
+  assert.match(r.stderr, /pyproject\.toml has license Apache-2\.0/);
+});
+
+test('ADR-0023: no manifest', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /no root manifest \(package\.json, pyproject\.toml\) is tracked/);
+});
+
+test('ADR-0023: package.json not JSON', () => {
+  const r = run(wired({ adrs: licenseAdr('MIT'), files: { 'package.json': '{ nope\n', LICENSE: 'x\n' } }), 'ADR-0023');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /package\.json is not valid JSON/);
+});
+
 // --- ADR-0024: a scan workflow that sends its SARIF somewhere
 
 const scanAdr = (tool: string, failOn = 'high'): Files => ({ 'ADR-0024-code-scanning.md': `  code_scanning:\n    tool: ${tool}\n    fail_on: ${failOn}` });

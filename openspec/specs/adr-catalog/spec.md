@@ -516,6 +516,38 @@ SHALL link to ADR-0022. Neither SHALL change `revision:`.
 
 #### Scenario: Original to governance
 - **WHEN** ADR-0022's References are read
+- **THEN** they say it is original to governance and hold the key table
+
+### Requirement: ADR-0023 asks under which licence others may use the repository
+ADR-0023 "License" SHALL ask one trait, `license.spdx`, holding a free SPDX
+license expression, with the recommended value `MIT`. It SHALL name
+`Apache-2.0` for when a patent grant matters, `UNLICENSED` for a private
+repository, and SHALL accept compound expressions. Its Decision SHALL fix
+that the root manifest's licence field (`license` in `package.json`,
+`[project] license` in `pyproject.toml`) holds the trait, and that a licence
+file is committed at the root unless the value is `UNLICENSED`. It SHALL say
+in prose that the copyright holder is the organisation owning the
+repository, or else the ADR's `authors:`, and SHALL NOT make it a key. It
+SHALL say why governance itself ships under MIT-0. It SHALL leave dependency
+licence compliance to ADR-0019's exclusion. It SHALL ship with
+`check: npx --no-install governance-check ADR-0023`, and its how-to-rule
+block SHALL say that the check reads neither the licence text nor manifests
+outside the root.
+
+#### Scenario: One trait
+- **WHEN** ADR-0023's frontmatter is read as shipped
+- **THEN** it holds `license.spdx` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent creating a manifest
+- **WHEN** an agent creates `package.json` in a repository that rules `license.spdx: MIT`
+- **THEN** ADR-0023 tells it to write `"license": "MIT"` and a `LICENSE` file, which `npm init` leaves out
+
+#### Scenario: Holder not a key
+- **WHEN** ADR-0023's traits are listed
+- **THEN** there is no key for the copyright holder, and the Decision names who holds it
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0023's References are read
 
 ### Requirement: ADR-0024 asks what analyses the repository's own code
 ADR-0024 "Code scanning" SHALL ask two traits:
