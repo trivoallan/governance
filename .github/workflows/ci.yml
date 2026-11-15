@@ -21,6 +21,8 @@ jobs:
           # The ADR-0006 step lints every commit after origin/<base>, so the
           # base branch and the whole history down to it must be present.
           fetch-depth: 0
+          # No step pushes or fetches: the token is not left in .git/config.
+          persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           # Node 24, as release.yml. setup-node's default npm cache is kept:
@@ -44,7 +46,11 @@ jobs:
       # author, not the actor, so a person's pull request is always checked.
       # Install and tests above still run and `test` still reports.
       - if: github.event.pull_request.user.login != 'dependabot[bot]'
-        run: node checks/governance-check.ts ADR-0006 --from "origin/${{ github.base_ref }}"
+        # The base branch name reaches the shell through env, not through a
+        # template expanded into the script (template injection).
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node checks/governance-check.ts ADR-0006 --from "origin/$BASE_REF"
       # ADR-0009: the pull request's head branch is <prefix>/<description> with
       # a prefix from branching.prefixes. The script reads it from
       # GITHUB_HEAD_REF, as the checkout is detached. The checkout's script, as
