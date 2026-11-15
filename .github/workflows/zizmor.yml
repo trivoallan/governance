@@ -4,6 +4,8 @@ name: zizmor
 # for what the ADR's rules forbid, on every pull request, with its online
 # audits. A finding fails the job. It is silenced only inline, on its line,
 # with its reason (`# zizmor: ignore[audit] why`), never in a zizmor.yml.
+# The job is named `zizmor`: that is the check the main ruleset requires.
+# No paths: filter, so every pull request reports it.
 on:
   pull_request:
 

@@ -155,7 +155,8 @@ listed), an image is not found (check it was pushed and matches the pin).
 
 Adopted as recommended. The repository is on GitHub and ships code that
 other repositories run (`governance-check`), so a red pipeline must block
-the merge. The workflows exist, and a ruleset requires `test` on `main`.
+the merge. The workflows exist, and a ruleset requires `test`, `scan` and `zizmor` on
+`main`.
 
 `forge.audit: zizmor` adopted as recommended, on 2026-11-15. The workflows
 were cleared of its findings before this ruling. `apply.yml`, added since,
@@ -163,7 +164,8 @@ is triggered by `pull_request_target`, which zizmor reports: the finding is
 silenced inline, because the workflow it calls checks out and runs nothing
 from the pull request. The `zizmor` job of
 `.github/workflows/zizmor.yml` runs it on every pull request, with the
-version `mise.toml` pins ([ADR-0025](ADR-0025-tools.md)).
+version `mise.toml` pins ([ADR-0025](ADR-0025-tools.md)), and the
+ruleset makes it required.
 
 **Departure: `forge.review: author`, not `peer`.** One person alone has
 write access to this repository, so there is no peer to ask. With
@@ -173,17 +175,17 @@ write access to this repository, so there is no peer to ask. With
 
 ### Positive
 
-- Nothing merges on `main` with failing tests or an off-format commit: a
-  ruleset requires `test`.
+- Nothing merges on `main` with failing tests, an off-format commit or a
+  zizmor finding: a ruleset requires `test` and `zizmor`.
 - The five rules apply from the first workflow, before habits form.
 
 ### Negative
 
 - A change is read by its author alone: what the pipeline does not test,
   nothing checks.
-- The `zizmor` job is not a required check: the ruleset requires `test`
-  and `scan` only, so its failure shows on the pull request and does not
-  block the merge.
+- A new zizmor audit, shipped with a version a person moves in
+  `mise.toml`, can block every pull request until its findings are fixed
+  or silenced inline.
 - Pinning actions by SHA makes updates a deliberate chore unless ADR-0018's
   tool proposes them.
 
