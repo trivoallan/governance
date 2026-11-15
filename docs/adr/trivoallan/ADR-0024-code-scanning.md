@@ -135,9 +135,11 @@ and a separate `semgrep scan --error --severity ERROR` step that fails the
 job.
 
 Adopted as recommended. The repository is public and written in
-TypeScript. CodeQL runs today through GitHub's default setup, which rule 2
-says does not answer this ADR: the workflow is still to write, and is
-tracked as an issue. Until it is committed, this ADR's check fails.
+TypeScript. CodeQL runs from `.github/workflows/codeql.yml`, and GitHub's
+default setup is off. The `main` ruleset (`.github/rulesets/main.json`)
+holds "Require code scanning results" for CodeQL, with its security-alerts
+threshold at `high_or_higher` and its alerts threshold at `none`: an alert
+without a security severity does not block.
 
 ## Consequences
 
@@ -148,14 +150,13 @@ tracked as an issue. Until it is committed, this ADR's check fails.
 
 ### Negative
 
-- Until the workflow is committed, the scan's version is the one GitHub
-  picks, and no file records the scan.
 - A false positive at `high` blocks a merge until a person dismisses it.
 
 ### Neutral
 
-- The ruleset that makes an alert block is a GitHub setting, outside the
-  repository, and nothing here checks it.
+- The ruleset that makes an alert block is a GitHub setting.
+  `.github/rulesets/main.json` records it, and nothing checks that the two
+  agree.
 
 ## Alternatives Considered
 
