@@ -1,17 +1,23 @@
 {
   "name": "@trivoallan/ontrack-engineering",
   "version": "0.5.1",
-  "description": "Tristan Rivoallan's governance: ADRs shared as an ontrack source.",
+  "description": "Engineering conventions your repositories import as ADRs: commits, branching, delivery, supply chain, coding agents. Checked in CI.",
   "license": "MIT-0",
   "keywords": [
-    "ontrack-tracks",
-    "ontrack-source",
-    "adr",
     "ontrack",
-    "supply-chain",
+    "adr",
+    "architecture-decision-records",
+    "engineering-standards",
+    "conventions",
+    "supply-chain-security",
     "slsa",
+    "sbom",
     "ci",
-    "coding-agents"
+    "github-actions",
+    "coding-agents",
+    "claude-code",
+    "typescript",
+    "python"
   ],
   "repository": {
     "type": "git",
@@ -40,7 +46,8 @@
     "build": "tsc",
     "hooks": "[ \"$(git rev-parse --show-toplevel 2>/dev/null)\" = \"$(pwd -P)\" ] && git config core.hooksPath .githooks || true",
     "prepare": "npm run build && npm run hooks",
-    "test": "tsc --noEmit && node --test --experimental-test-coverage --test-coverage-include='checks/*.ts' --test-coverage-exclude='checks/*.test.ts' --test-coverage-exclude='checks/test-helpers.ts' --test-coverage-lines=90 checks/*.test.ts"
+    "test": "tsc --noEmit && node --test --experimental-test-coverage --test-coverage-include='checks/*.ts' --test-coverage-exclude='checks/*.test.ts' --test-coverage-exclude='checks/test-helpers.ts' --test-coverage-lines=90 checks/*.test.ts",
+    "about": "gh repo edit --description \"$(node -p 'require(\"./package.json\").description')\" && node -p 'JSON.stringify({names: require(\"./package.json\").keywords})' | gh api -X PUT 'repos/{owner}/{repo}/topics' --input - --silent"
   },
   "ontrack": {
     "adr": "adr",
