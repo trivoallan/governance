@@ -288,19 +288,21 @@ const WORKFLOWS = ['.github/workflows/*.yml', '.github/workflows/*.yaml'];
 const inWorkflow = (...any: string[]): Row => ({ contains: { in: WORKFLOWS, any } });
 const byValue = (rows: Record<string, Row>) => (value: string) => rows[value] ?? null;
 
+// ADR-0008's rows; its check (docs, below) adds the channels.
+const DOCS_ROWS: Entry[] = [
+  { group: 'docs', key: 'tool', row: byValue({
+    starlight: { contains: { in: ['**/package.json'], any: ['@astrojs/starlight'] } },
+    docusaurus: { exists: [['**/docusaurus.config.js', '**/docusaurus.config.mjs', '**/docusaurus.config.ts']] },
+    mkdocs: { exists: [['**/mkdocs.yml']] },
+  }) },
+  { group: 'docs', key: 'root', row: (v) => ({ path: v }) },
+];
+
 const gate: Row = { exists: [WORKFLOWS], note: 'the ruleset that makes the pipeline required is not verified' };
 
 // ADR number -> traits it wires. `row(value, ctx)` returns a row, or null for
 // "nothing to check". ctx: { root, traits: { <group>: { <key>: validated value } } }.
 const WIRING: Record<string, Entry[]> = {
-  'ADR-0008': [
-    { group: 'docs', key: 'tool', row: byValue({
-      starlight: { contains: { in: ['**/package.json'], any: ['@astrojs/starlight'] } },
-      docusaurus: { exists: [['**/docusaurus.config.js', '**/docusaurus.config.mjs', '**/docusaurus.config.ts']] },
-      mkdocs: { exists: [['**/mkdocs.yml']] },
-    }) },
-    { group: 'docs', key: 'root', row: (v) => ({ path: v }) },
-  ],
   'ADR-0010': [
     // Fixed path: ADR-0010 revision 2, the architecture document does not move with docs.root.
     { group: 'architecture', key: 'document', row: (v) => v === 'arc42'
@@ -819,11 +821,134 @@ function adrs(root: string, file: string): number {
   return r.status ?? 1;
 }
 
+// --- ADR-0008 revision 3: the channels the site publishes, and the triggers
+// of the workflow that deploys GitHub Pages.
+
+const CHANNELS = ['release', 'main'];
+const DocsTool = z.object({ tool: one() });
+const Channels = z.object({ channels: list().min(1) });
+const DEPLOY = 'actions/deploy-pages';
+
+// The `push` trigger of a workflow's top-level `on:`: absent, unfiltered, or
+// filtered by `branches` and `tags`.
+type Push = { push: boolean; branches?: string[]; tags?: string[] };
+
+// ponytail: an indentation reader for the forms workflows are written in, not
+// YAML (no anchors, no multi-line flow mappings, no globs matched against the
+// default branch). A form it misses reads as a missing trigger, never a pass;
+// switch to the `yaml` package if that bites (ADR-0020: a person admits it).
+function pushTrigger(text: string): Push {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() && !l.trimStart().startsWith('#'));
+  const indent = (l: string) => l.length - l.trimStart().length;
+  const flow = (v: string) => v.startsWith('[') && v.endsWith(']') ? v.slice(1, -1).split(',').map(scalar).filter(Boolean) : null;
+  const o = lines.findIndex((l) => /^["']?on["']?:/.test(l));
+  if (o === -1) return { push: false };
+  const inline = scalar(lines[o].replace(/^["']?on["']?:/, ''));
+  if (inline) return { push: inline === 'push' || (flow(inline) ?? []).includes('push') };
+  const block: string[] = [];
+  for (const l of lines.slice(o + 1)) {
+    if (indent(l) === 0) break;
+    block.push(l);
+  }
+  if (!block.length) return { push: false };
+  const level = indent(block[0]);
+  if (block.some((l) => indent(l) === level && /^-\s*push$/.test(scalar(l.trim())))) return { push: true };
+  const p = block.findIndex((l) => indent(l) === level && /^["']?push["']?:/.test(l.trim()));
+  if (p === -1) return { push: false };
+  const children: string[] = [];
+  for (const l of block.slice(p + 1)) {
+    if (indent(l) <= level) break;
+    children.push(l);
+  }
+  const push: Push = { push: true };
+  const inner = children.length ? indent(children[0]) : 0;
+  children.forEach((l, i) => {
+    const kv = indent(l) === inner && l.trim().match(/^(branches|tags):\s*(.*)$/);
+    if (!kv) return;
+    const v = scalar(kv[2]);
+    const items = v ? flow(v) ?? [v] : [];
+    if (!v) {
+      for (const next of children.slice(i + 1)) {
+        if (indent(next) <= inner && !next.trim().startsWith('-')) break;
+        const item = next.trim().match(/^-\s*(.*)$/);
+        if (item) items.push(scalar(item[1]));
+      }
+    }
+    push[kv[1] as 'branches' | 'tags'] = items;
+  });
+  return push;
+}
+
+const covers = (t: Push, channel: string, branch: string) => {
+  if (!t.push) return false;
+  if (!t.branches && !t.tags) return true;
+  return channel === 'release' ? !!t.tags?.length : !!t.branches?.includes(branch);
+};
+
+// The branch origin/HEAD points to, as ADR-0006's default --from; `main` without it.
+function defaultBranch(root: string): string {
+  const r = spawnSync('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], { cwd: root, encoding: 'utf8' });
+  return r.status === 0 && r.stdout.trim() ? r.stdout.trim().replace(/^origin\//, '') : 'main';
+}
+
+function docs(root: string, file: string, opts: Options): number {
+  const wired = wiring('ADR-0008', DOCS_ROWS)(root, file, opts);
+  return channels(root, file) && wired === 0 ? 0 : 1;
+}
+
+function channels(root: string, file: string): boolean {
+  const text = readFileSync(file, 'utf8');
+  const fail = (msg: string) => { console.error(`ADR-0008: docs.channels ${msg}`); return false; };
+  let tool: string;
+  try {
+    tool = traitsOf(DocsTool, 'ADR-0008', 'docs', file, text).tool;
+  } catch (e) {
+    if (e instanceof CheckError) return false; // the docs.tool row already said so
+    throw e;
+  }
+  if (tool === 'none') {
+    if (readTraits(text, 'docs')?.channels === undefined) {
+      console.log('ADR-0008: docs.tool is none, no channels to check');
+      return true;
+    }
+    return fail(`is set, but docs.tool is none; remove docs.channels from ${file}`);
+  }
+  let listed: string[];
+  try {
+    listed = traitsOf(Channels, 'ADR-0008', 'docs', file, text).channels;
+  } catch (e) {
+    if (!(e instanceof CheckError)) throw e;
+    console.error(e.message);
+    return false;
+  }
+  const unknown = listed.find((c) => !CHANNELS.includes(c));
+  if (unknown) return fail(`has an unknown value: ${unknown}`);
+  const twice = listed.find((c, i) => listed.indexOf(c) !== i);
+  if (twice) return fail(`holds ${twice} twice`);
+  const name = `ADR-0008: docs.channels is ${listed.join(', ')}`;
+  const deploys = matching(tracked(root), WORKFLOWS).filter((f) => holds(root, f, [DEPLOY]));
+  if (!deploys.length) {
+    console.log(`${name}, but no workflow holds ${DEPLOY}, so the triggers are not checked`);
+    return true;
+  }
+  const branch = defaultBranch(root);
+  const need = (c: string) => (c === 'release' ? 'a push of tags' : `a push to ${branch}`);
+  const read = deploys.map((f) => ({ f, t: pushTrigger(readFileSync(join(root, f), 'utf8')) }));
+  const hit = read.find(({ t }) => listed.every((c) => covers(t, c, branch)));
+  if (hit) {
+    console.log(`${name}, ${hit.f} runs on ${listed.map(need).join(' and ')}`);
+    return true;
+  }
+  const missing = listed.filter((c) => !covers(read[0].t, c, branch)).map(need).join(' or ');
+  return fail(`is ${listed.join(', ')}, but ${read.map(({ f }) => f).join(', ')} is not triggered by ${missing}`);
+}
+
 const CHECKS: Record<string, Check> = {
   'ADR-0001': adrs,
   'ADR-0025': tools,
   'ADR-0011': forge,
   'ADR-0022': review,
+  'ADR-0008': docs,
   'ADR-0023': license,
   'ADR-0006': commits,
   'ADR-0009': branching,

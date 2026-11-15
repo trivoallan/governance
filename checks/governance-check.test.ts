@@ -340,20 +340,123 @@ test('wiring: arc42 files directly in architecture/ do not count', () => {
 
 test('wiring: Starlight site in a subfolder, as ontrack has it', () => {
   const r = run(wired({
-    adrs: { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public' },
+    adrs: { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public\n    channels: [main]' },
     files: { 'package.json': '{"name":"x"}\n', 'site/package.json': '{"dependencies":{"@astrojs/starlight":"0.43.1"}}\n', 'docs/a.md': 'x\n' },
   }), 'ADR-0008');
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /docs\.tool is starlight, found site\/package\.json/);
 });
 
+// ADR-0008 revision 3: docs.channels and the triggers of the Pages deploy.
+const site = (channels: string | null, tool = 'starlight') =>
+  ({ 'ADR-0008-documentation.md': `  docs:\n    tool: ${tool}\n    root: docs/\n    audience: public${channels === null ? '' : `\n    channels: ${channels}`}` });
+const siteFiles = { 'package.json': '{"dependencies":{"@astrojs/starlight":"1"}}\n', 'docs/a.md': 'x\n' };
+const pages = (on: string) => ({ ...siteFiles, '.github/workflows/docs.yml': `name: docs\n${on}\njobs:\n  deploy:\n    steps:\n      - uses: actions/deploy-pages@abc # v5\n` });
+
+test('docs: ontrack today fails on the missing tag trigger', () => {
+  const r = run(wired({ adrs: site('[release, main]'), files: pages('on:\n  pull_request:\n  push:\n    branches: [main]') }), 'ADR-0008');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /docs\.channels is release, main, but \.github\/workflows\/docs\.yml is not triggered by a push of tags/);
+});
+
+const passing: [string, string, string][] = [
+  ['both triggers, flow lists', '[release, main]', "on:\n  push:\n    branches: [main]\n    tags: ['v*']"],
+  ['both triggers, block lists', '[release, main]', "on:\n  workflow_dispatch:\n  push:\n    branches:\n      - main\n    tags:\n      - 'v*'\n  pull_request:"],
+  ['main only', '[main]', 'on:\n  push:\n    branches: [main]'],
+  ['release only', '[release]', "on:\n  push:\n    tags: ['v*']"],
+  ['unfiltered push', '[release, main]', 'on: push'],
+  ['unfiltered push in a list', '[release, main]', "'on': [push, pull_request]"],
+  ['unfiltered push key', '[release, main]', 'on:\n  push:\n  pull_request:'],
+];
+for (const [name, channels, on] of passing) {
+  test(`docs: ${name} passes`, () => {
+    const r = run(wired({ adrs: site(channels), files: pages(on) }), 'ADR-0008');
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.match(r.stdout, /docs\.channels is .*, \.github\/workflows\/docs\.yml runs on/);
+  });
+}
+
+const failing: [string, string, string, RegExp][] = [
+  ['tags filter only, main listed', '[release, main]', "on:\n  push:\n    tags: ['v*']", /not triggered by a push to main/],
+  ['branches filter only, release listed', '[release]', 'on:\n  push:\n    branches: [main]', /not triggered by a push of tags/],
+  ['pull_request only', '[main]', 'on: pull_request', /not triggered by a push to main/],
+  ['no on key', '[main]', '', /not triggered by a push to main/],
+  ['other branch', '[main]', 'on:\n  push:\n    branches: [develop]', /not triggered by a push to main/],
+];
+for (const [name, channels, on, message] of failing) {
+  test(`docs: ${name} fails`, () => {
+    const r = run(wired({ adrs: site(channels), files: pages(on) }), 'ADR-0008');
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, message);
+  });
+}
+
+test('docs: one of several deploy workflows has the triggers', () => {
+  const r = run(wired({ adrs: site('[release, main]'), files: {
+    ...pages('on:\n  push:\n    branches: [main]\n    tags: [v*]'),
+    '.github/workflows/a-preview.yml': 'on: pull_request\njobs:\n  x:\n    steps:\n      - uses: actions/deploy-pages@abc\n',
+  } }), 'ADR-0008');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /docs\.yml runs on a push of tags and a push to main/);
+});
+
+test('docs: another host deploys the site', () => {
+  const r = run(wired({ adrs: site('[release, main]'), files: { ...siteFiles, '.github/workflows/ci.yml': 'on: push\n' } }), 'ADR-0008');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /no workflow holds actions\/deploy-pages, so the triggers are not checked/);
+});
+
+test('docs: default branch not main', () => {
+  const dir = wired({ adrs: site('[main]'), files: pages('on:\n  push:\n    branches: [trunk]') });
+  git(dir, 'branch', '-m', 'trunk');
+  git(dir, 'update-ref', 'refs/remotes/origin/trunk', 'HEAD');
+  git(dir, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/trunk');
+  const r = run(dir, 'ADR-0008');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /runs on a push to trunk/);
+});
+
+test('docs: channels without a site', () => {
+  const r = run(wired({ adrs: site('[main]', 'none') }), 'ADR-0008');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /docs\.channels is set, but docs\.tool is none; remove docs\.channels/);
+});
+
+test('docs: no site, no channels', () => {
+  const r = run(wired({ adrs: site(null, 'none'), files: { 'docs/a.md': 'x\n' } }), 'ADR-0008');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /docs\.tool is none, no channels to check/);
+});
+
+const invalid: [string, string | null, RegExp][] = [
+  ['site without channels', null, /docs\.channels is not set/],
+  ['empty channels', '', /docs\.channels is not set/],
+  ['empty list', '[]', /docs\.channels is not set/],
+  ['not a list', 'release', /docs\.channels is not a list/],
+  ['unknown channel', '[release, beta]', /docs\.channels has an unknown value: beta/],
+  ['duplicate channel', '[main, main]', /docs\.channels holds main twice/],
+];
+for (const [name, channels, message] of invalid) {
+  test(`docs: ${name}`, () => {
+    const r = run(wired({ adrs: site(channels), files: siteFiles }), 'ADR-0008');
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, message);
+  });
+}
+
+test('docs: tool not set reports once and still fails', () => {
+  const r = run(wired({ adrs: { 'ADR-0008-documentation.md': '  docs:\n    tool:\n    root: docs/\n    audience: public' }, files: { 'docs/a.md': 'x\n' } }), 'ADR-0008');
+  assert.notEqual(r.status, 0);
+  assert.equal(r.stderr.match(/docs\.tool is not set/g)?.length, 1);
+});
+
 // One passing case for each remaining row.
 const rows: [string, Files, Files][] = [
-  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public' },
+  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: starlight\n    root: docs/\n    audience: public\n    channels: [main]' },
     { 'package.json': '{"dependencies":{"@astrojs/starlight":"1"}}\n', 'docs/index.md': 'x\n' }],
-  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: docusaurus\n    root: ./website\n    audience: team' },
+  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: docusaurus\n    root: ./website\n    audience: team\n    channels: [release]' },
     { 'website/docusaurus.config.ts': 'x\n', 'website/a.md': 'x\n' }],
-  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: mkdocs\n    root: docs\n    audience: team' },
+  ['ADR-0008', { 'ADR-0008-documentation.md': '  docs:\n    tool: mkdocs\n    root: docs\n    audience: team\n    channels: [release]' },
     { 'mkdocs.yml': 'x\n', 'docs/a.md': 'x\n' }],
   ['ADR-0010', { 'ADR-0010-architecture-documentation.md': '  architecture:\n    document: arc42\n    model: likec4\n    diagrams: mermaid' },
     { ...arc42('docs/'), 'docs/architecture/model/system.c4': 'x\n' }],
