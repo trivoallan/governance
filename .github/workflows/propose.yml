@@ -1,0 +1,29 @@
+name: propose
+
+# A maintainer adds the `ontrack:propose` label to an issue, and a draft pull
+# request carrying an OpenSpec change proposal appears. The workflow lives in
+# ontrack (its ADR-0004) and is called here by commit SHA.
+#
+# OpenSpec only: no ADR is drafted from an issue here. The ADRs of this
+# repository are the rules every repository that imports it ends up running,
+# so a person writes them.
+on:
+  issues:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  propose:
+    # A called workflow can only lower the permissions it is given, so this
+    # job grants what both of ontrack's jobs need. ontrack narrows them: the
+    # job that runs the agent keeps `contents: read` and the identity token,
+    # and the job that writes runs no agent (ADR-0011 rule 5).
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: trivoallan/ontrack/.github/workflows/propose.yml@e2144ac9aaa6c4fa13e24852e025ccee9c179518 # main, after trivoallan/ontrack#156
+    with:
+      frameworks: openspec
