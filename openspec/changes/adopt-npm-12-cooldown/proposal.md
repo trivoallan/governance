@@ -27,6 +27,13 @@ until npm 12, `min-release-age=3` and `npm ci` in CI are in place.
   script") becomes true instead of being amended. `allowScripts` stays
   empty; any other script npm 12 blocks goes through
   `admission.approver: person` first.
+- The Git devDependency `trivoallan` (`github:trivoallan/governance`, this
+  repository importing itself as an ontrack source) becomes the npm alias
+  `"trivoallan": "npm:@trivoallan/ontrack-governance@^0.4.0"`. npm 12
+  refuses every Git dependency by default (`allow-git = "none"`), so
+  `npm ci` fails on both Git devDependencies until they come from the
+  registry. The alias keeps the installed name `trivoallan`, which the
+  ontrack namespace reads. `allow-git` stays at its default.
 
 **Ownership of the CI install:** `add-ci-gate` (#35) writes the `npm ci`
 line (rule 5). This change adds no install of its own: it only changes the
@@ -47,8 +54,9 @@ what this change requires of the CI install is stated in
 
 ## Impact
 
-- New file: `.npmrc`. Edited: `package.json` (`devEngines`, and
-  `ontrack` → `@trivoallan/ontrack`, `allowScripts` only if a person admits
+- New file: `.npmrc`. Edited: `package.json` (`devEngines`,
+  `ontrack` → `@trivoallan/ontrack`, `trivoallan` → the
+  `@trivoallan/ontrack-governance` alias, `allowScripts` only if a person admits
   an exception), `package-lock.json`, `.github/workflows/ci.yml` (two lines).
 - `.github/workflows/release.yml` is unchanged: its publish job installs
   nothing.

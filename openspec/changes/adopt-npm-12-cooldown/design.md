@@ -50,9 +50,10 @@ stop every npm update `configure-dependabot` proposes. *Alternative:*
 nothing in `package.json`, as ontrack. Rejected: ADR-0020 is about the
 agent's session, and that is where an old npm would go unnoticed.
 
-**`.npmrc` holds `min-release-age=3` and nothing else.** No exclusion:
-the only package from this owner is `trivoallan`, installed from Git,
-which the setting does not cover anyway. The file explains, in comments,
+**`.npmrc` holds `min-release-age=3` and nothing else.** No exclusion: the
+packages from this owner (`@trivoallan/ontrack`, and
+`@trivoallan/ontrack-governance` through the `trivoallan` alias) wait three
+days like any other. The file explains, in comments,
 the rule it serves and that npm 10 ignores the key silently.
 
 **ontrack from the registry, not from Git** (maintainer's choice). The
@@ -66,6 +67,19 @@ on 2026-11-14, so `min-release-age=3` refuses it before 2026-11-17; the swap
 is done on or after that date, or with an older-than-three-days release.
 The `package.json` script names that call `ontrack` (if any) keep working:
 the bin is still `ontrack`.
+
+**`trivoallan` from the registry too, through an npm alias** (maintainer's
+choice, after implementation found it). npm 12.2.2 ships
+`allow-git = "none"`: `npm ci` refuses both Git devDependencies with
+`EALLOWGIT`, not only their scripts. The second one, `trivoallan`
+(`github:trivoallan/governance`), is governance importing itself as an
+ontrack source. It becomes
+`"trivoallan": "npm:@trivoallan/ontrack-governance@^0.4.0"`: the package
+is installed as `node_modules/trivoallan`, the name the ontrack namespace
+reads, from the registry. *Alternative:* `allow-git` in `.npmrc` for the
+two repositories. Rejected: it reopens what npm 12 closes, and `.npmrc`
+keeps one key. Timing: 0.4.0 was published on 2026-11-14 21:06 UTC, so the
+cooldown admits it from 2026-11-17, the same day as `@trivoallan/ontrack`.
 
 **Blocked scripts found on the move are admissions, not chores.** After
 `npm ci` on npm 12, `npm approve-scripts --allow-scripts-pending` lists
