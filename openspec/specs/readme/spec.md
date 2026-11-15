@@ -68,6 +68,10 @@ section SHALL NOT promise that a topic will be covered later.
 - **WHEN** a topic has a shipped ADR that decides it
 - **THEN** the section does not list it
 
+#### Scenario: Review beyond who merges
+- **WHEN** the section's item on code review is read
+- **THEN** it lists required approvals and ownership (`CODEOWNERS`) only, and links to ADR-0022, which names both as outside its question
+
 ### Requirement: README shows one ADR excerpt
 The README SHALL show a short excerpt of one shipped ADR: its question, its
 recommended answer and its `traits:` block. The excerpt SHALL be taken from

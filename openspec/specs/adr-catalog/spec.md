@@ -33,12 +33,14 @@ unless the table says it is original:
 | ADR-0019 | vulnerabilities | none (original to governance) | proposed |
 | ADR-0020 | adding-dependencies | none (original to governance) | proposed |
 | ADR-0021 | build-provenance | none (original to governance) | proposed |
+| ADR-0022 | review-and-merge | none (original to governance) | proposed |
+| ADR-0023 | license | none (original to governance) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
-- **THEN** they are exactly the twenty-one files in the table, with the slugs shown
+- **THEN** they are exactly the twenty-three files in the table, with the slugs shown
 
 #### Scenario: No service baseline
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
@@ -477,6 +479,74 @@ the model in `docs/architecture/model/`. Both ADRs SHALL be at
 #### Scenario: The glob snippet warns of what it publishes
 - **WHEN** ADR-0008 shows the Starlight `glob` loader over `./docs`
 - **THEN** it says the pattern also publishes `adr/` and `architecture/`, and shows how to exclude them
+
+### Requirement: ADR-0022 asks who merges a pull request
+ADR-0022 "Review and merge" SHALL ask who merges a pull request in a
+repository kept by one person, through one trait, `review.merge_by`, with the
+values `person` and `agent` and the recommended value `person`. It SHALL say
+that `agent` is acceptable when the ADR's text gives the reason. When the
+repository rules `person`, its Decision SHALL fix four rules:
+1. the agent opens the pull request ready for review, says when its checks are green, and stops;
+2. the agent merges nothing: not with `gh pr merge`, not with `--auto`, not through the API, not by pushing to the default branch;
+3. a bot that a workflow runs under another ADR's ruling is not an agent session, and ADR-0018's automerge is that exception;
+4. a review the agent runs on its own work is advice, and the person's merge is the review.
+
+It SHALL describe the GitHub ruleset that backs these rules (pull request
+required, zero approvals, no bypass) and SHALL say the check does not
+verify it. It SHALL name required approvals and `CODEOWNERS` as outside its
+question. It SHALL ship with `check: npx --no-install governance-check ADR-0022`,
+and its how-to-rule block SHALL say that the check denies nothing itself, and
+that `gh api` and a push to the default branch pass it. ADR-0018 SHALL state
+that its automerge is the exception ADR-0022 allows, and ADR-0019's rule 4
+SHALL link to ADR-0022. Neither SHALL change `revision:`.
+
+#### Scenario: One trait
+- **WHEN** ADR-0022's frontmatter is read as shipped
+- **THEN** it holds `review.merge_by` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent at a green pull request
+- **WHEN** an agent reads `review.merge_by: person` and its pull request's checks are green
+- **THEN** ADR-0022 tells it to say so and stop, not to merge or enable auto-merge
+
+#### Scenario: Dependabot automerge
+- **WHEN** ADR-0018 rules `automerge: patch` and ADR-0022 rules `merge_by: person`
+- **THEN** both ADRs say the Dependabot merge is the allowed exception, and neither contradicts the other
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0022's References are read
+- **THEN** they say it is original to governance and hold the key table
+
+### Requirement: ADR-0023 asks under which licence others may use the repository
+ADR-0023 "License" SHALL ask one trait, `license.spdx`, holding a free SPDX
+license expression, with the recommended value `MIT`. It SHALL name
+`Apache-2.0` for when a patent grant matters, `UNLICENSED` for a private
+repository, and SHALL accept compound expressions. Its Decision SHALL fix
+that the root manifest's licence field (`license` in `package.json`,
+`[project] license` in `pyproject.toml`) holds the trait, and that a licence
+file is committed at the root unless the value is `UNLICENSED`. It SHALL say
+in prose that the copyright holder is the organisation owning the
+repository, or else the ADR's `authors:`, and SHALL NOT make it a key. It
+SHALL say why governance itself ships under MIT-0. It SHALL leave dependency
+licence compliance to ADR-0019's exclusion. It SHALL ship with
+`check: npx --no-install governance-check ADR-0023`, and its how-to-rule
+block SHALL say that the check reads neither the licence text nor manifests
+outside the root.
+
+#### Scenario: One trait
+- **WHEN** ADR-0023's frontmatter is read as shipped
+- **THEN** it holds `license.spdx` with an empty value, `status: proposed` and `revision: 1`
+
+#### Scenario: Agent creating a manifest
+- **WHEN** an agent creates `package.json` in a repository that rules `license.spdx: MIT`
+- **THEN** ADR-0023 tells it to write `"license": "MIT"` and a `LICENSE` file, which `npm init` leaves out
+
+#### Scenario: Holder not a key
+- **WHEN** ADR-0023's traits are listed
+- **THEN** there is no key for the copyright holder, and the Decision names who holds it
+
+#### Scenario: Original to governance
+- **WHEN** ADR-0023's References are read
+- **THEN** they say it is original to governance and hold the key table
 
 ### Requirement: ADR-0011 revision 2 audits the workflows
 ADR-0011 SHALL move to `revision: 2` and SHALL add one key, `forge.audit`,
