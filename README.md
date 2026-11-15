@@ -6,7 +6,7 @@
 
 **Opinionated ADRs you import, overrule where you disagree, and check in CI.**
 
-The 24 questions I answer for every Python or TypeScript repository I keep
+The 25 questions I answer for every Python or TypeScript repository I keep
 on GitHub (commits, branching, delivery, supply chain, agent tooling), each
 with the answer I recommend and why; 14 of them come with a check.
 
@@ -56,6 +56,7 @@ doesn't fit your repository.
 - [ADR-0022](adr/ADR-0022-review-and-merge.md) Review and merge
 - [ADR-0023](adr/ADR-0023-license.md) License
 - [ADR-0024](adr/ADR-0024-code-scanning.md) Code scanning
+- [ADR-0025](adr/ADR-0025-tools.md) Tools outside the package manager
 
 ### Not covered
 

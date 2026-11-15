@@ -46,5 +46,5 @@
 
 ## Migration Plan
 
-ADR-0023 ships `proposed`. Repositories leaving it unruled see no change.
+ADR-0025 ships `proposed`. Repositories leaving it unruled see no change.
 Rollback: revert the commit.

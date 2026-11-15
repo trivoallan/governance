@@ -16,7 +16,7 @@ improvise its own answer.
 
 ## What Changes
 
-- Add **ADR-0023 "Tools outside the package manager"**, a question ADR
+- Add **ADR-0025 "Tools outside the package manager"**, a question ADR
   original to governance. Its question: *where do the tools that no package
   manager installs get their version, and how does one list reach every
   place they run?* One trait:
@@ -45,14 +45,15 @@ None.
 
 ### Modified Capabilities
 
-- `adr-catalog`: the catalog gains ADR-0023 and its trait.
+- `adr-catalog`: the catalog gains ADR-0025 and its trait.
 
 ## Impact
 
-- `adr/ADR-0023-tools.md`: new; consumers see it `new`.
+- `adr/ADR-0025-tools.md`: new; consumers see it `new`.
 - `adr/.mdschema.yml`: one trait.
+- `README.md`: the question count and one link, which `checks/readme.test.ts` holds to `adr/`.
 - ADR-0011, ADR-0015, ADR-0018 and ADR-0020 are not revised; at most one
   link each, so `revision:` stays 1 (ADR-0001 rule 6).
 - Depends on `add-review-merge-adr` landing first: both change the shipped
   ADR table, and this change assumes ADR-0022 is in it.
-- governance rules ADR-0023 itself only after a release ships it.
+- governance rules ADR-0025 itself only after a release ships it.
