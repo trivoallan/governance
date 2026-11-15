@@ -10,10 +10,9 @@
 # second schema for shipped questions: two schemas drift (surdesrails learned
 # this the hard way), so review is the check on governance's side.
 #
-# Run it FROM THIS DIRECTORY, because schema discovery walks up from the
-# current directory, not from the file being checked:
-#
-#   cd docs/adr/trivoallan && npx @jackchuka/mdschema@0.15.1 check '*.md'
+# `governance-check ADR-0001` runs it, through ADR-0001's `check:` line, with
+# `mdschema check --schema <this file>` on the ruled copies: no copy, no
+# discovery from the current directory.
 #
 # Trait keys are `optional`: an ABSENT key passes, so a `rejected` ADR with
 # no `traits:` block passes. A key that is PRESENT but empty is refused and
@@ -66,7 +65,6 @@ frontmatter:
     # ADR-0011
     - { name: "traits.forge.gate", enum: [blocking, informative, none], optional: true }
     - { name: "traits.forge.audit", type: string, optional: true }
-    - { name: "traits.forge.review", enum: [peer, author, agent], optional: true }
     # ADR-0012
     - { name: "traits.delivery.target", enum: [container, platform, package, none], optional: true }
     - { name: "traits.delivery.environments", type: array, optional: true }
@@ -100,7 +98,8 @@ frontmatter:
     # ADR-0021
     - { name: "traits.supply_chain.build_level", enum: [0, 1, 2, 3], optional: true }
     # ADR-0022
-    - { name: "traits.review.merge_by", enum: [person, agent], optional: true }
+    - { name: "traits.review.by", enum: [maintainer, peer, agent], optional: true }
+    - { name: "traits.review.approvals", type: number, optional: true }
     # ADR-0023
     - { name: "traits.license.spdx", type: string, optional: true }
     # ADR-0024

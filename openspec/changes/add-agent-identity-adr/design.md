@@ -2,32 +2,32 @@
 
 ## Context
 
-- ADR-0022 (review and merge) rules `review.merge_by: person` and holds the
-  rule with a Claude Code deny entry on `gh pr merge` plus a ruleset with zero
-  approvals and no bypass. Its Context names the limit this change addresses
-  (see proposal.md, Why).
-- GitHub refuses a pull request's author's approval of their own pull request.
-  A ruleset's bypass actors can be given "always" or "for pull requests only";
-  the latter lets them merge a pull request whose rules are not met, and not
-  push to the branch. To be confirmed in task 1.1.
-- ADR-0018's automerge runs `gh pr merge --auto` from a workflow with
-  `GITHUB_TOKEN`. With a required approval, auto-merge waits for one. A
-  workflow can approve with `gh pr review --approve` when the repository
-  allows GitHub Actions to approve pull requests. To be confirmed in task 1.1.
-- ADR-0015 rules where secrets are stored and guarded; the agent's token is
-  one.
+- ADR-0022 revision 2 asks `review.by` (`maintainer`, `peer`, `agent`) and
+  `review.approvals`. The agent never approves. With `peer`, the ruleset
+  requires `review.approvals` approvals of the latest push by another account,
+  and the agent merges once GitHub accepts it. The bypass list holds
+  Dependabot alone under `peer`, which ADR-0018 repeats ("no other actor goes
+  there"). ADR-0022's check reads the ruleset's approvals in CI, not its
+  bypass list, which needs admin rights. The `review-by-key` change that made
+  revision 2 is not yet archived, so this change does not modify ADR-0022's
+  requirement; it states the new links in ADR-0026's own requirement.
+- GitHub refuses a pull request's author's approval of their own pull
+  request. A ruleset bypass actor can be "Always allow" or "For pull requests
+  only"; the latter merges a pull request whose rules are not met and cannot
+  push to the branch. In a personal repository the eligible actors include
+  the repository admin role, GitHub Apps and Dependabot.
+- ADR-0015 rules where secrets are stored; the agent's token is one.
 - ADR-0017's `agent.host` already lives in the `agent` group. ontrack writes
-  each ADR's traits as a separate block of `AGENTS.md`, so two ADRs sharing a
-  group is a layout question, not a collision. `adr/.mdschema.yml` lists
-  traits flat, each optional.
-- `checks/governance-check.ts` checks tracked files only. ADR-0020 and
-  ADR-0025 ship without a `check:` line; the README counts only ADRs with one.
+  each ADR's traits as a separate block of `AGENTS.md`, and
+  `adr/.mdschema.yml` lists traits flat, each optional.
+- ADR-0020 and ADR-0025 ship without a `check:` line; the README counts only
+  ADRs with one.
 
 ## Goals / Non-Goals
 
 **Goals:**
 - One key that reads on its own in `AGENTS.md`: `agent.identity: own`.
-- A ruleset described once, in ADR-0026, which ADR-0022 points to under `own`.
+- No second ruleset: `own` reuses ADR-0022's `peer` ruleset and adds one bypass actor.
 
 **Non-Goals:**
 - Repositories with several maintainers: `CODEOWNERS`, several required
@@ -35,7 +35,8 @@
 - Step-by-step setup of a GitHub App or a machine account. The ADR names the
   steps that matter and links GitHub's documentation.
 - Hosts other than Claude Code for the isolation advice, as ADR-0022 does.
-- Verifying anything on GitHub. No check calls the API today.
+- Verifying the identity or the bypass list. ADR-0022's check reads the
+  ruleset in CI and cannot see its bypass list.
 
 ## Decisions
 
@@ -54,24 +55,29 @@
   and a ruleset with a bypass are a large step from one deny line, and a
   recommendation that most readers reject teaches nothing. `own` is named as
   the stronger answer with the two signals that justify it.
-- **Maintainer as the only bypass actor, for pull requests only.** One
-  required approval blocks the maintainer's own pull requests, since GitHub
-  refuses self-approval. Three answers were weighed:
-  - the agent's identity approves the maintainer's pull requests: it makes an
-    agent's approval a gate, which ADR-0022 rule 4 calls advice;
-  - every change goes through an agent session: a rule the maintainer will
-    break the first time they fix a typo;
-  - the maintainer bypasses, chosen: the agent cannot merge, and the
-    maintainer merges without approving, which is ADR-0022's review. The cost,
-    stated in the ADR: the bypass also lets the maintainer merge the agent's
-    pull request unread, exactly as today.
-- **No `check:` line.** Every fact the ADR fixes sits outside tracked files.
-  A check on, say, a `CODEOWNERS` file would verify something the ADR does not
-  require, and passing it would read as more than it proves.
-- **`CODEOWNERS` in Alternatives, not in the Decision.** With the maintainer
-  bypassing, a required code owner review is bypassed too; without the bypass,
-  the maintainer's own pull requests block. Either way the file adds no
-  enforcement for one maintainer.
+- **`own` rules ADR-0022 `peer`.** Once the agent is another account, the
+  maintainer's approval is a peer approval, the one review GitHub enforces.
+  ADR-0022 already says what follows: the agent never approves, and merges
+  once GitHub accepts. `own` with `maintainer` stays possible (attribution
+  only) and the ADR says what it leaves to the deny entry.
+- **The repository admin role as an extra bypass actor, for pull requests
+  only.** Under `peer`, the maintainer's own pull requests wait for an
+  approval nobody can give. Three answers were weighed:
+  - the agent's identity approves them: ADR-0022 rule 1 forbids the agent to
+    approve, under any account;
+  - every change goes through an agent session: a rule the maintainer breaks
+    the first time they fix a typo;
+  - the admin role bypasses, chosen: the maintainer's pull requests merge, the
+    agent's still need the approval. The cost, stated in the ADR: the bypass
+    also lets the maintainer merge the agent's pull request unapproved.
+  ADR-0022 and ADR-0018 name this second actor where they say Dependabot is
+  the only one.
+- **No `check:` line.** The identity and the token's isolation sit outside
+  tracked files, and ADR-0022's check already reads the approvals the ruleset
+  requires. A check of its own would verify nothing new.
+- **`CODEOWNERS` in Alternatives, not in the Decision.** While the
+  maintainer is the only account that approves, requiring a code owner's
+  review names the same person the approval already comes from.
 - **Isolation stated as an outcome, not a mechanism.** The ADR fixes that the
   agent's session reaches the agent's token and not the maintainer's, and
   names ways to get there (a sandbox that denies reading the maintainer's
@@ -82,16 +88,16 @@
 - [The agent's session can still read the maintainer's `gh` credentials on
   the same machine] → rule 2 makes isolation part of `own`, and the ADR says
   an `own` without it is two identities the agent chooses between.
-- [A required approval silently stops Dependabot automerge] → the ADR states
-  it, with the workflow change and the repository setting it needs.
-- [The bypass lets the maintainer merge unread] → stated as a Negative
-  consequence; it is ADR-0022's situation today, not a regression.
-- [GitHub's bypass modes or Actions approval behave otherwise than described]
-  → task 1.1 checks each sentence against GitHub's documentation and drops
-  what it cannot source.
+- [Three ADRs name the bypass list] → each names both actors, and a spec
+  scenario reads them together.
+- [The bypass lets the maintainer merge the agent's work unapproved] →
+  stated as a Negative consequence; it is the `maintainer` situation, not a
+  regression.
+- [GitHub's bypass modes behave otherwise than described] → checked against
+  GitHub's documentation on 2026-11-15; the ADR links the pages.
 
 ## Migration Plan
 
 ADR-0026 ships `proposed` in the next release. Consumers see it `new` and rule
 it. Repositories that leave it unruled, or rule `maintainer`, change nothing.
-ADR-0022 keeps `revision: 1`. Rollback: revert the commit.
+ADR-0022 and ADR-0018 keep their `revision:`. Rollback: revert the commit.

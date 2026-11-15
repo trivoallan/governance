@@ -77,8 +77,9 @@ licences too.
    adding an ignore rule, not by lowering `fail_on`, not by removing the
    job. It fixes by updating the dependency, through ADR-0018's updater
    when one is ruled. When no fixed version exists, or the vulnerable code
-   is not reachable, it proposes an ignore rule and a person merges it
-   ([ADR-0022](ADR-0022-review-and-merge.md)).
+   is not reachable, it proposes an ignore rule and a person approves or
+   merges it, as [ADR-0022](ADR-0022-review-and-merge.md)'s `review.by`
+   says.
 5. **Every ignore rule names one vulnerability and says why**: in
    `.grype.yaml`, an entry under `ignore:` with `vulnerability:` and
    `reason:`. An ignore by severity, by package alone or without a reason
@@ -131,7 +132,7 @@ For an image, `actions/attest` with `sbom-path` binds the SBOM to the image
 digest; it needs `id-token: write`, `attestations: write` and
 `artifact-metadata: write`.
 
-An ignore rule, proposed by an agent, merged by a person:
+An ignore rule, proposed by an agent, approved or merged by a person:
 
 ```yaml
 # .grype.yaml
@@ -196,7 +197,7 @@ what makes a decision different from an accepted default.
 ### Positive
 
 - An agent facing a red scan knows its move: update the dependency, or
-  propose an ignore rule for a person to merge. Never silence it.
+  propose an ignore rule for a person to approve or merge. Never silence it.
 - Every release says what it contains, in a file a scanner reads, so a CVE
   published later can be checked against releases already shipped.
 - The weekly scan finds vulnerabilities in code nobody touched.

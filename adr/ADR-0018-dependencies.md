@@ -53,8 +53,12 @@ about the code.
 
 **Automerge is the exception
 [ADR-0022](ADR-0022-review-and-merge.md) allows** to its rule that a
-person merges: a workflow the repository ruled merges the update, not an
-agent.
+person reviews: a workflow the repository ruled merges the update, not an
+agent. With ADR-0022's `review.by: peer`, the ruleset requires an
+approval, so Dependabot is the one actor in its bypass list, and its
+automerge passes the approval rule; no other actor goes there, except the
+repository admin role under
+[ADR-0026](ADR-0026-agent-identity.md)'s `agent.identity: own`.
 
 **Not concerned:** security alerts that report a vulnerable dependency
 without proposing an update. They inform, under

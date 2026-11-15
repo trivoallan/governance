@@ -22,4 +22,4 @@ section SHALL NOT promise that a topic will be covered later.
 
 #### Scenario: Review beyond who merges
 - **WHEN** the section's item on code review is read
-- **THEN** it lists ownership (`CODEOWNERS`) and review among several people only, and links to ADR-0022 and ADR-0026, which decide who merges and under whose identity the agent proposes
+- **THEN** it lists ownership (`CODEOWNERS`) only, and links to ADR-0022, which names it as outside its question

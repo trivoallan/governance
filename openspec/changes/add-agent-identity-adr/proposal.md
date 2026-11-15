@@ -3,52 +3,50 @@
 ## Why
 
 The agent works with the maintainer's `gh` session or token, so GitHub records
-everything it does under the maintainer's name. ADR-0022 states the two costs
-and cannot remove them: an agent's merge cannot be told apart afterwards, and
-the rule "a person merges" is held only by a deny entry that is not a security
-boundary, plus a ruleset that cannot require an approval from a repository's
-only maintainer. Giving the agent an identity of its own removes both, and no
-ADR asks the question.
+everything it does under the maintainer's name. ADR-0022 (revision 2) states
+the cost: an agent's act cannot be told apart afterwards. And a repository
+kept by one person can only rule `review.by: maintainer`, where the review is
+an unenforced merge and the agent is held back by a deny entry that is not a
+security boundary. With an identity of its own, the agent's pull requests have
+an author other than the maintainer, so the maintainer's approval becomes the
+`peer` review GitHub enforces. No ADR asks the question.
 
 ## What Changes
 
 - Add **ADR-0026 "Agent identity"**, a question ADR original to governance,
-  written, as ADR-0022 is, for a repository kept by one person with a coding
-  agent. Its question: *under whose GitHub identity does the agent act?* One
-  trait:
+  written for a repository kept by one person with a coding agent. Its
+  question: *under whose GitHub identity does the agent act?* One trait:
   - `agent.identity` (`maintainer`, `own`), recommending `maintainer`. `own`
     is the stronger answer, worth its setup when the history must tell the
-    agent from the person, or when the merge rule must be held by GitHub
-    rather than by the agent host.
+    agent from the person, or when the person's review must be an approval
+    GitHub enforces.
 - Its Decision fixes, when the repository rules `own`:
   1. the agent acts under its own GitHub identity, a GitHub App or a machine
-     account: its commits, pushes, pull requests and comments are recorded
-     under it;
-  2. its credentials are kept apart from the maintainer's: the session that
-     runs the agent reaches the agent's token and not the maintainer's `gh`
-     session or SSH key, and the token is stored as ADR-0015 says secrets are;
-  3. on the default branch, the ruleset requires a pull request with one
-     approval, and its bypass list holds the maintainer alone, for pull
-     requests only. The agent's identity is not a bypass actor and cannot
-     approve its own pull request, so it cannot merge; the maintainer merges
-     without approving, which ADR-0022 calls the review;
+     account with the write role;
+  2. its credentials are kept apart from the maintainer's, and its token is
+     stored as ADR-0015 says secrets are;
+  3. ADR-0022 is ruled `review.by: peer` with `review.approvals: 1`: the
+     maintainer approves the agent's latest push, and the agent merges once
+     GitHub accepts it;
   4. a `Co-Authored-By` trailer labels a commit and is not an identity.
-- It states that a required approval stops ADR-0018's automerge unless the
-  automerge workflow approves the Dependabot pull request, and says how.
-- It ships **no check**: the identity, the token's isolation and the ruleset
-  live on GitHub and on the maintainer's machine, not in tracked files. The
-  ADR says so.
-- `CODEOWNERS` stays out: with the maintainer as bypass actor, a required code
-  owner review is bypassed with the rest, and the file only routes review
-  requests. The ADR names it in Alternatives Considered.
-- ADR-0022: its Context links ADR-0026 where it says an agent's merge cannot be
-  told apart; its ruleset paragraph says that with `agent.identity: own`,
-  ADR-0026's ruleset replaces it; its "One required approval" alternative says
-  ADR-0026 makes it workable. No trait changes, so `revision:` stays `1`.
+- The ruleset is ADR-0022's `peer` ruleset, with the repository admin role in
+  the bypass list, "For pull requests only", so the maintainer's own pull
+  requests merge. The ADR states that the bypass also lets the maintainer
+  merge the agent's work unapproved.
+- It ships **no check**: the identity and the token's isolation live outside
+  tracked files; ADR-0022's check already reads the ruleset's approvals in CI,
+  not its bypass list. The ADR says so.
+- `CODEOWNERS` stays out: while the maintainer is the only account that
+  approves, a required code owner review adds nothing. The ADR names it in
+  Alternatives Considered.
+- ADR-0022: its Context links ADR-0026; its bypass sentence names the admin
+  role under ADR-0026's `own` beside Dependabot; its "One required approval
+  for a single maintainer" alternative says ADR-0026 makes it workable.
+  ADR-0018's "no other actor goes there" names the same exception. No trait
+  changes, so neither `revision:` moves.
 - Add the trait to `adr/.mdschema.yml`.
 - README: ADR-0026 joins the question list and the Agents row. The counts
-  become 26 questions, 14 of them with a check. The code review item in "Not
-  covered" shrinks to ownership (`CODEOWNERS`) and review among several people.
+  become 26 decisions, 16 of them with a check.
 
 ## Capabilities
 
@@ -58,16 +56,15 @@ None.
 
 ### Modified Capabilities
 
-- `adr-catalog`: the catalog gains ADR-0026 and its trait; ADR-0022's
-  requirement gains the link to ADR-0026.
-- `readme`: the "Not covered" item about code review changes.
+- `adr-catalog`: the catalog gains ADR-0026 and its trait, and the
+  requirement states the links ADR-0022 and ADR-0018 gain.
 
 ## Impact
 
 - `adr/ADR-0026-agent-identity.md`: new; consumers see it `new`.
-- `adr/ADR-0022-review-and-merge.md`: three sentences, no trait change, so
-  `revision:` stays `1` (ADR-0001 rule 6).
+- `adr/ADR-0022-review-and-merge.md`, `adr/ADR-0018-dependencies.md`: a few
+  sentences, no trait change, so `revision:` stays (ADR-0001 rule 6).
 - `adr/.mdschema.yml`: one trait.
-- `README.md`: counts, list, Agents row, "Not covered".
+- `README.md`: counts, list, Agents row.
 - `checks/`: unchanged.
 - governance itself rules ADR-0026 only after a release ships it.

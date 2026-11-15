@@ -45,50 +45,6 @@ SDR-0000 (service baseline) SHALL NOT be adapted.
 - **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
 - **THEN** none is found
 
-### Requirement: ADR-0022 asks who merges a pull request
-ADR-0022 "Review and merge" SHALL ask who merges a pull request in a
-repository kept by one person, through one trait, `review.merge_by`, with the
-values `person` and `agent` and the recommended value `person`. It SHALL say
-that `agent` is acceptable when the ADR's text gives the reason. When the
-repository rules `person`, its Decision SHALL fix four rules:
-1. the agent opens the pull request ready for review, says when its checks are green, and stops;
-2. the agent merges nothing: not with `gh pr merge`, not with `--auto`, not through the API, not by pushing to the default branch;
-3. a bot that a workflow runs under another ADR's ruling is not an agent session, and ADR-0018's automerge is that exception;
-4. a review the agent runs on its own work is advice, and the person's merge is the review.
-
-It SHALL describe the GitHub ruleset that backs these rules (pull request
-required, zero approvals, no bypass) and SHALL say the check does not
-verify it. It SHALL name required approvals and `CODEOWNERS` as outside its
-question. It SHALL say that with ADR-0026's `agent.identity: own`, ADR-0026's
-ruleset replaces this one, and its Context SHALL link ADR-0026 where it says
-an agent's merge cannot be told apart. Its "One required approval"
-alternative SHALL say that ADR-0026 makes it workable. It SHALL ship with
-`check: npx --no-install governance-check ADR-0022`,
-and its how-to-rule block SHALL say that the check denies nothing itself, and
-that `gh api` and a push to the default branch pass it. ADR-0018 SHALL state
-that its automerge is the exception ADR-0022 allows, and ADR-0019's rule 4
-SHALL link to ADR-0022. Neither SHALL change `revision:`.
-
-#### Scenario: One trait
-- **WHEN** ADR-0022's frontmatter is read as shipped
-- **THEN** it holds `review.merge_by` with an empty value, `status: proposed` and `revision: 1`
-
-#### Scenario: Agent at a green pull request
-- **WHEN** an agent reads `review.merge_by: person` and its pull request's checks are green
-- **THEN** ADR-0022 tells it to say so and stop, not to merge or enable auto-merge
-
-#### Scenario: Dependabot automerge
-- **WHEN** ADR-0018 rules `automerge: patch` and ADR-0022 rules `merge_by: person`
-- **THEN** both ADRs say the Dependabot merge is the allowed exception, and neither contradicts the other
-
-#### Scenario: Original to governance
-- **WHEN** ADR-0022's References are read
-- **THEN** they say it is original to governance and hold the key table
-
-#### Scenario: Agent with its own identity
-- **WHEN** ADR-0022 rules `merge_by: person` and ADR-0026 rules `agent.identity: own`
-- **THEN** ADR-0022 points to ADR-0026's ruleset, and the two ADRs describe one ruleset, not two
-
 ## ADDED Requirements
 
 ### Requirement: ADR-0026 asks under whose identity the agent acts
@@ -97,41 +53,54 @@ a coding agent, under whose GitHub identity the agent acts, through one trait,
 `agent.identity`, with the values `maintainer` and `own` and the recommended
 value `maintainer`. It SHALL say that `own` is the stronger answer and when it
 is worth its setup: when the history must tell the agent from the person, or
-when the merge rule must be held by GitHub rather than by the agent host. When
-the repository rules `own`, its Decision SHALL fix four rules:
-1. the agent acts under its own GitHub identity, a GitHub App or a machine account, and its commits, pushes, pull requests and comments are recorded under it;
+when the person's review must be an approval GitHub enforces. When the
+repository rules `own`, its Decision SHALL fix four rules:
+1. the agent acts under its own GitHub identity, a GitHub App or a machine account with the write role, and its commits, pushes, pull requests and comments are recorded under it;
 2. its credentials are kept apart: the session that runs the agent reaches the agent's token and not the maintainer's `gh` session or SSH key, and the token is stored as ADR-0015 says secrets are;
-3. the default branch's ruleset requires a pull request with one approval, and its bypass list holds the maintainer alone, for pull requests only, so the agent cannot merge and the maintainer merges without approving;
+3. ADR-0022 is ruled `review.by: peer` with `review.approvals: 1`: the maintainer's approval of the agent's latest push is the review, and the agent merges once GitHub accepts the merge;
 4. a `Co-Authored-By` trailer labels a commit and is not an identity.
 
-It SHALL compare a GitHub App and a machine account by what each costs to set
-up and to keep. It SHALL state that a required approval stops ADR-0018's
-automerge unless the automerge workflow approves the pull request, and how.
-It SHALL ship without a `check:` line, and SHALL say that the identity, the
-token's isolation and the ruleset are not verified because none of them lives
-in a tracked file. Its Alternatives Considered SHALL hold, each with its cost:
-`maintainer`; a machine account; a GitHub App; a `Co-Authored-By` trailer
-alone; `CODEOWNERS` with a required code owner review.
+It SHALL say that the ruleset is ADR-0022's `peer` ruleset, with the
+repository admin role added to its bypass list in the mode "For pull requests
+only", so the maintainer's own pull requests merge without an approval nobody
+can give, and SHALL state that this bypass also lets the maintainer merge the
+agent's pull request unapproved. It SHALL say that `own` with
+`review.by: maintainer` records the agent apart but leaves the merge held by
+the deny entry alone. It SHALL compare a GitHub App and a machine account by
+what each costs to set up and to keep. It SHALL ship without a `check:` line,
+and SHALL say that the identity and the token's isolation are not verified,
+and that ADR-0022's check reads the ruleset's approvals but not its bypass
+list. Its Alternatives Considered SHALL hold, each with its cost:
+`maintainer`; the agent approving the maintainer's pull requests; every change
+going through the agent; a `Co-Authored-By` trailer alone; `CODEOWNERS` with a
+required code owner review.
+
+ADR-0022 SHALL link ADR-0026 where it says an agent's act cannot be told
+apart, SHALL name the repository admin role under ADR-0026's `own` beside
+Dependabot in its bypass list, and its alternative "One required approval for
+a single maintainer" SHALL say that ADR-0026 makes it workable. ADR-0018
+SHALL name the same exception where it says no other actor goes in the bypass
+list. Neither SHALL change `revision:`.
 
 #### Scenario: One trait
 - **WHEN** ADR-0026's frontmatter is read as shipped
 - **THEN** it holds `agent.identity` with an empty value, `status: proposed`, `revision: 1` and no `check:` line
 
 #### Scenario: Agent at a green pull request with its own identity
-- **WHEN** a repository rules `agent.identity: own` and the agent's pull request is green
-- **THEN** ADR-0026 says GitHub refuses the agent's merge, because it is not a bypass actor and cannot approve its own pull request
+- **WHEN** a repository rules `agent.identity: own` and `review.by: peer`, and the agent's pull request is green but unapproved
+- **THEN** ADR-0026 says GitHub refuses the merge until the maintainer approves the latest push, and that the agent merges after
 
 #### Scenario: The maintainer's own pull request
 - **WHEN** the maintainer opens a pull request without the agent, under `agent.identity: own`
-- **THEN** ADR-0026 says the maintainer merges it as the bypass actor, and states that this bypass also lets the maintainer merge the agent's pull request without approving it
+- **THEN** ADR-0026 says the maintainer merges it as the bypass actor, and states that this bypass also lets the maintainer merge the agent's pull request unapproved
 
-#### Scenario: Dependabot automerge under a required approval
-- **WHEN** ADR-0018 rules `automerge: patch` and ADR-0026 rules `agent.identity: own`
-- **THEN** ADR-0026 says the automerge waits for an approval unless its workflow approves the pull request, and names what that requires
+#### Scenario: Bypass list read the same way everywhere
+- **WHEN** ADR-0018, ADR-0022 and ADR-0026 are read for who sits in the bypass list under `peer`
+- **THEN** all three name Dependabot, and the repository admin role only under `agent.identity: own`
 
 #### Scenario: CODEOWNERS left out
 - **WHEN** ADR-0026's Alternatives Considered are read
-- **THEN** `CODEOWNERS` is there, with the reason it adds no enforcement once the maintainer bypasses the ruleset
+- **THEN** `CODEOWNERS` is there, with the reason it adds no enforcement while the maintainer is the only account that approves
 
 #### Scenario: Original to governance
 - **WHEN** ADR-0026's References are read

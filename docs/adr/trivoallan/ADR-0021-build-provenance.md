@@ -112,7 +112,7 @@ it with `npm audit signatures`.
 
 ### Positive
 
-- A consumer of `@trivoallan/ontrack-governance` can tell which commit and
+- A consumer of `@trivoallan/ontrack-engineering` can tell which commit and
   which workflow produced the version they install.
 - A leaked npm token can no longer publish a version that passes for a
   release.
