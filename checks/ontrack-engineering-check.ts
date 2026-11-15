@@ -156,7 +156,8 @@ function traitsOf<S extends z.ZodObject>(schema: S, number: string, group: strin
   const issue = parsed.error.issues[0];
   const key = String(issue.path[0]);
   const name = `${number}: ${group}.${key}`;
-  const value = raw[key];
+  const at = raw[key];
+  const value = Array.isArray(at) && typeof issue.path[1] === 'number' ? at[issue.path[1]] : at;
   if (value === undefined || value === '' || issue.code === 'too_small') {
     throw new CheckError(`${name} is not set in ${file}; the ADR is not ruled`);
   }
@@ -317,9 +318,6 @@ const WIRING: Record<string, Entry[]> = {
     { group: 'delivery', key: 'release_tool', row: byValue({ 'release-please': inWorkflow('googleapis/release-please-action') }) },
     { group: 'delivery', key: 'target', row: byValue({ container: { exists: [['**/Dockerfile', '**/Containerfile']] } }) },
     { group: 'deployment', key: 'manifests', row: (v) => (v === 'none' || v.includes('://') ? null : { path: v }) },
-  ],
-  'ADR-0017': [
-    { group: 'agent', key: 'host', row: byValue({ 'claude-code': { exists: [['.claude/settings.json']] } }) },
   ],
   'ADR-0018': [
     { group: 'dependencies', key: 'updater', row: byValue({
@@ -552,15 +550,116 @@ function changes(root: string, file: string): number {
   return failed ? 1 : 0;
 }
 
-// ADR-0022 reads ADR-0017: the deny list it looks for belongs to the agent host.
+// ADR-0017: the agent hosts a repository works with. Each host names the settings
+// files it commits and how ADR-0022 finds a command denied in them.
+type Verdict = { ok: boolean; detail: string };
+const SETTINGS = '.claude/settings.json';
+const OPENCODE = ['opencode.json', '.opencode/opencode.json'];
+
+// opencode's own Wildcard.match (packages/core/src/util/wildcard.ts), Windows case aside.
+function wildcard(input: string, pattern: string): boolean {
+  let re = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.');
+  if (re.endsWith(' .*')) re = `${re.slice(0, -3)}( .*)?`;
+  return new RegExp(`^${re}$`, 's').test(input);
+}
+
+function claudeDeny(root: string, files: string[], commands: string[]): Verdict[] {
+  // Tracked only, as wiring rows: a deny never committed protects one machine.
+  if (!files.includes(SETTINGS)) return [{ ok: false, detail: `${SETTINGS} is not tracked` }];
+  let deny: unknown;
+  try {
+    deny = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.permissions?.deny;
+  } catch {
+    return [{ ok: false, detail: `${SETTINGS} is not valid JSON` }];
+  }
+  return commands.map((command) => {
+    const p = `Bash(${command}`;
+    // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
+    const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(p)) : undefined;
+    return entry
+      ? { ok: true, detail: `${SETTINGS} denies ${entry}` }
+      : { ok: false, detail: `${SETTINGS} permissions.deny has no ${p} entry` };
+  });
+}
+
+// opencode joins the `permissions` of the root file, then of .opencode/, and the
+// last rule matching the action and the command decides. Replayed on the command
+// alone and with an argument.
+// ponytail: two fixed probes; a deny the probes do not exercise can slip through.
+function opencodeDeny(root: string, files: string[], commands: string[]): Verdict[] {
+  const fail = (detail: string) => [{ ok: false, detail }];
+  const jsonc = OPENCODE.map((f) => `${f}c`).find((f) => files.includes(f));
+  if (jsonc) return fail(`${jsonc} is tracked, but the check reads only ${jsonc.slice(0, -1)}; move its rules there`);
+  const present = OPENCODE.filter((f) => files.includes(f));
+  if (!present.length) return fail(`no tracked ${OPENCODE.join(' or ')}`);
+  const rules: { file: string; rule: Record<string, unknown> }[] = [];
+  for (const file of present) {
+    let config: unknown;
+    try {
+      config = JSON.parse(readFileSync(join(root, file), 'utf8'));
+    } catch {
+      return fail(`${file} is not valid JSON`);
+    }
+    if (typeof config !== 'object' || config === null) return fail(`${file} is not a JSON object`);
+    if ('permission' in config) return fail(`${file} holds the V1 key permission; convert it to the V2 permissions array`);
+    const list = (config as { permissions?: unknown }).permissions ?? [];
+    if (!Array.isArray(list)) return fail(`${file} permissions is not an array`);
+    for (const rule of list) if (typeof rule === 'object' && rule !== null) rules.push({ file, rule });
+  }
+  return commands.map((command) => {
+    let detail = '';
+    for (const probe of [command, `${command} 1`]) {
+      const last = rules.findLast(({ rule }) => typeof rule.action === 'string' && typeof rule.resource === 'string'
+        && wildcard('shell', rule.action) && wildcard(probe, rule.resource));
+      if (!last) return { ok: false, detail: `no rule in ${present.join(', ')} denies ${probe}` };
+      if (last.rule.effect !== 'deny') return { ok: false, detail: `${last.file} rule ${JSON.stringify(last.rule)} decides ${probe}` };
+      detail = `${last.file} denies ${command} with ${JSON.stringify(last.rule)}`;
+    }
+    return { ok: true, detail };
+  });
+}
+
+const HOSTS = {
+  'claude-code': { files: [SETTINGS], deny: claudeDeny },
+  opencode: { files: OPENCODE, deny: opencodeDeny },
+};
+type Host = keyof typeof HOSTS;
+const Agent = z.object({ hosts: z.array(z.enum(Object.keys(HOSTS) as [Host, ...Host[]])) });
+
+// Revision 1 asked `agent.host`, one value: say what to write instead.
+function renamed(value: unknown): string {
+  const v = typeof value === 'string' ? value : '';
+  return `agent.host became agent.hosts (a list) in ADR-0017 revision 2; write agent.hosts: [${v === 'none' ? '' : v}]`;
+}
+
+function agentTooling(root: string, file: string): number {
+  const text = readFileSync(file, 'utf8');
+  const old = readTraits(text, 'agent')?.host;
+  if (old !== undefined) throw new CheckError(`ADR-0017: ${renamed(old)}`);
+  const { hosts } = traitsOf(Agent, 'ADR-0017', 'agent', file, text);
+  if (!hosts.length) {
+    console.log('ADR-0017: agent.hosts is empty, nothing to check');
+    return 0;
+  }
+  const files = tracked(root);
+  let failed = false;
+  for (const host of hosts) {
+    const hit = HOSTS[host].files.find((f) => files.includes(f));
+    if (hit) console.log(`ADR-0017: agent.hosts holds ${host}, found ${hit}`);
+    else {
+      console.error(`ADR-0017: agent.hosts holds ${host}, but no tracked file matching ${HOSTS[host].files.join(' or ')}`);
+      failed = true;
+    }
+  }
+  return failed ? 1 : 0;
+}
+
+// ADR-0022 reads ADR-0017: the denies it looks for belong to each agent host.
 // `approvals` arrives as text from readTraits; the regex keeps "2.5" and "-1" out.
 const Review = z.object({
   by: z.enum(['maintainer', 'peer', 'agent']),
   approvals: one().regex(/^\d+$/, 'a whole number').transform(Number),
 });
-const SETTINGS = '.claude/settings.json';
-const MERGE = 'Bash(gh pr merge';
-const APPROVE = 'Bash(gh pr review';
 
 function review(root: string, file: string): number {
   const text = readFileSync(file, 'utf8');
@@ -576,34 +675,41 @@ function review(root: string, file: string): number {
     return 0;
   }
   // Both parts run, so one run shows every problem.
-  const denied = denies(root, name, by === 'maintainer' ? [APPROVE, MERGE] : [APPROVE]);
+  const denied = denies(root, name, by === 'maintainer' ? ['gh pr review', 'gh pr merge'] : ['gh pr review']);
   const ruled = ruleset(root, name, by, approvals);
   return denied && ruled ? 0 : 1;
 }
 
-function denies(root: string, name: string, required: string[]): boolean {
-  const host = toolAnswer(root, 'ADR-0017', 'agent', 'host');
-  if (host.value !== 'claude-code') {
+function denies(root: string, name: string, commands: string[]): boolean {
+  const old = toolAnswer(root, 'ADR-0017', 'agent', 'host');
+  if (old.value !== undefined) {
+    console.error(`${name}, but ${renamed(old.value)}`);
+    return false;
+  }
+  const answer = toolAnswer(root, 'ADR-0017', 'agent', 'hosts');
+  const v = answer.value;
+  // ponytail: a scalar counts as one host, so a malformed list checks more, never less; ADR-0017's check refuses it.
+  const hosts = (Array.isArray(v) ? v : v ? [v] : []).map(String);
+  if (!hosts.length) {
     const adr17 = ref('ADR-0017');
-    const why = host.why ?? (host.found ? `${adr17} agent.host is ${host.value || '(not set)'}` : `${adr17} is not in this repository`);
+    const why = answer.why ?? (answer.found ? `${adr17} agent.hosts is empty` : `${adr17} is not in this repository`);
     console.log(`${name}, but ${why}, no deny to check`);
     return true;
   }
-  const fail = (msg: string) => { console.error(`${name}, but ${msg}`); return false; };
-  // Tracked only, as wiring rows: a deny never committed protects one machine.
-  if (!tracked(root).includes(SETTINGS)) return fail(`${SETTINGS} is not tracked`);
-  let deny: unknown;
-  try {
-    deny = JSON.parse(readFileSync(join(root, SETTINGS), 'utf8'))?.permissions?.deny;
-  } catch {
-    return fail(`${SETTINGS} is not valid JSON`);
-  }
+  const files = tracked(root);
   let ok = true;
-  for (const p of required) {
-    // ponytail: prefix match, so an exact-command rule passes though it denies less; parse rules if that matters.
-    const entry = Array.isArray(deny) ? deny.find((d) => typeof d === 'string' && d.startsWith(p)) : undefined;
-    if (entry) console.log(`${name}, ${SETTINGS} denies ${entry}`);
-    else ok = fail(`${SETTINGS} permissions.deny has no ${p} entry`);
+  for (const host of hosts) {
+    if (!(host in HOSTS)) {
+      console.log(`${name}, ${host} is not a host governance knows, no deny to check`);
+      continue;
+    }
+    for (const verdict of HOSTS[host as Host].deny(root, files, commands)) {
+      if (verdict.ok) console.log(`${name}, ${verdict.detail}`);
+      else {
+        console.error(`${name}, but ${verdict.detail}`);
+        ok = false;
+      }
+    }
   }
   return ok;
 }
@@ -947,6 +1053,7 @@ const CHECKS: Record<string, Check> = {
   'ADR-0001': adrs,
   'ADR-0025': tools,
   'ADR-0011': forge,
+  'ADR-0017': agentTooling,
   'ADR-0022': review,
   'ADR-0008': docs,
   'ADR-0023': license,
