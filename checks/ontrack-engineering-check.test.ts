@@ -1050,7 +1050,7 @@ test('ADR-0022: one host of two fails', () => {
 test('ADR-0022: unknown host has no deny to check', () => {
   const r = local(wired({ adrs: reviewAdr('maintainer', '0', '[cursor]') }));
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /cursor is not a host governance knows, no deny to check/);
+  assert.match(r.stdout, /cursor is not a host ontrack-engineering knows, no deny to check/);
 });
 
 // --- ADR-0017: the agent hosts and each one's committed settings

@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -41,7 +41,7 @@ A repository can hold others without changing the answer.
 
 ## Decision
 
-**governance does not choose for you, but it narrows the field.** It
+**ontrack-engineering does not choose for you, but it narrows the field.** It
 recommends two languages:
 
 | Key | Recommended value | Reason |
@@ -55,7 +55,7 @@ and services that do neither. Neither is better in the abstract.
 **Another language remains possible, and is justified here**, not
 elsewhere. Write what the two recommended languages did not give you: a
 single static binary, a runtime constraint, an ecosystem the repository
-depends on. That justification is the only thing governance asks in return.
+depends on. That justification is the only thing ontrack-engineering asks in return.
 
 **None of this is checked by a tool.** The schema checks that a value is
 written, never that it is in the list: refusing a language mechanically
@@ -104,7 +104,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -142,7 +142,7 @@ One language from browser to server, gradual typing, `zod` for validation.
 ### `Go`
 
 One binary to deploy, fast compilation, simple concurrency. surdesrails
-recommends it; governance does not, because its repositories rarely need a
+recommends it; ontrack-engineering does not, because its repositories rarely need a
 static binary and one fewer language keeps the other recommendations
 shorter. It remains a valid answer when justified.
 
@@ -159,7 +159,7 @@ For a documentation, configuration or infrastructure repository. Rule
 ## References
 
 - Adapted from surdesrails [SDR-0004](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0004-languages.md), revision 1.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0005](ADR-0005-validation.md) and [ADR-0007](ADR-0007-tests.md): validation and coverage, which depend on this answer.
 
 **The key.**
@@ -170,7 +170,7 @@ For a documentation, configuration or infrastructure repository. Rule
 
 **What this key does not cover:** no test runner, test command, coverage
 threshold, lint command or tool. The coverage threshold is ADR-0007's;
-commands are not carried by governance, which does not know what your
+commands are not carried by ontrack-engineering, which does not know what your
 repository runs.
 
 **An empty key is not an answer**: this one is required. The value is

@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -37,7 +37,7 @@ place. The history can no longer be filtered, and a release generated from
 the messages sorts changes into the wrong places. Once the list is written,
 the agent picks from it.
 
-**The format itself is not decided here.** governance requires
+**The format itself is not decided here.** ontrack-engineering requires
 [Conventional Commits](https://www.conventionalcommits.org/) and its eleven
 types. What is yours to decide is the **scope vocabulary** of this
 repository, and the **tool** that enforces it, or the absence of one.
@@ -48,13 +48,13 @@ single-area repository with no pipeline is the typical case.
 
 ## Decision
 
-**What governance fixes, and is not up for ruling:** the Conventional
+**What ontrack-engineering fixes, and is not up for ruling:** the Conventional
 Commits format, its **eleven types** (`feat`, `fix`, `docs`, `style`,
 `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) and its
 breaking-change syntax. It is the one thing that makes histories comparable
 from one repository to the next.
 
-**What governance recommends for the tool, and why.**
+**What ontrack-engineering recommends for the tool, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -64,8 +64,8 @@ from one repository to the next.
 recommendation falls, and `none` is just as good an answer. The reason rests
 on that premise and only holds for repositories it describes.
 
-**For `commits.scopes`, governance has no answer to recommend**, and that is
-information: scopes name **your** areas, and governance does not know them.
+**For `commits.scopes`, ontrack-engineering has no answer to recommend**, and that is
+information: scopes name **your** areas, and ontrack-engineering does not know them.
 A default list would be a guess dressed as a recommendation. Write one word
 per area you want to be able to filter on, and not one more. **`[]` is a
 full answer**: a single-area repository has nothing to name, and a list
@@ -127,7 +127,7 @@ runs it from your repository's root, and it reads the keys you ruled:
 - with `hook` or `none`, it prints that there is nothing to check, and
   passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -182,7 +182,7 @@ Review keeps the convention. Enough when versions are set by hand.
 - Suggested skills: `commit` from `source-control@melodic-software`.
 - Adapted from surdesrails [SDR-0006](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0006-commits.md), revision 1.
 - [Conventional Commits](https://www.conventionalcommits.org/).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0009](ADR-0009-branching.md): with `squash`, the merge message is the one that carries the type.
 
 **The keys.**
@@ -193,7 +193,7 @@ Review keeps the convention. Enough when versions are set by hand.
 | `commits.tool` | what enforces the convention, and **where** | `commitlint` in CI, `hook` locally, or `none` |
 
 **What these keys do not cover:** the eleven types and the breaking-change
-syntax. They come from governance and are not declared here.
+syntax. They come from ontrack-engineering and are not declared here.
 
 **An empty key is not an answer**: both are required. `[]` and `none` are
 answers; empty is not. The value is written in this file and nowhere else;

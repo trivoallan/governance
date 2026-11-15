@@ -21,7 +21,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -44,11 +44,11 @@ a branch is a separate question, asked by
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `branching.model` | `github-flow` | it is what the rest of governance already assumes: **one change, one branch, one pull request, one review**. The other two models would mean rewriting that cycle |
+| `branching.model` | `github-flow` | it is what the rest of ontrack-engineering already assumes: **one change, one branch, one pull request, one review**. The other two models would mean rewriting that cycle |
 | `branching.merge` | `squash` | a change becomes **one** commit on the default branch, whose history then reads as the list of changes shipped |
 | `branching.prefixes` | `[feat, fix, docs]` | these are already commit types: nothing new to remember, and a branch name says what it carries |
 
@@ -59,7 +59,7 @@ type and any breaking-change marker, since it is the one versions are
 derived from. Tidy intermediate commits still help review, but they are not
 enough.
 
-**Branch prefixes are a subset, not a second list.** governance allows
+**Branch prefixes are a subset, not a second list.** ontrack-engineering allows
 eleven commit types (see ADR-0006), listed here in full so you have nothing
 to look up: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 `build`, `ci`, `chore`, `revert`. `branching.prefixes` keeps only those that
@@ -131,7 +131,7 @@ runs it from your repository's root, and it reads the keys you ruled:
 It does not check `branching.model` or `branching.merge`: those live in
 your forge's settings, outside the repository.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -179,7 +179,7 @@ continuously.
 
 - Suggested skills: `worktree` and `pull-request` from `source-control@melodic-software`; `finishing-a-development-branch` from `superpowers@superpowers-marketplace`.
 - Adapted from surdesrails [SDR-0009](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0009-branching.md), revision 1.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0006](ADR-0006-commits.md): the commit format and its eleven types.
 
 **The keys.**

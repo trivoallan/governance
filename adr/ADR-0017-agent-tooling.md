@@ -19,7 +19,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -33,7 +33,7 @@ Proposed
 Once this repository rules an ADR, an agent knows *what* was decided, not
 *how* to carry it out. ADR-0006 says `commitlint`; nothing says how to set
 it up. Skills package that know-how: instructions, sometimes scripts, that
-an agent loads when the task calls for them. Several governance ADRs name
+an agent loads when the task calls for them. Several ontrack-engineering ADRs name
 the skills that fit them in a `Suggested skills` line in their References.
 
 Skills are also a way in for content nobody reviewed. A skill fetched from
@@ -41,7 +41,7 @@ the network on each run can change between two sessions; a skill committed
 to the repository can pre-approve tools through its `allowed-tools` field.
 What reaches the repository, from where, and pinned how, is the question.
 
-governance targets **Claude Code** first, and covers **opencode** and
+ontrack-engineering targets **Claude Code** first, and covers **opencode** and
 **GitHub Copilot CLI** too: one repository can be worked on with several,
 by different contributors.
 While this key is empty, an agent does not know which hosts' project
@@ -51,11 +51,11 @@ the rules this repository accepted; opencode does not read `CLAUDE.md`.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `agent.hosts` | `[claude-code]` | the agent governance's ADRs are written for, and the one whose project settings can declare and pin the skills a repository relies on |
+| `agent.hosts` | `[claude-code]` | the agent ontrack-engineering's ADRs are written for, and the one whose project settings can declare and pin the skills a repository relies on |
 
 List every host the repository's contributors work with: a team where
 some use Claude Code and others opencode rules
@@ -67,7 +67,7 @@ the `Suggested skills` lines are only reading material.
 The list of plugins lives in each host's own files, not in a trait: the
 host reads them, and a trait copying them would drift.
 
-**What governance fixes when the list holds `claude-code`.**
+**What ontrack-engineering fixes when the list holds `claude-code`.**
 
 1. **Plugins first, through the repository's own marketplace.** The
    repository keeps a marketplace in `marketplace/.claude-plugin/marketplace.json`,
@@ -113,7 +113,7 @@ enabled plugins with one name conflict. The `marketplace/` path is resolved
 against the repository's main checkout, so every worktree shares it.
 Neither the marketplace nor vendored skills load in cloud sessions.
 
-**What governance fixes when the list holds `opencode`.**
+**What ontrack-engineering fixes when the list holds `opencode`.**
 
 1. **The configuration is committed** as `opencode.json` at the root, and
    as `.opencode/opencode.json` only when the repository needs one.
@@ -147,7 +147,7 @@ Neither the marketplace nor vendored skills load in cloud sessions.
 opencode installs these plugins on startup: there is no per-contributor
 install step.
 
-**What governance fixes when the list holds `copilot`.** `copilot` means
+**What ontrack-engineering fixes when the list holds `copilot`.** `copilot` means
 GitHub Copilot CLI. Copilot CLI reads `extraKnownMarketplaces`,
 `enabledPlugins` and `hooks` from `.claude/settings.json`, the marketplace
 it points at, and `.claude/skills/`, so the repository keeps the Claude Code
@@ -271,7 +271,7 @@ and review catches it. `[]` has nothing to check. A host it does not know
 fails, and so does the revision 1 key `agent.host`, with the line to write
 in its place.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -343,9 +343,9 @@ sessions are guaranteed the same tools.
 ## References
 
 - Suggested skills: `plugin-structure` and `skill-development` from `plugin-dev@claude-plugins-official`; `check` from `skill-quality@melodic-software`, before vendoring a skill.
-- Original to governance; no surdesrails SDR. The vendoring rule follows the
+- Original to ontrack-engineering; no surdesrails SDR. The vendoring rule follows the
   one surdesrails SDR-0013 applies to its Angular skill.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on, and why `Suggested skills` lines change no `revision`.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on, and why `Suggested skills` lines change no `revision`.
 - [ADR-0016](ADR-0016-changes.md): skills listed by an OpenSpec schema.
 - Claude Code documentation: [plugins for a team](https://code.claude.com/docs/en/plugins/org.md), [marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference.md) and [skills](https://code.claude.com/docs/en/skills.md), read on 2026-11-14.
 - opencode documentation: [config](https://opencode.ai/docs/config/), [plugins](https://opencode.ai/docs/plugins/), [skills](https://opencode.ai/docs/skills/) and [instructions](https://opencode.ai/docs/instructions/), read on 2026-11-15.

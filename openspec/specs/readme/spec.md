@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Makes governance's README a public showcase that tells a visitor what
+Makes ontrack-engineering's README a public showcase that tells a visitor what
 importing the source gains them. It keeps every claim the README makes
 about the shipped ADRs and their checks true, and leaves contributor setup
 to CONTRIBUTING.md.
@@ -14,7 +14,7 @@ to CONTRIBUTING.md.
 ADRs you import, overrule where you disagree, and check in CI." The next
 sentence SHALL limit the scope to Python or TypeScript repositories on
 GitHub and state how many ADRs ship and how many come with a check. One
-sentence SHALL then say that governance is an ontrack source, an npm package
+sentence SHALL then say that ontrack-engineering is an ontrack source, an npm package
 of ADRs that a repository imports and rules on. The author SHALL speak in
 the first person. The README SHALL NOT mention surdesrails.
 
@@ -59,7 +59,7 @@ title.
 - **THEN** every `adr/ADR-*.md` file has a link in the README, and every link it has to `adr/ADR-*.md` resolves to an existing file
 
 ### Requirement: README says what is not covered
-The README SHALL have a "Not covered" section listing what governance decides
+The README SHALL have a "Not covered" section listing what ontrack-engineering decides
 nothing about. Each item SHALL be either an exclusion that a shipped ADR
 states, linked to that ADR, or a topic that no shipped ADR addresses. The
 section SHALL NOT promise that a topic will be covered later.
@@ -90,7 +90,7 @@ an ADR whose recommendation names no programming language.
 - **THEN** it names no TypeScript-only or Python-only tool
 
 ### Requirement: Installation defers to ontrack's documentation
-The README SHALL give only governance's own install command,
+The README SHALL give only ontrack-engineering's own install command,
 `npm i -D trivoallan@npm:@trivoallan/ontrack-governance`, and SHALL point to
 `npm audit signatures` for checking how the package was built. It SHALL link
 to ontrack's documentation for installing ontrack and for its lifecycle
@@ -99,7 +99,7 @@ or ontrack's own install command.
 
 #### Scenario: A visitor installs
 - **WHEN** a visitor follows the install section
-- **THEN** they find governance's command, `npm audit signatures`, and a link to ontrack's documentation, and no ontrack install command
+- **THEN** they find ontrack-engineering's command, `npm audit signatures`, and a link to ontrack's documentation, and no ontrack install command
 
 ### Requirement: README shows the source in use
 The README SHALL point to ontrack as a repository that imports this source.
@@ -107,11 +107,11 @@ It SHALL link to its `docs/adr/trivoallan/` directory, to its `AGENTS.md`,
 and to its `docs/architecture/` directory.
 
 #### Scenario: A visitor wants a real example
-- **WHEN** a visitor looks for a repository that uses governance
+- **WHEN** a visitor looks for a repository that uses ontrack-engineering
 - **THEN** the README links to ontrack's imported ADRs, its `AGENTS.md` and its architecture documentation
 
 ### Requirement: Contributor setup lives in CONTRIBUTING.md
-`CONTRIBUTING.md` SHALL hold how to work on governance: installing the
+`CONTRIBUTING.md` SHALL hold how to work on ontrack-engineering: installing the
 Claude Code plugins from the repository's marketplace, the departure for
 `claude-security`, turning off upstream copies of a plugin, and the
 gitleaks pre-commit hook with how it is installed and what a refused commit

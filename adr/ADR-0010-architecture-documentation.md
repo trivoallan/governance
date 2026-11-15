@@ -21,7 +21,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -48,7 +48,7 @@ answer one without the other.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -173,7 +173,7 @@ only that the files they imply are committed, not what those files say:
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -242,18 +242,18 @@ needs a plugin or a rendering server.
 ### Another architecture-as-code tool
 
 Structurizr DSL or diagrams as code in Mermaid or PlantUML. Valid answers
-when named; governance recommends LikeC4 because one model feeds every view,
+when named; ontrack-engineering recommends LikeC4 because one model feeds every view,
 where diagram-by-diagram tools repeat each element in each picture.
 
 ## References
 
 - Suggested skills: `arc42-section-01` to `arc42-section-12` and `arc42-review` from `arc42-toolkit@arc42-toolkit`.
-- Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; governance does not yet.
+- Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; ontrack-engineering does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
 - [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
 - [C4 model](https://c4model.com/): the context, container and component levels LikeC4 views draw.
 - [Mermaid](https://mermaid.js.org/): diagrams as text, rendered by GitHub and in the browser by the documentation site.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 
 **The keys.**
 

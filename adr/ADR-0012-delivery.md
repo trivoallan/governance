@@ -25,7 +25,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -38,7 +38,7 @@ Proposed
 
 While these keys are empty, an agent finishing a change does not know
 whether merging puts it in front of users or only onto the default branch,
-nor what produces a version. Of all the questions governance asks, this is
+nor what produces a version. Of all the questions ontrack-engineering asks, this is
 the one where a wrong guess reaches people outside the repository.
 
 **Releasing and deploying are two acts.** Releasing makes a named version
@@ -55,13 +55,13 @@ departure, declared in your own ADR.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
-| `delivery.target` | *no recommendation* | it describes what this repository ships, which governance cannot know. It is the trait that changes most what an agent writes: an image job, platform configuration, a publish job, or nothing |
+| `delivery.target` | *no recommendation* | it describes what this repository ships, which ontrack-engineering cannot know. It is the trait that changes most what an agent writes: an image job, platform configuration, a publish job, or nothing |
 | `delivery.environments` | staging on `merge`, production on `tag` | staging should mirror the default branch with no extra step; production runs a named version, so a rollback has a target. **The list itself is asked, never guessed** |
-| `delivery.release_tool` | `release-please` | governance assumes GitHub, and it is the most widely used tool there that turns Conventional Commits into a version, a changelog and a release pull request |
+| `delivery.release_tool` | `release-please` | ontrack-engineering assumes GitHub, and it is the most widely used tool there that turns Conventional Commits into a version, a changelog and a release pull request |
 | `delivery.release_notes` | `highlights` | a generated changelog lists commits, for whoever maintains the repository; it does not tell a consumer what the release brings or what they must do. A short text that heads the release does, and only a reader of the whole release can write it |
 | `delivery.registry` | *a form, not a value*: an address such as `ghcr.io/<owner>` | needed as soon as `delivery.target` is `container`; GitHub's registry needs no other account |
 | `deployment.manifests` | *a form, not a value*: a relative path or a URL | the form decides the pipeline (below), and only this repository knows where its manifests live |
@@ -203,7 +203,7 @@ only that the files they imply are committed, not what those files say:
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -250,7 +250,7 @@ cost is that the act is written nowhere.
 ### `releaser-pleaser`
 
 surdesrails' recommendation, because it covers GitHub and GitLab alike, and
-it is proven on GitHub Actions. governance assumes GitHub only, where
+it is proven on GitHub Actions. ontrack-engineering assumes GitHub only, where
 `release-please` is the more widely used choice. A repository already on
 `releaser-pleaser` has no reason to migrate.
 
@@ -258,7 +258,7 @@ it is proven on GitHub Actions. governance assumes GitHub only, where
 
 - Suggested skills: `deploy-checklist` from `engineering@knowledge-work-plugins`; `verification-before-completion` from `superpowers@superpowers-marketplace`, for the last tasks of a change; `deliver-release-notes` from `pm-skills@product-on-purpose`, for the highlights.
 - Adapted from surdesrails [SDR-0011](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0011-delivery.md), revision 1 (its internal hosting-offer trait `hosting.offer` replaced by `delivery.target`; recommends `release-please` instead of `releaser-pleaser`).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [release-please](https://github.com/googleapis/release-please) and [Semantic Versioning](https://semver.org/).
 
 **The keys.**

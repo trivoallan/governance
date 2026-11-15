@@ -1,7 +1,7 @@
 # test-coverage Specification
 
 ## Purpose
-Holds governance's own test suite to the line coverage its ADR-0007 rules,
+Holds ontrack-engineering's own test suite to the line coverage its ADR-0007 rules,
 so that a change leaving check code untested fails `npm test` instead of
 shipping.
 
@@ -28,7 +28,7 @@ dependencies the suite already uses.
 
 ### Requirement: Threshold follows ADR-0007
 The threshold `npm test` applies SHALL equal `tests.coverage_target` in
-governance's own `docs/adr/trivoallan/ADR-0007-tests.md`. When the two
+ontrack-engineering's own `docs/adr/trivoallan/ADR-0007-tests.md`. When the two
 differ, `npm test` SHALL fail and name both values.
 
 #### Scenario: ADR-0007 ruled higher than the script

@@ -20,7 +20,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -51,7 +51,7 @@ stays in the Security tab, with who dismissed it and why. A path in
 `paths-ignore`, or a query removed by `query-filters`, leaves nothing to
 see: the alert never exists.
 
-**A scan of small code finds little.** Measured on governance itself, a
+**A scan of small code finds little.** Measured on ontrack-engineering itself, a
 TypeScript CLI that validates its inputs: CodeQL's 87 default queries
 reported one alert, a false positive in a test helper. The question is
 asked for the repositories where routes, queries and paths do come from
@@ -63,7 +63,7 @@ outside.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ outside.
 `none` is an answer for `tool`, for a repository with no code that handles
 outside input. Any tool that writes SARIF answers it too.
 
-**What governance fixes, whatever you rule:**
+**What ontrack-engineering fixes, whatever you rule:**
 
 1. **No blocking scan without `forge.gate: blocking`** (ADR-0011). With
    `informative` or `none`, a required check does not exist.
@@ -97,7 +97,7 @@ outside input. Any tool that writes SARIF answers it too.
    its own exit code at `fail_on`, for example
    `semgrep scan --error --severity ERROR` for `high`. Its SARIF is not
    documented to carry the `security-severity` that threshold reads.
-4. **All code is scanned, tests included.** governance cannot tell what
+4. **All code is scanned, tests included.** ontrack-engineering cannot tell what
    counts as test code in another repository, and a fixture that shells
    out is still a command built from a string.
 5. **Narrowing the scan is a person's call.** Dismissing an alert,
@@ -200,7 +200,7 @@ only that the files they imply are committed, not what those files say:
   neither of. Neither does it read `tools: linked`, or default setup in
   your repository's settings.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -233,7 +233,7 @@ what makes a decision different from an accepted default.
 One click in the repository's settings, and GitHub picks the languages,
 the queries and their version. Nothing in the repository records it, the
 check cannot see it, and the version moves without a pull request. It is
-fine to try, as governance did, before writing the workflow.
+fine to try, as ontrack-engineering did, before writing the workflow.
 
 ### `fail_on: critical`
 
@@ -256,8 +256,8 @@ its reason.
 
 ### Excluding tests by default
 
-Less noise, as with governance's false positive. It needs a list of test
-paths per language that governance would guess for every repository, and
+Less noise, as with ontrack-engineering's false positive. It needs a list of test
+paths per language that ontrack-engineering would guess for every repository, and
 it is an exclusion nobody decided.
 
 ### A key in ADR-0019
@@ -268,8 +268,8 @@ ADRs were split to avoid.
 
 ## References
 
-- Original to governance; no surdesrails SDR asks this question.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the gate, the pinning rule, and `forge.audit` for workflows.
 - [ADR-0019](ADR-0019-vulnerabilities.md): the dependency scan, its SARIF upload and its rule 4.
 - [ADR-0022](ADR-0022-review-and-merge.md): who reviews and merges.

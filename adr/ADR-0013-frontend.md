@@ -18,7 +18,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -41,7 +41,7 @@ service, a library, a command-line tool) rules this ADR `rejected`.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ service, a library, a command-line tool) rules this ADR `rejected`.
 lives in the dependency file. Any framework is a valid answer; another one
 than `astro` says why in this ADR's body.
 
-**What governance fixes, whatever the framework.**
+**What ontrack-engineering fixes, whatever the framework.**
 
 1. **Pin the scaffolder and the major version.** Create the project with an
    exact version of its generator (`npm create astro@<version>`), never
@@ -124,7 +124,7 @@ traits:
 ---
 ```
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -177,7 +177,7 @@ enterprise design system.
 
 - Suggested skills: `frontend-design` from `frontend-design@claude-plugins-official`; `playwright` from `playwright@melodic-software` (rule 7); `accessibility-review` from `design@knowledge-work-plugins`.
 - Adapted from surdesrails [SDR-0013](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0013-frontend.md), revision 1 (framework opened to any value; its design-system theme trait and every rule tied to that design system dropped; only the framework-agnostic rules kept).
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [Astro](https://astro.build/) and [Playwright](https://playwright.dev/).
 
 **The key.**

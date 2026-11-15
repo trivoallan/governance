@@ -22,7 +22,7 @@ traits:
 
 Proposed
 
-> **What is this file?** A question governance asks your repository, with
+> **What is this file?** A question ontrack-engineering asks your repository, with
 > the answer it recommends. While it says `status: proposed`, you may edit
 > it freely. `revision:` dates the question, not the file: you do not fill
 > it, and it only moves when the question changes. `rejected` is a full
@@ -50,20 +50,20 @@ and whoever rules reads the ADRs in `docs/adr/`. `docs.root`,
 `docs.audience`, `docs.channels` and Diátaxis apply to the user
 documentation only.
 
-**The classification is not decided here.** governance requires
+**The classification is not decided here.** ontrack-engineering requires
 [Diátaxis](https://diataxis.fr/) (tutorial, how-to guide, explanation,
 reference) and the Google developer documentation style for prose. What is
 yours is the **tooling**, the **location** and the **audience**.
 
 ## Decision
 
-**What governance recommends, and why.**
+**What ontrack-engineering recommends, and why.**
 
 | Key | Recommended value | Reason |
 | --- | --- | --- |
 | `docs.tool` | `starlight` | the fastest build measured (see References), navigation **generated from the directory tree** so adding a page touches no table of contents, built-in search, and LikeC4 views (ADR-0010) embedded through its Vite plugin with no generation step |
 | `docs.root` | `docs/` | an agent looking for where to put a page has nothing to guess, and sharing the directory with `docs/adr/` and `docs/architecture/` lets one site serve all three if you want it to; that is a convenience, not a constraint |
-| `docs.audience` | `public` | governance's repositories are public on GitHub, so their documentation is read by anyone whether or not that was intended; writing for that audience from the start is the honest default |
+| `docs.audience` | `public` | ontrack-engineering's repositories are public on GitHub, so their documentation is read by anyone whether or not that was intended; writing for that audience from the start is the honest default |
 | `docs.channels` | *by target*: `[release, main]` when ADR-0012's `delivery.target` is `package`, `[main]` when every merge reaches users | a package's users run a release, so the site's root must show that release, and the default branch stays readable under `next/` for whoever tests before the release; where every merge is deployed, the default branch *is* what users run |
 
 **Starlight does not read `docs/` by default**: it expects
@@ -223,7 +223,7 @@ only that the files they imply are committed, not what those files say:
 
 Any other value has nothing to check, and passes.
 
-The Alternatives Considered below were weighed by governance without
+The Alternatives Considered below were weighed by ontrack-engineering without
 knowing your context. Weighing them against yours is still to do, and it is
 what makes a decision different from an accepted default.
 
@@ -319,7 +319,7 @@ break every answer. The list takes that value without breaking any.
   generation); Docusaurus 3.10.2 with `future.faster`, 10.4 s (including
   1.6 s); Starlight 0.43.1 on Astro 7.4, 7.6 s (including the Pagefind
   index). The development server was not measured.
-- [ADR-0001](ADR-0001-record-architecture-decisions.md): how governance ADRs are ruled on.
+- [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [Diátaxis](https://diataxis.fr/) and the [Google developer documentation style guide](https://developers.google.com/style).
 
 **The keys.**

@@ -1,13 +1,13 @@
 # adr-catalog Specification
 
 ## Purpose
-Lists the questions governance ships to consuming repositories, the
+Lists the questions ontrack-engineering ships to consuming repositories, the
 surdesrails question each one adapts, and the traits each one asks for.
 
 ## Requirements
 
 ### Requirement: Shipped ADRs
-governance SHALL ship exactly these ADRs, each adapted from the named SDR
+ontrack-engineering SHALL ship exactly these ADRs, each adapted from the named SDR
 unless the table says it is original:
 
 | ADR | slug | from | status as shipped |
@@ -26,18 +26,18 @@ unless the table says it is original:
 | ADR-0012 | delivery | SDR-0011 | proposed |
 | ADR-0013 | frontend | SDR-0013 | proposed |
 | ADR-0014 | work-tracking | SDR-0014 | proposed |
-| ADR-0015 | secrets | none (original to governance) | proposed |
-| ADR-0016 | changes | none (original to governance) | proposed |
-| ADR-0017 | agent-tooling | none (original to governance) | proposed |
-| ADR-0018 | dependencies | none (original to governance) | proposed |
-| ADR-0019 | vulnerabilities | none (original to governance) | proposed |
-| ADR-0020 | adding-dependencies | none (original to governance) | proposed |
-| ADR-0021 | build-provenance | none (original to governance) | proposed |
-| ADR-0022 | review-and-merge | none (original to governance) | proposed |
-| ADR-0023 | license | none (original to governance) | proposed |
-| ADR-0024 | code-scanning | none (original to governance) | proposed |
-| ADR-0025 | tools | none (original to governance) | proposed |
-| ADR-0026 | agent-identity | none (original to governance) | proposed |
+| ADR-0015 | secrets | none (original to ontrack-engineering) | proposed |
+| ADR-0016 | changes | none (original to ontrack-engineering) | proposed |
+| ADR-0017 | agent-tooling | none (original to ontrack-engineering) | proposed |
+| ADR-0018 | dependencies | none (original to ontrack-engineering) | proposed |
+| ADR-0019 | vulnerabilities | none (original to ontrack-engineering) | proposed |
+| ADR-0020 | adding-dependencies | none (original to ontrack-engineering) | proposed |
+| ADR-0021 | build-provenance | none (original to ontrack-engineering) | proposed |
+| ADR-0022 | review-and-merge | none (original to ontrack-engineering) | proposed |
+| ADR-0023 | license | none (original to ontrack-engineering) | proposed |
+| ADR-0024 | code-scanning | none (original to ontrack-engineering) | proposed |
+| ADR-0025 | tools | none (original to ontrack-engineering) | proposed |
+| ADR-0026 | agent-identity | none (original to ontrack-engineering) | proposed |
 
 SDR-0000 (service baseline) SHALL NOT be adapted.
 
@@ -54,18 +54,18 @@ ADR-0001 SHALL ship `accepted`, at `revision: 4`, with the trait
 `record-architecture-decisions.format` set to `nygard` (the template of
 `/pm-skills:develop-adr`) in place of SDR-0001's `MADR`, and with
 `check: npx --no-install ontrack-engineering-check ADR-0001`. Its Consequences SHALL state
-that governance is an adaptation of surdesrails meant to be imported instead
+that ontrack-engineering is an adaptation of surdesrails meant to be imported instead
 of it, and that nothing detects when an SDR it adapts changes. Its Decision
 SHALL state that the freeze of a ruled body applies to a repository's
-verdict, that governance revises the ADRs it ships through `revision`, and
+verdict, that ontrack-engineering revises the ADRs it ships through `revision`, and
 that a `Suggested skills` line changes no `revision`. It SHALL also state that
 an ADR may carry a `check:` line that `ontrack check` runs once the ADR is
 `accepted`, that a `check:` line and the scripts it calls change no
-`revision`, that those scripts follow governance's package version, and that
-a `check:` line governance adds to an ADR a repository has already ruled
+`revision`, that those scripts follow ontrack-engineering's package version, and that
+a `check:` line ontrack-engineering adds to an ADR a repository has already ruled
 reaches that repository's copy through `ontrack plan`, which reports the ADR
 `check`, and `ontrack apply`, which reports it `synced` and writes only that
-line. Its rule 7 SHALL state that the schema governance ships is run by
+line. Its rule 7 SHALL state that the schema ontrack-engineering ships is run by
 ADR-0001's own check on every ruled copy, that it refuses a half-ruled ADR,
 and that nothing is copied or installed by hand; it SHALL name no `npx`
 command and no release binary. Its Revisions list SHALL hold a
@@ -117,7 +117,7 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
   file per section, and `architecture.model` (a named architecture-as-code
   tool or `none`), recommending `likec4` in `docs/architecture/model/`, and
   `architecture.diagrams` (`mermaid`, `plantuml`, `none`) for diagrams the
-  model does not cover, recommending `mermaid`. It SHALL NOT point to a template, since governance ships none.
+  model does not cover, recommending `mermaid`. It SHALL NOT point to a template, since ontrack-engineering ships none.
 - ADR-0004 SHALL ask `languages.main.name`, recommending Python or
   TypeScript, without reasoning that relies on a team's existing skills.
 - ADR-0008 SHALL ask `docs.tool`, `docs.root` and `docs.audience`,
@@ -279,7 +279,7 @@ workflow that merges its pull requests obeys ADR-0011's rules.
 - **WHEN** a repository that ruled `dependencies.automerge: patch` receives a patch update of a SHA-pinned action
 - **THEN** ADR-0018's Decision requires a person to merge it
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0018's References are read
 - **THEN** they state that no surdesrails SDR asks this question
 
@@ -292,7 +292,7 @@ in the repository, and that `--from <ref>` may be appended when the base is not
 `origin/HEAD`.
 
 #### Scenario: Check line without a revision bump
-- **WHEN** ADR-0006 is read straight from governance after this change
+- **WHEN** ADR-0006 is read straight from ontrack-engineering after this change
 - **THEN** it holds the `check:` line and its `revision` is `1`
 
 #### Scenario: How-to-rule explains the check
@@ -334,7 +334,7 @@ ADR-0019's `revision` SHALL NOT change for the reference to `review.by`.
 - **WHEN** ADR-0011's stage table is read
 - **THEN** it has a `scan` row conditioned on `vulnerabilities.scanner` and its `revision` is `1`
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0019's References are read
 - **THEN** they state that no surdesrails SDR asks this question
 
@@ -388,7 +388,7 @@ name installed is the distribution name, never the import name.
 - **WHEN** a package without a provenance attestation is admitted with its declaration
 - **THEN** ADR-0020's Decision allows it
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0020's References are read
 - **THEN** they state that no surdesrails SDR asks this question
 
@@ -437,7 +437,7 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 - **WHEN** ADR-0021's Alternatives Considered are read
 - **THEN** level `3` is listed with an isolated builder and the cost it adds
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0021's References are read
 - **THEN** they state that no surdesrails SDR asks this question
 
@@ -454,7 +454,7 @@ makes the pipeline required, and, from revision 2, that with
 that key it checks content, not presence.
 
 #### Scenario: Check line without a revision bump
-- **WHEN** ADR-0018 is read straight from governance after this change
+- **WHEN** ADR-0018 is read straight from ontrack-engineering after this change
 - **THEN** it holds `check: npx --no-install ontrack-engineering-check ADR-0018` and its `revision` is `1`
 
 #### Scenario: How-to-rule names the files
@@ -480,7 +480,7 @@ names its tool, so ADR-0012 and ADR-0018 are to be ruled with or before it, and 
 runs `openspec validate --all`.
 
 #### Scenario: Check line without a revision bump
-- **WHEN** ADR-0015 is read straight from governance after this change
+- **WHEN** ADR-0015 is read straight from ontrack-engineering after this change
 - **THEN** it holds `check: npx --no-install ontrack-engineering-check ADR-0015` and its `revision` is `1`
 
 #### Scenario: How-to-rule names the tool
@@ -509,7 +509,7 @@ its Suggested skills line. Adding the key SHALL raise ADR-0012 to revision
 3.
 
 #### Scenario: Key shipped unanswered
-- **WHEN** ADR-0012 is read straight from governance
+- **WHEN** ADR-0012 is read straight from ontrack-engineering
 - **THEN** its `traits:` block holds `delivery.release_notes` with no value, and its `revision` is 3
 
 #### Scenario: Recommendation is reasoned
@@ -582,7 +582,7 @@ that the root manifest's licence field (`license` in `package.json`,
 file is committed at the root unless the value is `UNLICENSED`. It SHALL say
 in prose that the copyright holder is the organisation owning the
 repository, or else the ADR's `authors:`, and SHALL NOT make it a key. It
-SHALL say why governance itself ships under MIT-0. It SHALL leave dependency
+SHALL say why ontrack-engineering itself ships under MIT-0. It SHALL leave dependency
 licence compliance to ADR-0019's exclusion. It SHALL ship with
 `check: npx --no-install ontrack-engineering-check ADR-0023`, and its how-to-rule
 block SHALL say that the check reads neither the licence text nor manifests
@@ -600,7 +600,7 @@ outside the root.
 - **WHEN** ADR-0023's traits are listed
 - **THEN** there is no key for the copyright holder, and the Decision names who holds it
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0023's References are read
 
 ### Requirement: ADR-0024 asks what analyses the repository's own code
@@ -644,9 +644,9 @@ without changing ADR-0019's `revision:`.
 - **WHEN** an agent writes the CodeQL workflow
 - **THEN** ADR-0024 tells it to pin the actions by SHA and set `tools: linked`
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0024's References are read
-- **THEN** they say it is original to governance and hold the key table
+- **THEN** they say it is original to ontrack-engineering and hold the key table
 
 ### Requirement: ADR-0011 revision 2 audits the workflows
 ADR-0011 SHALL move to `revision: 2` and SHALL add one key, `forge.audit`,
@@ -664,7 +664,7 @@ and rule 4). The Consequences SHALL no longer say that no tool enforces rules
 3 to 5.
 
 #### Scenario: Revision 2
-- **WHEN** ADR-0011 is read straight from governance after this change
+- **WHEN** ADR-0011 is read straight from ontrack-engineering after this change
 - **THEN** it holds `revision: 2`, an empty `forge.audit`, and a Revisions line naming `forge.audit` as the key to answer
 
 #### Scenario: An agent meets a finding
@@ -687,7 +687,7 @@ pinned. Its Decision SHALL fix, whatever the repository rules:
 It SHALL ship with `check: npx --no-install ontrack-engineering-check ADR-0025`, at
 revision 1. Its how-to-rule block SHALL say what the check lists (the tools
 that `secrets.guard` and `forge.audit` name in accepted, not superseded
-ADRs), that with `mise` it fails on a tool governance knows that mise does
+ADRs), that with `mise` it fails on a tool ontrack-engineering knows that mise does
 not find, and only notes an unforeseen one, and that with `script` or
 `aqua` it lists without verifying. Its Neutral consequence SHALL say that a
 tool named by a trait the check does not know, or whose binary has another
@@ -705,12 +705,12 @@ name than the value, is left to review.
 - **WHEN** a tool named by an accepted ADR is needed on a workstation, a runner and an agent session
 - **THEN** ADR-0025's Decision requires all three to read the one place holding its version and checksum
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0025's References are read
-- **THEN** they say it is original to governance and hold the key table
+- **THEN** they say it is original to ontrack-engineering and hold the key table
 
 #### Scenario: Check line without a revision bump
-- **WHEN** ADR-0025 is read straight from governance after this change
+- **WHEN** ADR-0025 is read straight from ontrack-engineering after this change
 - **THEN** it holds `check: npx --no-install ontrack-engineering-check ADR-0025` and its `revision` is `1`
 
 #### Scenario: Neutral consequence names what review keeps
@@ -850,9 +850,9 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 - **WHEN** a ruled ADR-0022 holds `review.approvals: two`
 - **THEN** the schema in `adr/.mdschema.yml` refuses it, because the value is not a number
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0022's References are read
-- **THEN** they say it is original to governance and hold the key table
+- **THEN** they say it is original to ontrack-engineering and hold the key table
 
 #### Scenario: opencode denies shown
 - **WHEN** ADR-0022's Decision is read by a repository whose `agent.hosts` holds `opencode`
@@ -872,7 +872,7 @@ The sentence on who reviews a change proposed elsewhere SHALL remain
 unchanged.
 
 #### Scenario: Key gone
-- **WHEN** ADR-0011 is read straight from governance
+- **WHEN** ADR-0011 is read straight from ontrack-engineering
 - **THEN** its `traits:` block holds no `forge.review`, and its `revision` is 4
 
 #### Scenario: Consumer reads what to re-answer
@@ -983,9 +983,9 @@ list. Neither SHALL change `revision:`.
 - **WHEN** ADR-0026's Alternatives Considered are read
 - **THEN** `CODEOWNERS` is there, with the reason it adds no enforcement while the maintainer is the only account that approves
 
-#### Scenario: Original to governance
+#### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0026's References are read
-- **THEN** they say it is original to governance and hold the key table
+- **THEN** they say it is original to ontrack-engineering and hold the key table
 
 ### Requirement: ADR-0016 archives a change in the pull request that completes it
 ADR-0016 SHALL state, without a key, that with `changes.framework: openspec`

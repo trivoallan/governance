@@ -759,7 +759,7 @@ function denies(root: string, name: string, commands: string[]): boolean {
   let ok = true;
   for (const host of hosts) {
     if (!(host in HOSTS)) {
-      console.log(`${name}, ${host} is not a host governance knows, no deny to check`);
+      console.log(`${name}, ${host} is not a host ontrack-engineering knows, no deny to check`);
       continue;
     }
     for (const verdict of HOSTS[host as Host].deny(root, files, commands)) {
