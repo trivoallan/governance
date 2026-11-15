@@ -56,6 +56,14 @@ under a later rename and is shorter than the package name.
 **Archive order.** `run-pinned-tools` is archived before this change, so
 that this change's `adr-format` and `adr-catalog` deltas apply over its text.
 
+**ADR-0022 left to `review-by-key`.** `review-by-key` (#128) removes the
+ADR-0022 requirement this change first modified. It adds its own, which
+quotes `governance-check`. It cannot be archived yet, because its
+`adr-checks` delta lacks a scenario `main` now holds. So this change's
+delta does not touch ADR-0022's requirements. The ADR file calls the new
+name, and the spec text stays true through the alias. #129 renames it with
+the rest.
+
 ## Risks / Trade-offs
 
 - [A consumer re-imports after the alias is removed but never ran a
