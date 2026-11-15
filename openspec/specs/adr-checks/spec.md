@@ -7,30 +7,42 @@ from a decision it ruled.
 
 ## Requirements
 
-### Requirement: The governance-check command
-governance's package SHALL expose a command `governance-check` that takes one
+### Requirement: The ontrack-engineering-check command
+The package SHALL expose a command `ontrack-engineering-check` that takes one
 argument, an ADR number such as `ADR-0006`. It SHALL run from the consuming
 repository's root and read that repository's copy of the ADR, the single file
 matching `docs/adr/*/<number>-*.md`. When no file or more than one file
-matches, or when governance ships no check for that number, it SHALL exit with
-a non-zero code and say why on standard error. It MUST NOT create, modify or
-delete any file in the repository.
+matches, or when the package ships no check for that number, it SHALL exit
+with a non-zero code and say why on standard error. It MUST NOT create,
+modify or delete any file in the repository. Until a later change removes
+it, the package SHALL also expose `governance-check` as a second name for the
+same command, with the same arguments, output and exit code, so that a
+`check:` line imported before the rename still runs. The other requirements
+of this capability that name `governance-check` hold for both names.
 
 #### Scenario: ADR found
-- **WHEN** `governance-check ADR-0006` runs in a repository holding `docs/adr/trivoallan/ADR-0006-commits.md`
+- **WHEN** `ontrack-engineering-check ADR-0006` runs in a repository holding `docs/adr/trivoallan/ADR-0006-commits.md`
 - **THEN** it reads the traits of that file
 
 #### Scenario: ADR missing
-- **WHEN** `governance-check ADR-0006` runs in a repository with no file matching `docs/adr/*/ADR-0006-*.md`
+- **WHEN** `ontrack-engineering-check ADR-0006` runs in a repository with no file matching `docs/adr/*/ADR-0006-*.md`
 - **THEN** it exits non-zero and standard error names the pattern it looked for
 
 #### Scenario: No check for that ADR
-- **WHEN** `governance-check ADR-0003` runs
-- **THEN** it exits non-zero and standard error says governance ships no check for ADR-0003
+- **WHEN** `ontrack-engineering-check ADR-0003` runs
+- **THEN** it exits non-zero and standard error says this package ships no check for ADR-0003
 
 #### Scenario: Repository left untouched
-- **WHEN** `governance-check ADR-0006` has run, whatever its result
+- **WHEN** `ontrack-engineering-check ADR-0006` has run, whatever its result
 - **THEN** `git status --porcelain` in the repository prints the same as before
+
+#### Scenario: Usage names the command
+- **WHEN** `ontrack-engineering-check` runs with no argument
+- **THEN** it exits non-zero and standard error starts with `usage: ontrack-engineering-check <ADR number>`
+
+#### Scenario: Old name still runs
+- **WHEN** a repository's imported ADR-0009 holds `check: npx --no-install governance-check ADR-0009` and `ontrack check` runs it
+- **THEN** the ADR-0009 check runs and exits as `ontrack-engineering-check ADR-0009` would
 
 ### Requirement: ADR-0006 check with commitlint
 When ADR-0006's `commits.tool` is `commitlint`, `governance-check ADR-0006`
@@ -403,19 +415,23 @@ not set.
 - **THEN** the check exits non-zero
 
 ### Requirement: Shipped as JavaScript
-governance's package SHALL ship `governance-check` as JavaScript that Node
+The package SHALL ship `ontrack-engineering-check` as JavaScript that Node
 22.18 or later runs from `node_modules` with no type stripping, loader or
 build in the consuming repository. The installed package SHALL hold that
 compiled script and no TypeScript source. It SHALL work installed from the
-npm registry and installed from a git tag of governance, with the same
+npm registry and installed from a git tag of the repository, with the same
 behaviour as every other requirement of this capability.
 
 #### Scenario: Installed from the npm registry
-- **WHEN** the package as `npm pack` builds it is installed in a repository holding a ruled ADR-0006, and `npx --no-install governance-check ADR-0006` runs there
+- **WHEN** the package as `npm pack` builds it is installed in a repository holding a ruled ADR-0006, and `npx --no-install ontrack-engineering-check ADR-0006` runs there
 - **THEN** the check runs and reports on ADR-0006, and no `.ts` file is in the installed package
 
+#### Scenario: Both names installed
+- **WHEN** the package as `npm pack` builds it is installed
+- **THEN** `node_modules/.bin/` holds `ontrack-engineering-check` and `governance-check`, both running the same script
+
 #### Scenario: Installed from a git tag
-- **WHEN** governance is installed with `npm i -D trivoallan@git+https://github.com/trivoallan/governance.git#<tag>` and `npx --no-install governance-check ADR-0006` runs
+- **WHEN** the package is installed with `npm i -D trivoallan@git+https://github.com/trivoallan/ontrack-engineering.git#<tag>` and `npx --no-install ontrack-engineering-check ADR-0006` runs
 - **THEN** the check runs and reports on ADR-0006
 
 ### Requirement: Declared validation of arguments and traits
@@ -452,40 +468,106 @@ pass, including unforeseen values of a wiring key, SHALL still pass.
 - **THEN** the check prints that there is nothing to check for `dependencies.updater` and exits `0`
 
 ### Requirement: ADR-0022 check
-`governance-check ADR-0022` SHALL read `review.merge_by` from ADR-0022 and
-`agent.host` from the repository's copy of ADR-0017, read as an answer.
-- When `review.merge_by` is absent or empty, it SHALL exit non-zero and say it is not set.
-- When `review.merge_by` is `agent`, it SHALL print that there is nothing to check and exit `0`.
-- When `review.merge_by` is `person` and ADR-0017 is missing, not accepted, or superseded, or `agent.host` is empty, `none` or a value other than `claude-code`, it SHALL print that there is nothing to check and give the reason. It SHALL exit `0`.
-- When `review.merge_by` is `person` and `agent.host` is `claude-code`, it SHALL read the tracked `.claude/settings.json`. It SHALL exit `0` only when that file's `permissions.deny` array holds an entry that starts with `Bash(gh pr merge`.
-- It SHALL exit non-zero, naming the file, when that file is not tracked, is not valid JSON, or has no such entry.
+`governance-check ADR-0022` SHALL read `review.by` and `review.approvals`
+from ADR-0022, and `agent.host` from the repository's copy of ADR-0017.
+- When ADR-0022 still holds `review.merge_by`, it SHALL exit non-zero and say the key was replaced by `review.by`.
+- When `review.by` or `review.approvals` is absent or empty, it SHALL exit non-zero and say which one is not set.
+- When `review.approvals` is not a whole number of `0` or more, it SHALL exit non-zero and say so.
+- With `maintainer` or `agent`, it SHALL exit non-zero unless `review.approvals` is `0`. With `peer`, it SHALL exit non-zero unless `review.approvals` is `1` or more. In both cases the message SHALL name both values.
+- When `review.by` is `agent` and `review.approvals` is `0`, it SHALL print that there is nothing to check and exit `0`.
 
-An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy
-the check. `.claude/settings.local.json` SHALL NOT be read.
+When `review.by` is `maintainer` or `peer`, it SHALL run two parts and
+report both. It SHALL exit `0` only when neither fails.
+
+**Deny part.**
+- When ADR-0017 is missing, not accepted, or superseded, or `agent.host` is empty, `none` or a value other than `claude-code`, the deny part SHALL print that it has nothing to check and give the reason.
+- Otherwise it SHALL read the tracked `.claude/settings.json`. That file's `permissions.deny` array SHALL hold an entry that starts with `Bash(gh pr review`, and, with `maintainer`, an entry that starts with `Bash(gh pr merge`.
+- It SHALL fail, naming the file, when that file is not tracked, is not valid JSON, or lacks a required entry.
+- An entry under `permissions.allow` or `permissions.ask` SHALL NOT satisfy it, and `.claude/settings.local.json` SHALL NOT be read.
+
+**Ruleset part.**
+- Outside GitHub Actions, it SHALL print `ADR-0022: ruleset not read outside CI` and SHALL NOT fail.
+- In GitHub Actions, it SHALL read through `gh api` the rules active on the repository's default branch, as GitHub reports them. It SHALL fail, naming what is missing, unless the merged `pull_request` rules require:
+  - a pull request, with exactly `review.approvals` required approvals;
+  - with `peer`, also stale reviews dismissed on push and approval of the most recent push.
+- It SHALL fail and say so when `gh` is missing or the rules cannot be read.
+- It SHALL NOT read the bypass list, and SHALL say in its output that the bypass list is not verified.
 
 #### Scenario: Merge denied
-- **WHEN** `merge_by` is `person`, `host` is `claude-code`, and the tracked `.claude/settings.json` has `"deny": ["Bash(gh pr merge:*)"]` under `permissions`
-- **THEN** the check exits `0` and names the entry
+- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, the tracked `.claude/settings.json` has `"deny": ["Bash(gh pr merge:*)", "Bash(gh pr review:*)"]` under `permissions`, and the check runs outside CI
+- **THEN** the check names both entries, prints `ADR-0022: ruleset not read outside CI`, and exits `0`
+
+#### Scenario: Maintainer without the review deny
+- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, and `permissions.deny` holds only `Bash(gh pr merge:*)`
+- **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr review` entry
+
+#### Scenario: Peer needs no merge deny
+- **WHEN** `review.by` is `peer`, `host` is `claude-code`, and `permissions.deny` holds only `Bash(gh pr review:*)`
+- **THEN** the deny part passes
 
 #### Scenario: Merge only asked
-- **WHEN** the same entry sits under `permissions.ask` and not under `permissions.deny`
+- **WHEN** `review.by` is `maintainer` and the `Bash(gh pr merge` entry sits under `permissions.ask` and not under `permissions.deny`
 - **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr merge` entry
 
+#### Scenario: Review only asked
+- **WHEN** the `Bash(gh pr review` entry sits under `permissions.ask` and not under `permissions.deny`
+- **THEN** the check exits non-zero and says `permissions.deny` has no `Bash(gh pr review` entry
+
 #### Scenario: No agent host
-- **WHEN** `merge_by` is `person` and ADR-0017 is accepted with `agent.host: none`
-- **THEN** the check prints `ADR-0022: review.merge_by is person, but ADR-0017 agent.host is none, nothing to check` and exits `0`
+- **WHEN** `review.by` is `maintainer`, ADR-0017 rules `agent.host: none`, and the check runs outside CI
+- **THEN** the check prints `ADR-0022: review.by is maintainer, but ADR-0017 agent.host is none, no deny to check` and exits `0`
 
 #### Scenario: Agent host not ruled yet
-- **WHEN** `merge_by` is `person` and ADR-0017 is `proposed` with `agent.host: claude-code` already written
-- **THEN** the check prints that ADR-0017 is not accepted, nothing to check, and exits `0`
+- **WHEN** `review.by` is `maintainer` and ADR-0017 is `proposed` with `agent.host: claude-code` already written
+- **THEN** the deny part prints that ADR-0017 is not accepted, no deny to check
 
 #### Scenario: Agent merges
-- **WHEN** `merge_by` is `agent`
-- **THEN** the check prints `ADR-0022: review.merge_by is agent, nothing to check` and exits `0`
+- **WHEN** `review.by` is `agent` and `review.approvals` is `0`
+- **THEN** the check prints `ADR-0022: review.by is agent, nothing to check` and exits `0`
+
+#### Scenario: Leftover merge_by
+- **WHEN** ADR-0022 holds `review.merge_by: person`
+- **THEN** the check exits non-zero and says `review.merge_by` was replaced by `review.by`
 
 #### Scenario: Settings not committed
-- **WHEN** `merge_by` is `person`, `host` is `claude-code`, and `.claude/settings.json` exists but is not tracked
+- **WHEN** `review.by` is `maintainer`, `host` is `claude-code`, and `.claude/settings.json` exists but is not tracked
 - **THEN** the check exits non-zero and names `.claude/settings.json`
+
+#### Scenario: Peer ruleset complete in CI
+- **WHEN** `review.by` is `peer`, `review.approvals` is `1`, the check runs in GitHub Actions, and the default branch's rules hold a `pull_request` rule requiring one approval, dismissing stale reviews and requiring approval of the last push
+- **THEN** the ruleset part passes and the output says the bypass list is not verified
+
+#### Scenario: Peer ruleset without last-push approval
+- **WHEN** `review.by` is `peer`, the check runs in GitHub Actions, and the `pull_request` rule does not require approval of the most recent push
+- **THEN** the check exits non-zero and names the missing setting
+
+#### Scenario: No pull request rule in CI
+- **WHEN** `review.by` is `maintainer`, the check runs in GitHub Actions, and the default branch has no active `pull_request` rule
+- **THEN** the check exits non-zero and says no ruleset requires a pull request on the default branch
+
+#### Scenario: Maintainer ruleset asks for an approval
+- **WHEN** `review.by` is `maintainer`, the check runs in GitHub Actions, and the `pull_request` rule requires one approval
+- **THEN** the check exits non-zero and says the maintainer cannot approve their own pull request
+
+#### Scenario: Ruleset count differs from the ADR
+- **WHEN** `review.by` is `peer`, `review.approvals` is `2`, the check runs in GitHub Actions, and the `pull_request` rule requires one approval
+- **THEN** the check exits non-zero and says the ruleset requires 1 approval where `review.approvals` rules 2
+
+#### Scenario: Peer with zero approvals
+- **WHEN** `review.by` is `peer` and `review.approvals` is `0`
+- **THEN** the check exits non-zero and says `peer` needs `review.approvals` of 1 or more
+
+#### Scenario: Maintainer with approvals
+- **WHEN** `review.by` is `maintainer` and `review.approvals` is `1`
+- **THEN** the check exits non-zero and says `maintainer` needs `review.approvals: 0`
+
+#### Scenario: Approvals not a number
+- **WHEN** `review.approvals` is `two`
+- **THEN** the check exits non-zero and says `review.approvals` is not a whole number
+
+#### Scenario: Rules unreadable in CI
+- **WHEN** the check runs in GitHub Actions and `gh api` fails
+- **THEN** the check exits non-zero and shows `gh`'s error
 
 ### Requirement: ADR-0023 check
 `governance-check ADR-0023` SHALL read `license.spdx` from ADR-0023.
@@ -683,3 +765,17 @@ the other requirements say).
 #### Scenario: Installs without install scripts
 - **WHEN** governance is installed with `npm install --ignore-scripts`
 - **THEN** `governance-check ADR-0001` runs mdschema
+
+### Requirement: ADR-0011 check refuses forge.review
+`governance-check ADR-0011` SHALL fail when the repository's ADR-0011 still
+holds `forge.review`, with or without a value. Its message SHALL name
+ADR-0022's `review.by` as the key's new place. It SHALL still report
+`forge.gate` and `forge.audit` in the same run.
+
+#### Scenario: Leftover key
+- **WHEN** a ruled ADR-0011 holds `forge.review: author`
+- **THEN** the check exits non-zero and prints `ADR-0011: forge.review moved to ADR-0022 review.by; answer it there and remove it here`
+
+#### Scenario: Key removed
+- **WHEN** a ruled ADR-0011 holds no `forge.review`
+- **THEN** the check's exit code follows `forge.gate` and `forge.audit` alone
