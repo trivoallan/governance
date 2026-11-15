@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { privateKey, keyLine, onPath, barePath } from './test-helpers.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const script = join(here, 'governance-check.ts');
+const script = join(here, 'ontrack-engineering-check.ts');
 const modules = join(here, '..', 'node_modules');
 
 // Path -> content, for ADRs and committed files alike.
@@ -31,7 +31,7 @@ function repo({ traits, messages = [], withCommitlint = true }: { traits: string
   mkdirSync(join(dir, 'docs', 'adr', 'trivoallan'), { recursive: true });
   writeFileSync(
     join(dir, 'docs', 'adr', 'trivoallan', 'ADR-0006-commits.md'),
-    `---\nadr: ADR-0006\nstatus: accepted\ncheck: npx --no-install governance-check ADR-0006\ntraits:\n  commits:\n${traits}\n---\n\n# Commits\n`,
+    `---\nadr: ADR-0006\nstatus: accepted\ncheck: npx --no-install ontrack-engineering-check ADR-0006\ntraits:\n  commits:\n${traits}\n---\n\n# Commits\n`,
   );
   writeFileSync(join(dir, '.gitignore'), 'node_modules\n');
   if (withCommitlint) symlinkSync(modules, join(dir, 'node_modules'));
@@ -75,7 +75,7 @@ test('installed, only the namespace of its alias is read', () => {
   assert.equal(tsc.status, 0, tsc.stdout);
   writeFileSync(join(pkg, 'package.json'), '{"type":"module"}');
   symlinkSync(join(modules, 'zod'), join(dir, 'node_modules', 'zod'));
-  const run = () => spawnSync(process.execPath, [join(pkg, 'dist', 'governance-check.js'), 'ADR-0006'], { cwd: dir, encoding: 'utf8' });
+  const run = () => spawnSync(process.execPath, [join(pkg, 'dist', 'ontrack-engineering-check.js'), 'ADR-0006'], { cwd: dir, encoding: 'utf8' });
   const adr = '---\nadr: ADR-0006\nstatus: accepted\ntraits:\n  commits:\n    tool: none\n---\n';
   mkdirSync(join(dir, 'docs/adr/other'), { recursive: true });
   writeFileSync(join(dir, 'docs/adr/other/ADR-0006-x.md'), adr);
@@ -85,11 +85,20 @@ test('installed, only the namespace of its alias is read', () => {
   assert.doesNotMatch(run().stderr, /several files match|no file matches/);
 });
 
+// npm links every `bin` entry into node_modules/.bin: the old name runs the same
+// script until the change that removes it, so imported `check:` lines keep working.
+test('both command names ship the one compiled script', () => {
+  const { bin, files } = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8')) as { bin: Record<string, string>; files: string[] };
+  assert.deepEqual(Object.keys(bin).sort(), ['governance-check', 'ontrack-engineering-check']);
+  assert.equal(bin['governance-check'], bin['ontrack-engineering-check']);
+  assert.ok(files.includes(bin['ontrack-engineering-check']));
+});
+
 test('no check for that ADR', () => {
   const dir = repo({ traits: '    tool: none' });
   const r = spawnSync(process.execPath, [script, 'ADR-0003'], { cwd: dir, encoding: 'utf8' });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /governance ships no check for ADR-0003/);
+  assert.match(r.stderr, /this package ships no check for ADR-0003/);
 });
 
 test('not ruled', () => {
@@ -173,13 +182,13 @@ test('arguments: unknown option', () => {
 test('arguments: no ADR number gives the usage line', () => {
   const r = spawnSync(process.execPath, [script], { cwd: repo({ traits: '    tool: none' }), encoding: 'utf8' });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /^usage: governance-check <ADR number>/m);
+  assert.match(r.stderr, /^usage: ontrack-engineering-check <ADR number>/m);
 });
 
 test('arguments: two ADR numbers give the usage line', () => {
   const r = check(repo({ traits: '    tool: none' }), 'ADR-0009');
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /^usage: governance-check <ADR number>/m);
+  assert.match(r.stderr, /^usage: ontrack-engineering-check <ADR number>/m);
 });
 
 test('repository left untouched', () => {
@@ -1252,7 +1261,7 @@ test('installed, another ADR is named <namespace>/<number>', () => {
   assert.equal(tsc.status, 0, tsc.stdout);
   writeFileSync(join(pkg, 'package.json'), '{"type":"module"}');
   symlinkSync(join(modules, 'zod'), join(dir, 'node_modules', 'zod'));
-  const r = spawnSync(process.execPath, [join(pkg, 'dist', 'governance-check.js'), 'ADR-0009', '--branch', 'dependabot/x'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '' } });
+  const r = spawnSync(process.execPath, [join(pkg, 'dist', 'ontrack-engineering-check.js'), 'ADR-0009', '--branch', 'dependabot/x'], { cwd: dir, encoding: 'utf8', env: { ...process.env, GITHUB_HEAD_REF: '' } });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /no aliased\/ADR-0018 in docs\/adr\/\*\/ rules dependencies\.updater/);
 });

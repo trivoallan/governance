@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0006
+check: npx --no-install ontrack-engineering-check ADR-0006
 traits:
   commits:
     scopes:
@@ -106,7 +106,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0006
+check: npx --no-install ontrack-engineering-check ADR-0006
 traits:
   commits:
     scopes: [api, cli, docs]
@@ -123,7 +123,7 @@ runs it from your repository's root, and it reads the keys you ruled:
   `@commitlint/config-conventional` as dev dependencies; without them, the
   check fails and names the missing one. If your CI checkout has no
   `origin/HEAD`, append the base you compare to, as in
-  `check: npx --no-install governance-check ADR-0006 --from origin/main`;
+  `check: npx --no-install ontrack-engineering-check ADR-0006 --from origin/main`;
 - with `hook` or `none`, it prints that there is nothing to check, and
   passes.
 

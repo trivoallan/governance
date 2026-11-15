@@ -7,7 +7,7 @@ revision: 2
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0016
+check: npx --no-install ontrack-engineering-check ADR-0016
 traits:
   changes:
     framework:
@@ -164,7 +164,7 @@ revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0016
+check: npx --no-install ontrack-engineering-check ADR-0016
 traits:
   changes:
     framework: openspec

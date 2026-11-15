@@ -7,7 +7,7 @@ revision: 2
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0010
+check: npx --no-install ontrack-engineering-check ADR-0010
 traits:
   architecture:
     document:
@@ -61,7 +61,7 @@ per section.** One file per section keeps each change small, lets a pull
 request touch only the section it changes, and gives an agent a precise
 file to open. The path is fixed: it does not move with `docs.root`.
 
-**governance ships no template for now.** Create the twelve files below.
+**This package ships no template for now.** Create the twelve files below.
 Fill only those you have something to say in; a section with nothing to say
 yet keeps its file with one line saying so, rather than disappearing:
 
@@ -153,7 +153,7 @@ revision: 2
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0010
+check: npx --no-install ontrack-engineering-check ADR-0010
 traits:
   architecture:
     document: arc42

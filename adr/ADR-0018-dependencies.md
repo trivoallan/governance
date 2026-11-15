@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0018
+check: npx --no-install ontrack-engineering-check ADR-0018
 traits:
   dependencies:
     updater:
@@ -168,7 +168,7 @@ revision: 1
 date: 2026-11-14
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0018
+check: npx --no-install ontrack-engineering-check ADR-0018
 traits:
   dependencies:
     updater: dependabot

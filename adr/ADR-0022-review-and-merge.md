@@ -7,7 +7,7 @@ revision: 1
 date:
 authors: []
 supersedes: []
-check: npx --no-install governance-check ADR-0022
+check: npx --no-install ontrack-engineering-check ADR-0022
 traits:
   review:
     merge_by:
@@ -138,7 +138,7 @@ revision: 1
 date: 2026-11-15
 authors: [Your Name]
 supersedes: []
-check: npx --no-install governance-check ADR-0022
+check: npx --no-install ontrack-engineering-check ADR-0022
 traits:
   review:
     merge_by: person
