@@ -102,6 +102,9 @@ frontmatter:
     - { name: "traits.review.merge_by", enum: [person, agent], optional: true }
     # ADR-0023
     - { name: "traits.license.spdx", type: string, optional: true }
+    # ADR-0024
+    - { name: "traits.code_scanning.tool", type: string, optional: true }
+    - { name: "traits.code_scanning.fail_on", enum: [critical, high, medium, low, none], optional: true }
 structure:
   - heading:
       pattern: "^# .+"

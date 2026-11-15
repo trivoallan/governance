@@ -947,3 +947,55 @@ test('ADR-0011 with zizmor: clean workflows pass', real, () => {
   const r = run(wired({ adrs: forgeAdr('blocking', 'zizmor'), files: { '.github/workflows/ci.yml': pinned } }), 'ADR-0011');
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
+
+// --- ADR-0024: a scan workflow that sends its SARIF somewhere
+
+const scanAdr = (tool: string, failOn = 'high'): Files => ({ 'ADR-0024-code-scanning.md': `  code_scanning:\n    tool: ${tool}\n    fail_on: ${failOn}` });
+const grypeWf = 'jobs:\n  scan:\n    steps:\n      - uses: anchore/scan-action@abc\n      - uses: github/codeql-action/upload-sarif@abc\n';
+
+test('ADR-0024: CodeQL in advanced setup passes', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/codeql.yml': 'steps:\n  - uses: github/codeql-action/init@abc\n  - uses: github/codeql-action/analyze@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /code_scanning\.tool is codeql, found \.github\/workflows\/codeql\.yml/);
+  assert.match(r.stdout, /code_scanning\.fail_on is high, nothing to check/);
+});
+
+test('ADR-0024: CodeQL default setup only fails', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/scan.yml': grypeWf } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /holds github\/codeql-action\/analyze/);
+});
+
+test('ADR-0024: CodeQL init without analyze fails', () => {
+  const r = run(wired({ adrs: scanAdr('codeql'), files: { '.github/workflows/codeql.yml': 'steps:\n  - uses: github/codeql-action/init@abc\n' } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+});
+
+test('ADR-0024: another tool uploading SARIF passes', () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci --sarif > semgrep.sarif\n  - uses: github/codeql-action/upload-sarif@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /found \.github\/workflows\/sast\.yml/);
+});
+
+test('ADR-0024: private repository keeps the SARIF as an artifact', () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci --sarif > semgrep.sarif\n  - uses: actions/upload-artifact@abc\n' } }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test("ADR-0024: Grype's upload does not count for another tool", () => {
+  const r = run(wired({ adrs: scanAdr('semgrep'), files: { '.github/workflows/scan.yml': grypeWf, '.github/workflows/sast.yml': 'steps:\n  - run: semgrep ci\n' } }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /holds semgrep, and github\/codeql-action\/upload-sarif or actions\/upload-artifact/);
+});
+
+test('ADR-0024: none has nothing to check', () => {
+  const r = run(wired({ adrs: scanAdr('none', 'none') }), 'ADR-0024');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /code_scanning\.tool is none, nothing to check/);
+});
+
+test('ADR-0024: fail_on not set', () => {
+  const r = run(wired({ adrs: scanAdr('none', '') }), 'ADR-0024');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /code_scanning\.fail_on is not set/);
+});

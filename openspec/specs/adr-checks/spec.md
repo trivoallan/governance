@@ -156,6 +156,8 @@ governance SHALL ship these rows. Workflows are the tracked files matching
 | ADR-0018 | `dependencies.updater = renovate` | exists | `renovate.json`, `renovate.json5`, `.renovaterc`, `.renovaterc.json`, `.github/renovate.json` or `.github/renovate.json5` |
 | ADR-0018 | `dependencies.automerge = patch` or `minor`, when `dependencies.updater` is `dependabot` | contains | a workflow holds `dependabot/fetch-metadata` |
 | ADR-0021 | `supply_chain.build_level = 1`, `2` or `3` | contains | a workflow holds `actions/attest-build-provenance`, `--provenance` or `pypa/gh-action-pypi-publish` |
+| ADR-0024 | `code_scanning.tool = codeql` | contains | a workflow holds `github/codeql-action/analyze` |
+| ADR-0024 | `code_scanning.tool = <any other value but none>` | contains all | one workflow holds the value, and `github/codeql-action/upload-sarif` or `actions/upload-artifact` (ADR-0024 rule 2: the SARIF goes to code scanning, or stays a job artifact where the plan does not allow the upload) |
 
 The arc42 row looks under `docs/architecture/arc42/` whatever ADR-0008's
 `docs.root` says: the architecture document does not move with the user
@@ -163,7 +165,9 @@ documentation. A
 `deployment.manifests` value holding `://` is a URL and has no row. The
 ADR-0011 line SHALL say that the ruleset requiring the pipeline is not
 verified. With `dependencies.updater: renovate`, `dependencies.automerge` has
-no row.
+no row. A `contains all` row passes only when a single file holds, for each
+of its lists, one of that list's strings. `code_scanning.fail_on` has no row: the threshold lives in the
+ruleset and the workflow, which the check does not read.
 
 #### Scenario: arc42 under another root
 - **WHEN** ADR-0008 has `docs.root: site/` and ADR-0010 has `architecture.document: arc42`
@@ -192,6 +196,26 @@ no row.
 #### Scenario: Starlight site in a subfolder
 - **WHEN** ADR-0008 has `docs.tool: starlight` and only `site/package.json` names `@astrojs/starlight`
 - **THEN** the `docs.tool` row passes and names `site/package.json`
+
+#### Scenario: CodeQL in advanced setup
+- **WHEN** ADR-0024 has `code_scanning.tool: codeql` and a workflow uses `github/codeql-action/analyze@<sha>`
+- **THEN** the check exits `0` and names that workflow
+
+#### Scenario: CodeQL in default setup only
+- **WHEN** ADR-0024 has `code_scanning.tool: codeql` and no workflow holds `github/codeql-action/analyze`
+- **THEN** the check exits non-zero, even if default setup is on in the repository's settings
+
+#### Scenario: Another tool uploads SARIF
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep` and one workflow runs `semgrep ci --sarif` and `github/codeql-action/upload-sarif`
+- **THEN** the check exits `0` and names that workflow
+
+#### Scenario: Private repository keeps the SARIF
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep` and one workflow runs `semgrep ci --sarif` and keeps the file with `actions/upload-artifact`
+- **THEN** the check exits `0`
+
+#### Scenario: Grype's upload does not count
+- **WHEN** ADR-0024 has `code_scanning.tool: semgrep`, the only `upload-sarif` is in a workflow running Grype, and semgrep runs in another workflow
+- **THEN** the check exits non-zero
 
 ### Requirement: Repository tools
 When a check runs a tool other than commitlint, it SHALL look for it in the
@@ -497,3 +521,4 @@ The check SHALL exit non-zero when either key fails, and SHALL report both.
 #### Scenario: zizmor missing
 - **WHEN** `forge.audit` is `zizmor` and zizmor is not on the `PATH`
 - **THEN** the check exits non-zero and says zizmor is not installed
+
