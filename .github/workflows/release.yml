@@ -2,7 +2,7 @@ name: release
 
 # Keeps a release pull request open; merging it tags vX.Y.Z and creates the
 # GitHub release, then publishes that version to npm as
-# @trivoallan/ontrack-governance: the two environments of ADR-0012, both on tag.
+# @trivoallan/ontrack-engineering: the two environments of ADR-0012, both on tag.
 # Configuration: release-please-config.json.
 on:
   push:

@@ -23,8 +23,8 @@ test('readme: frontmatter check lines only', () => {
   assert.equal(hasCheck('no frontmatter\ncheck: npx a\n'), false);
 });
 
-test('readme: question count matches adr/', () => {
-  assert.equal(stated(/(\d+) questions/), adrs.length, `README states ${stated(/(\d+) questions/)} questions, adr/ holds ${adrs.length}`);
+test('readme: decision count matches adr/', () => {
+  assert.equal(stated(/(\d+) decisions/), adrs.length, `README states ${stated(/(\d+) decisions/)} decisions, adr/ holds ${adrs.length}`);
 });
 
 test('readme: check count matches frontmatter check lines', () => {
