@@ -216,9 +216,11 @@ runs it from your repository's root. It reads the keys you ruled:
 - `forge.audit`: with `zizmor`, it runs `zizmor --offline --no-config` on
   the committed workflows and fails on any finding no inline ignore covers.
   This one reads what the workflows say. It loads no configuration, so a
-  `zizmor.yml` in your repository does not change its verdict. It needs
-  zizmor on the `PATH` (`uvx zizmor`, `pipx`, `brew`), and prints the
-  version it ran. The online audits run only in CI.
+  `zizmor.yml` in your repository does not change its verdict. It takes
+  zizmor from mise when [ADR-0025](ADR-0025-tools.md) rules
+  `tools.manager: mise`, from the `PATH` otherwise, never from
+  `node_modules/.bin`, and prints the version it ran. The online audits run
+  only in CI.
 - `forge.review`: nothing. Who reviews is a GitHub setting, outside the
   repository, like the ruleset behind `forge.gate`.
 

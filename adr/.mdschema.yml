@@ -10,10 +10,9 @@
 # second schema for shipped questions: two schemas drift (surdesrails learned
 # this the hard way), so review is the check on governance's side.
 #
-# Run it FROM THIS DIRECTORY, because schema discovery walks up from the
-# current directory, not from the file being checked:
-#
-#   cd docs/adr/trivoallan && npx @jackchuka/mdschema@0.15.1 check '*.md'
+# `governance-check ADR-0001` runs it, through ADR-0001's `check:` line, with
+# `mdschema check --schema <this file>` on the ruled copies: no copy, no
+# discovery from the current directory.
 #
 # Trait keys are `optional`: an ABSENT key passes, so a `rejected` ADR with
 # no `traits:` block passes. A key that is PRESENT but empty is refused and
