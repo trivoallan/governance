@@ -32,3 +32,10 @@ test('adr-revisions: one entry per revision above 1', () => {
   });
   assert.deepEqual(wrong, []);
 });
+
+// The shipped ADRs name no track they were adapted from (adr-catalog spec, "No service baseline").
+test('adr: no source track named', () => {
+  for (const f of [...adrs, '.mdschema.yml']) {
+    assert.doesNotMatch(readFileSync(join(root, 'adr', f), 'utf8'), /surdesrails|\bSDR\b|SDR-\d/i, `adr/${f} names surdesrails or an SDR`);
+  }
+});

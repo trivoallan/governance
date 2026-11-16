@@ -13,7 +13,7 @@ CI. When a decision changes, each repository is told, instead of drifting.
 
 ontrack-engineering is an [ontrack](https://github.com/trivoallan/ontrack) track:
 an npm package of ADRs that your repository imports and rules on, one
-question at a time.
+convention at a time.
 
 ## What you get
 
@@ -22,16 +22,16 @@ question at a time.
 | **Agents** (0017, 0022, 0026) | The rules you accepted, written by ontrack into a managed block of `AGENTS.md`, which Claude Code, opencode and Copilot CLI read on every session; plugins pinned; the agent opens the pull request and never approves one; a person merges it, or approves it so the agent can; if you choose, the agent acts under its own GitHub identity, so that approval is one GitHub enforces | each declared host's settings exist (`.claude/settings.json`, `opencode.json`), deny `gh pr review`, and deny `gh pr merge` with `review.by: maintainer` (for Copilot CLI, through a hook, since it ignores denies); in CI, the default branch's ruleset matches `review.approvals`; the agent's identity is not verified |
 | **Architecture** (0003, 0010) | A hexagonal core by default, where the domain depends on no I/O, so an agent writes and tests it without a running environment. The architecture is documented in [arc42](https://arc42.org/overview)'s twelve sections, with [C4](https://c4model.com/) diagrams generated from a [LikeC4](https://likec4.dev/) model kept as code | the twelve arc42 section files; the LikeC4 model files, if you chose them |
 | **Code** (0004, 0005, 0007, 0013, 0024) | Validation at every boundary (`zod` or `pydantic`), a test coverage target you set, and your own code scanned by CodeQL, its alerts blocking from `high` | a scan workflow sends its SARIF to code scanning (or keeps it as an artifact); the threshold, held by the ruleset, is not verified |
-| **Decisions & docs** (0001, 0002, 0008) | Decisions kept as ADRs, docs in one language under one root | each ruled ADR carries its verdict (status decided, no trait left empty, how-to-rule block gone), checked against the shipped `.mdschema.yml`; the docs tool and root exist |
+| **Decisions & docs** (0001, 0002, 0008) | Decisions kept as ADRs, docs in one language under one root | each ruled ADR carries its ruling (status decided, no trait left empty, how-to-rule block gone), checked against the shipped `.mdschema.yml`; the docs tool and root exist |
 | **Delivery** (0011, 0012, 0023) | A pipeline designed once (stages, a blocking gate, releases cut from tags) that your agent writes from the rules and that [zizmor](https://docs.zizmor.sh/) reads for what those rules forbid, and a licence others can reuse the code under | a workflow exists; zizmor finds no movable action reference, dangerous trigger, template injection or over-broad permission in the workflows; release-please runs in one; a Dockerfile if you ship a container; the root manifest declares the ruled licence and a licence file is committed |
-| **Supply chain** (0015, 0018, 0019, 0020, 0021, 0025) | Current practice, by name: gitleaks before every commit, dependencies admitted by a person with install scripts ignored, a CycloneDX SBOM scanned by Grype, SLSA Build Level 2 provenance, and the tools outside npm pinned by version and checksum in one place | gitleaks finds no secret on the branch; Dependabot is configured, and so is its automerge; the publishing workflow emits provenance; mise pins the tools your answers name, and the checks run those, never a bin from `node_modules` |
+| **Supply chain** (0015, 0018, 0019, 0020, 0021, 0025) | Current practice, by name: gitleaks before every commit, dependencies admitted by a person with install scripts ignored, a CycloneDX SBOM scanned by Grype, SLSA Build Level 2 provenance, and the tools outside npm pinned by version and checksum in one place | gitleaks finds no secret on the branch; Dependabot is configured, and so is its automerge; the publishing workflow emits provenance; mise pins the tools your rulings name, and the checks run those, never a bin from `node_modules` |
 | **Workflow** (0006, 0009, 0014, 0016) | One convention for commits and branch names, refused at the gate instead of argued in review | the branch's commits pass commitlint; the branch name has an accepted prefix; OpenSpec uses the schema you chose |
 
 Checks confirm the wiring is there, not that it is right: the gate's
-ruleset, for one, is yours to set on GitHub. Reject any question that
+ruleset, for one, is yours to set on GitHub. Reject any convention that
 doesn't fit your repository.
 
-### The questions
+### The conventions
 
 - [ADR-0001](adr/ADR-0001-record-architecture-decisions.md) Record architecture decisions
 - [ADR-0002](adr/ADR-0002-localization.md) Localization
@@ -81,7 +81,7 @@ ontrack-engineering decides nothing about:
 
 ## What an ADR looks like
 
-Each ADR asks a question, recommends an answer and gives the reasons. You
+Each ADR proposes a convention, recommends its values and gives the reasons. You
 rule on it by filling its `traits:`. From
 [ADR-0009](adr/ADR-0009-branching.md), abridged:
 
@@ -124,7 +124,7 @@ Everything after that (`ontrack plan`, `ontrack apply`, what a new
 ## See it in use
 
 [ontrack](https://github.com/trivoallan/ontrack) imports this track: its
-answers are in
+rulings are in
 [`docs/adr/trivoallan/`](https://github.com/trivoallan/ontrack/tree/main/docs/adr/trivoallan),
 the rules they produce in its
 [`AGENTS.md`](https://github.com/trivoallan/ontrack/blob/main/AGENTS.md),

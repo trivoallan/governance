@@ -21,12 +21,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -40,11 +41,11 @@ document or a diagram should change with it. Once these values are written,
 it knows where the document is, whether the diagrams are code it can edit,
 or that there is neither.
 
-This question is asked separately from the code's pattern
+This convention is separate from the code's pattern
 ([ADR-0003](ADR-0003-architecture.md)) because the two are ruled at
 different times. A pattern is chosen before the first module; a document
 is worth writing once there is something to describe, and a repository can
-answer one without the other.
+rule on one without the other.
 
 ## Decision
 
@@ -112,8 +113,8 @@ keeps its architecture private only if its site does not publish
 **This recommendation does not bind your repository.** If your architecture
 already lives in a mature document elsewhere, say `elsewhere` and name the
 path in this ADR's body. If you keep no architecture document, say `none`:
-that is an honest answer for a small repository. For `architecture.model`,
-another architecture-as-code tool is a valid answer when named, and `none`
+that is an honest value for a small repository. For `architecture.model`,
+another architecture-as-code tool is a valid value when named, and `none`
 means the diagrams, if any, are drawn by hand. For
 `architecture.diagrams`, `plantuml` is the other text format, and `none`
 means the section files hold no diagram outside the model's views.
@@ -132,7 +133,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -213,7 +214,7 @@ what makes a decision different from an accepted default.
 
 ### `arc42` in a single file
 
-One `arc42.md`, as surdesrails does. Simpler to start, but every change
+One `arc42.md`. Simpler to start, but every change
 touches the same file, and the file grows long enough that an agent reads
 far more than it needs.
 
@@ -241,14 +242,13 @@ needs a plugin or a rendering server.
 
 ### Another architecture-as-code tool
 
-Structurizr DSL or diagrams as code in Mermaid or PlantUML. Valid answers
+Structurizr DSL or diagrams as code in Mermaid or PlantUML. Valid values
 when named; ontrack-engineering recommends LikeC4 because one model feeds every view,
 where diagram-by-diagram tools repeat each element in each picture.
 
 ## References
 
 - Suggested skills: `arc42-section-01` to `arc42-section-12` and `arc42-review` from `arc42-toolkit@arc42-toolkit`.
-- Split out of surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.document` key). surdesrails ships an arc42 template; ontrack-engineering does not yet.
 - [arc42](https://arc42.org/overview): the twelve sections.
 - [LikeC4](https://likec4.dev/): architecture as code, one model and generated views.
 - [C4 model](https://c4model.com/): the context, container and component levels LikeC4 views draw.
@@ -264,14 +264,14 @@ where diagram-by-diagram tools repeat each element in each picture.
 | `architecture.diagrams` | the text format of diagrams the model does not cover | `mermaid`, `plantuml`, `none` |
 
 **`architecture.model` is not checked against a list**: architecture-as-code
-tools are not a closed set. The schema checks that you answered, never that
-the answer is right.
+tools are not a closed set. The schema checks that you gave a value,
+never that the value is right.
 
-**All three keys are required**: an empty key is not an answer. The value is
+**All three keys are required**: an empty key is not a value. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
 - Revision 2: arc42 and the model live at fixed paths under `docs/architecture/`, not under `docs.root`, and their audience is the repository's visibility. Keys and values are unchanged: if your arc42 sections sit under another `docs.root`, move them to `docs/architecture/arc42/`.

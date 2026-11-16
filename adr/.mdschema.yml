@@ -2,13 +2,13 @@
 #
 # Schema for the ontrack-engineering ADRs once a repository has RULED on them.
 #
-# It checks that an ADR carries its verdict: status decided, date set, no
+# It checks that an ADR carries its ruling: status decided, date set, no
 # trait key left empty, Nygard sections present, and the how-to-rule block
-# gone. A question ADR exactly as this package ships it FAILS this schema, on
+# gone. A convention exactly as this package ships it FAILS this schema, on
 # purpose: it is still `proposed` and its traits are empty. Only ADR-0001,
 # which ships `accepted`, passes it inside ontrack-engineering itself. There is no
-# second schema for shipped questions: two schemas drift (surdesrails learned
-# this the hard way), so review is the check on ontrack-engineering's side.
+# second schema for shipped conventions: two schemas drift, so review is the check
+# on ontrack-engineering's side.
 #
 # `ontrack-engineering-check ADR-0001` runs it, through ADR-0001's `check:` line, with
 # `mdschema check --schema <this file>` on the ruled copies: no copy, no

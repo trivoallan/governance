@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -88,8 +89,8 @@ from the requirement.
 language not listed here. In order, an option falls if it: **describes
 without validating** at run time; validates **by hand**, field by field, so
 an added field is an uncovered field; exposes **no exportable schema**; or,
-all else equal, has the narrowest ecosystem. For Go, surdesrails retained
-`go-playground/validator` on this grid.
+all else equal, has the narrowest ecosystem. For Go, `go-playground/validator`
+passes this grid.
 
 **The value's format:** the name the library is installed under (`pydantic`,
 `zod`), with no version. The version lives in your dependency file; copied
@@ -116,7 +117,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -185,7 +186,6 @@ Trust what comes in. Tenable only for a repository with no boundary; rule
 
 ## References
 
-- Adapted from surdesrails [SDR-0005](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0005-validation.md), revision 1 (adds `zod` for TypeScript, which SDR-0005 left open).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): the main language, which picks the `boundary` library.
 
@@ -212,12 +212,12 @@ module: the entry point decides what it accepts.
 
 **Neither key is checked against a list.** Validation libraries are not a
 closed set, and freezing one would refuse the departure this file allows.
-The schema checks that you answered, never that the answer is right.
+The schema checks that you gave a value, never that the value is right.
 
 **`rejected` means this repository has no data boundary at all**, which is
 rare but real. It is not the same as "we validate by hand": that is a value,
 and it is written.
 
-**Both keys are required**: an empty key is not an answer. The value is
+**Both keys are required**: an empty key is not a value. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

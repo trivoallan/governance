@@ -1,8 +1,8 @@
 # adr-catalog Specification
 
 ## Purpose
-Lists the questions ontrack-engineering ships to consuming repositories, the
-surdesrails question each one adapts, and the traits each one asks for.
+Lists the conventions ontrack-engineering ships to consuming repositories and
+the traits each one asks for.
 
 ## Requirements
 
@@ -57,7 +57,7 @@ ADR-0001 SHALL ship `accepted`, at `revision: 4`, with the trait
 that ontrack-engineering is an adaptation of surdesrails meant to be imported instead
 of it, and that nothing detects when an SDR it adapts changes. Its Decision
 SHALL state that the freeze of a ruled body applies to a repository's
-verdict, that ontrack-engineering revises the ADRs it ships through `revision`, and
+ruling, that ontrack-engineering revises the ADRs it ships through `revision`, and
 that a `Suggested skills` line changes no `revision`. It SHALL also state that
 an ADR may carry a `check:` line that `ontrack check` runs once the ADR is
 `accepted`, that a `check:` line and the scripts it calls change no
@@ -70,7 +70,7 @@ ADR-0001's own check on every ruled copy, that it refuses a half-ruled ADR,
 and that nothing is copied or installed by hand; it SHALL name no `npx`
 command and no release binary. Its Revisions list SHALL hold a
 `Revision 4:` entry saying rule 7 changed and that there is nothing to
-re-answer.
+rule on again.
 
 #### Scenario: Drift is written down
 - **WHEN** the Consequences of ADR-0001 are read
@@ -160,8 +160,8 @@ ADR-0017 SHALL ask `agent.hosts`, a list whose values are `claude-code`,
 `opencode` and `copilot`, recommending `[claude-code]`. `[]` SHALL say that the repository
 declares no agent tooling. ADR-0017 SHALL be at `revision: 3`. Its Revisions
 list SHALL say that `agent.host` became `agent.hosts`, and that a repository
-re-answers by writing its former value as a one-item list, or `[]` for `none`;
-and that revision 3 adds `copilot`, with nothing to re-answer for a
+rules again by writing its former value as a one-item list, or `[]` for `none`;
+and that revision 3 adds `copilot`, with nothing to rule on again for a
 repository whose contributors do not use Copilot CLI.
 
 Its Decision SHALL fix, for every repository whose list holds `claude-code`:
@@ -236,7 +236,7 @@ Its how-to-rule block SHALL say:
 - **WHEN** a repository has ruled ADR-0017 `accepted` with `opencode` in `agent.hosts`
 - **THEN** every string or `package` entry under `plugins` in its `opencode.json` is a local path, a `<package>@<x.y.z>` exact version, or a Git specification ending in a 40-character commit hash
 
-#### Scenario: Re-answering revision 2
+#### Scenario: Ruling again at revision 2
 - **WHEN** a repository that ruled `agent.host: claude-code` reads ADR-0017's Revisions list
 - **THEN** it learns to write `agent.hosts: [claude-code]`
 
@@ -248,9 +248,9 @@ Its how-to-rule block SHALL say:
 - **WHEN** a repository whose `agent.hosts` holds `copilot` commits a `.github/copilot/settings.json`
 - **THEN** ADR-0017 forbids `enabledPlugins` and `extraKnownMarketplaces` in it
 
-#### Scenario: Re-answering revision 3
+#### Scenario: Ruling again at revision 3
 - **WHEN** a repository that ruled `agent.hosts: [claude-code]` reads ADR-0017's Revisions list after revision 3
-- **THEN** it learns that nothing is to re-answer unless its contributors use Copilot CLI, in which case it adds `copilot`
+- **THEN** it learns that nothing is to rule on again unless its contributors use Copilot CLI, in which case it adds `copilot`
 
 ### Requirement: ADR-0018 asks what keeps dependencies current
 ADR-0018 SHALL ask `dependencies.updater` (`dependabot`, `renovate`,
@@ -281,7 +281,7 @@ workflow that merges its pull requests obeys ADR-0011's rules.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0018's References are read
-- **THEN** they state that no surdesrails SDR asks this question
+- **THEN** they state that no surdesrails SDR proposes this convention
 
 ### Requirement: ADR-0006 ships its check
 ADR-0006 SHALL ship with a `check:` line calling `ontrack-engineering-check ADR-0006`,
@@ -336,7 +336,7 @@ ADR-0019's `revision` SHALL NOT change for the reference to `review.by`.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0019's References are read
-- **THEN** they state that no surdesrails SDR asks this question
+- **THEN** they state that no surdesrails SDR proposes this convention
 
 ### Requirement: ADR-0020 asks who lets a new dependency in
 ADR-0020 SHALL ask `admission.approver` (`person`, `agent`), recommending
@@ -390,7 +390,7 @@ name installed is the distribution name, never the import name.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0020's References are read
-- **THEN** they state that no surdesrails SDR asks this question
+- **THEN** they state that no surdesrails SDR proposes this convention
 
 ### Requirement: ADR-0021 asks what proves where an artifact was built
 ADR-0021 SHALL ask `supply_chain.build_level` (`0`, `1`, `2`, `3`), the SLSA
@@ -439,7 +439,7 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0021's References are read
-- **THEN** they state that no surdesrails SDR asks this question
+- **THEN** they state that no surdesrails SDR proposes this convention
 
 ### Requirement: Wiring ADRs ship their check
 ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0018, ADR-0021 and ADR-0024
@@ -501,14 +501,14 @@ ADR-0012 SHALL ask `delivery.release_notes`, with the values `changelog`,
 mean the generated changelog alone. `highlights` SHALL mean the changelog
 plus a short text for readers that heads the release's notes on the forge;
 a release SHALL NOT be finished until that text is written. `none` SHALL
-mean there are no versions, and SHALL be the answer when
+mean there are no versions, and SHALL be the value when
 `delivery.release_tool` is `none`. The highlights SHALL name every ADR the
 release revises, where the repository ships ADRs. ADR-0012's References
 SHALL name `deliver-release-notes` from `pm-skills@product-on-purpose` on
 its Suggested skills line. Adding the key SHALL raise ADR-0012 to revision
 3.
 
-#### Scenario: Key shipped unanswered
+#### Scenario: Key shipped without a value
 - **WHEN** ADR-0012 is read straight from ontrack-engineering
 - **THEN** its `traits:` block holds `delivery.release_notes` with no value, and its `revision` is 3
 
@@ -550,7 +550,7 @@ ADR-0012's Suggested skills line SHALL also name
 ADR-0008 SHALL govern only the documentation written for whoever uses the
 product: `docs.root`, `docs.audience`, `docs.channels` and Diátaxis SHALL
 apply to it alone, and its `rejected` SHALL mean "no user documentation",
-whatever ADR-0010 answers. ADR-0010 SHALL take nothing from ADR-0008 but a
+whatever ADR-0010 rules. ADR-0010 SHALL take nothing from ADR-0008 but a
 possible shared site, and SHALL say that the audience of the architecture
 document and of the ADRs is the repository's visibility, observed rather
 than asked. Neither ADR SHALL say that a path moves with `docs.root`: the
@@ -558,7 +558,7 @@ ADRs stay in `docs/adr/`, the architecture document in
 `docs/architecture/arc42/` and the model in `docs/architecture/model/`.
 ADR-0010 SHALL be at `revision: 2`. ADR-0008 SHALL be at `revision: 3`,
 whose Revisions entry says that `docs.channels` was added and that a
-repository whose `docs.tool` is not `none` must answer it.
+repository whose `docs.tool` is not `none` must rule on it.
 
 #### Scenario: No path follows docs.root
 - **WHEN** ADR-0008 and ADR-0010 are searched for a path said to move with `docs.root`
@@ -570,7 +570,7 @@ repository whose `docs.tool` is not `none` must answer it.
 
 #### Scenario: Revision 3 entry
 - **WHEN** ADR-0008's Revisions list is read
-- **THEN** its `Revision 3:` entry names `docs.channels` and says who must answer it
+- **THEN** its `Revision 3:` entry names `docs.channels` and says who must rule on it
 
 ### Requirement: ADR-0023 asks under which licence others may use the repository
 ADR-0023 "License" SHALL ask one trait, `license.spdx`, holding a free SPDX
@@ -605,14 +605,14 @@ outside the root.
 
 ### Requirement: ADR-0024 asks what analyses the repository's own code
 ADR-0024 "Code scanning" SHALL ask two traits:
-- `code_scanning.tool`, a free string recommending `codeql`, answered by any tool that writes SARIF, naming `semgrep` for a private repository without GitHub Code Security, and accepting `none`;
+- `code_scanning.tool`, a free string recommending `codeql`, accepting any tool that writes SARIF, naming `semgrep` for a private repository without GitHub Code Security, and accepting `none`;
 - `code_scanning.fail_on` (`critical`, `high`, `medium`, `low`, `none`), recommending `high`.
 
 It SHALL give the reason `high` differs from ADR-0019's `critical`: the
 finding is in the repository's own code, and the agent that wrote it can fix
 it at once. Its Decision SHALL fix, whatever the repository rules:
 1. no blocking scan without `forge.gate: blocking`; blocking goes through the ruleset rule that requires code scanning results, which the check does not verify;
-2. the scan runs in a workflow (CodeQL's advanced setup), with its actions pinned by SHA and, for CodeQL, `tools: linked` so that the bundle and its default queries follow the pinned action, on every pull request and every push to the default branch. Its results go to GitHub code scanning as SARIF, as ADR-0019's scanner's do, or stay a job artifact where the plan does not allow the upload. CodeQL blocks through the ruleset rule that requires code scanning results, with its security-alert threshold at `fail_on`. Any other tool blocks through its own exit code at `fail_on`. Default setup alone does not answer the ADR;
+2. the scan runs in a workflow (CodeQL's advanced setup), with its actions pinned by SHA and, for CodeQL, `tools: linked` so that the bundle and its default queries follow the pinned action, on every pull request and every push to the default branch. Its results go to GitHub code scanning as SARIF, as ADR-0019's scanner's do, or stay a job artifact where the plan does not allow the upload. CodeQL blocks through the ruleset rule that requires code scanning results, with its security-alert threshold at `fail_on`. Any other tool blocks through its own exit code at `fail_on`. Default setup alone does not satisfy the ADR;
 3. all code is scanned, tests included;
 4. dismissing an alert, excluding a path (`paths-ignore`, `paths`, a tool's own ignore file) or removing a query or rule (`query-filters`, a narrower suite or ruleset) silences a finding: the agent may propose one with its reason, and a person merges or dismisses (ADR-0019 rule 4, ADR-0022);
 5. workflows are `forge.audit`'s concern (ADR-0011), not this ADR's.
@@ -634,7 +634,7 @@ without changing ADR-0019's `revision:`.
 
 #### Scenario: Private repository
 - **WHEN** a private repository without GitHub Code Security reads ADR-0024
-- **THEN** it finds `semgrep` named as the answer, blocking through its exit code at `fail_on`, with `none` acceptable
+- **THEN** it finds `semgrep` named as the value, blocking through its exit code at `fail_on`, with `none` acceptable
 
 #### Scenario: Another tool's threshold
 - **WHEN** a public repository rules `code_scanning.tool: semgrep` and `fail_on: high`
@@ -651,7 +651,7 @@ without changing ADR-0019's `revision:`.
 ### Requirement: ADR-0011 revision 2 audits the workflows
 ADR-0011 SHALL move to `revision: 2` and SHALL add one key, `forge.audit`,
 with `zizmor` recommended and `none` accepted. Its Revisions list SHALL say
-that revision 2 adds `forge.audit` and that only that key needs answering.
+that revision 2 adds `forge.audit` and that only that key needs a ruling.
 With `forge.audit: zizmor`, its Decision SHALL fix:
 1. a workflow job runs zizmor on pull requests, through `zizmorcore/zizmor-action` pinned by SHA (rule 3), with its online audits using the job's `GITHUB_TOKEN`;
 2. a finding is silenced only by an inline `# zizmor: ignore[<audit>]` comment that gives its reason; the agent proposes it, a person merges it (ADR-0019 rule 4, ADR-0022). A `zizmor.yml` that loosens a policy is not a way to silence;
@@ -665,7 +665,7 @@ and rule 4). The Consequences SHALL no longer say that no tool enforces rules
 
 #### Scenario: Revision 2
 - **WHEN** ADR-0011 is read straight from ontrack-engineering after this change
-- **THEN** it holds `revision: 2`, an empty `forge.audit`, and a Revisions line naming `forge.audit` as the key to answer
+- **THEN** it holds `revision: 2`, an empty `forge.audit`, and a Revisions line naming `forge.audit` as the key to rule on
 
 #### Scenario: An agent meets a finding
 - **WHEN** zizmor reports `template-injection` on a workflow an agent wrote
@@ -699,7 +699,7 @@ name than the value, is left to review.
 
 #### Scenario: One tool
 - **WHEN** a repository has a single tool outside the package manager
-- **THEN** ADR-0025 says `script` can be the right answer and states its cost
+- **THEN** ADR-0025 says `script` can be the right value and states its cost
 
 #### Scenario: Same list everywhere
 - **WHEN** a tool named by an accepted ADR is needed on a workstation, a runner and an agent session
@@ -741,7 +741,7 @@ happens. Its values are:
 - `peer`: the approval of the latest push by an account other than the one that opened the pull request is the review;
 - `agent`: no person reviews.
 
-It SHALL recommend `maintainer` and say that `peer` is the answer once
+It SHALL recommend `maintainer` and say that `peer` is the value once
 another account can approve. It SHALL say that `agent` is acceptable for a
 repository nobody depends on, when the ADR's text gives the reason.
 
@@ -779,7 +779,7 @@ beside each value of ADR-0011's `forge.gate`:
 - with `blocking`, the pipeline and that reading;
 - with `informative`, the maintainer alone decides on a red.
 
-It SHALL name `CODEOWNERS` as outside its question. For each host of
+It SHALL name `CODEOWNERS` as outside its convention. For each host of
 ADR-0017's `agent.hosts`, it SHALL show the deny entries each value needs:
 - for `claude-code`, the `.claude/settings.json` entries;
 - for `copilot`, the `PreToolUse` hook in `.claude/settings.json`: one
@@ -818,9 +818,9 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 - **WHEN** a team rules `review.by: peer` and `review.approvals: 2`
 - **THEN** ADR-0022's ruleset for `peer` requires two approvals, and the agent's rules are the same as with `1`
 
-#### Scenario: Consumer reads what to re-answer
+#### Scenario: Consumer reads what to rule on again
 - **WHEN** `ontrack plan` reports ADR-0022 `revised` from revision 1 to 2
-- **THEN** its `Revision 2:` entry names `review.by` as the key to answer and maps the old values to the new ones
+- **THEN** its `Revision 2:` entry names `review.by` as the key to rule on and maps the old values to the new ones
 
 #### Scenario: Agent never approves
 - **WHEN** an agent in a repository that rules `review.by: peer` is asked to approve a colleague's pull request
@@ -866,8 +866,8 @@ rule, and that this is the exception ADR-0022 allows. ADR-0018's
 ADR-0011 SHALL NOT ask `forge.review`. Removing the key SHALL raise ADR-0011
 to revision 4, with a `Revision 4:` entry. That entry SHALL say that
 `forge.review` moved to ADR-0022's `review.by`, and that a repository
-re-answers it there and deletes it from ADR-0011. ADR-0011 SHALL say in one
-sentence that who reviews and who merges a change is ADR-0022's question.
+rules on it there and deletes it from ADR-0011. ADR-0011 SHALL say in one
+sentence that who reviews and who merges a change is ADR-0022's convention.
 The sentence on who reviews a change proposed elsewhere SHALL remain
 unchanged.
 
@@ -875,7 +875,7 @@ unchanged.
 - **WHEN** ADR-0011 is read straight from ontrack-engineering
 - **THEN** its `traits:` block holds no `forge.review`, and its `revision` is 4
 
-#### Scenario: Consumer reads what to re-answer
+#### Scenario: Consumer reads what to rule on again
 - **WHEN** `ontrack plan` reports ADR-0011 `revised` from revision 3 to 4
 - **THEN** ADR-0011's `Revision 4:` entry says `forge.review` moved to ADR-0022's `review.by`
 
@@ -932,7 +932,7 @@ choose it. Older majors and a version picker SHALL stay out of the key.
 ADR-0026 "Agent identity" SHALL ask, for a repository kept by one person with
 a coding agent, under whose GitHub identity the agent acts, through one trait,
 `agent.identity`, with the values `maintainer` and `own` and the recommended
-value `maintainer`. It SHALL say that `own` is the stronger answer and when it
+value `maintainer`. It SHALL say that `own` is the stronger value and when it
 is worth its setup: when the history must tell the agent from the person, or
 when the person's review must be an approval GitHub enforces. When the
 repository rules `own`, its Decision SHALL fix four rules:

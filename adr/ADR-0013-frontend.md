@@ -18,12 +18,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -49,7 +50,7 @@ service, a library, a command-line tool) rules this ADR `rejected`.
 
 **The value is the name the framework is installed under** (`astro`,
 `react`, `vue`, `svelte`, `@angular/core`…), with no version: the version
-lives in the dependency file. Any framework is a valid answer; another one
+lives in the dependency file. Any framework is a valid value; another one
 than `astro` says why in this ADR's body.
 
 **What ontrack-engineering fixes, whatever the framework.**
@@ -97,7 +98,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -170,13 +171,11 @@ fewer ready-made libraries.
 ### `@angular/core`
 
 A complete framework with strong conventions, and a major version to track
-twice a year. surdesrails admits only Angular, for reasons tied to an
-enterprise design system.
+twice a year.
 
 ## References
 
 - Suggested skills: `frontend-design` from `frontend-design@claude-plugins-official`; `playwright` from `playwright@melodic-software` (rule 7); `accessibility-review` from `design@knowledge-work-plugins`.
-- Adapted from surdesrails [SDR-0013](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0013-frontend.md), revision 1 (framework opened to any value; its design-system theme trait and every rule tied to that design system dropped; only the framework-agnostic rules kept).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [Astro](https://astro.build/) and [Playwright](https://playwright.dev/).
 
@@ -187,8 +186,8 @@ enterprise design system.
 | `frontend.framework` | the frontend framework, as installed | a package name such as `astro`, `react`, `vue`, `svelte` or `@angular/core` |
 
 **Not checked against a list**: frameworks are not a closed set. The schema
-checks that you answered, never that the answer is right.
+checks that you gave a value, never that the value is right.
 
-**An empty key is not an answer**: this one is required. The value is
+**An empty key is not a value**: this one is required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

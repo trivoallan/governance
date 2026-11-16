@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -127,7 +128,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -199,7 +200,7 @@ what makes a decision different from an accepted default.
 ### `0`
 
 No provenance. Nothing to maintain; nothing for a consumer to check
-either. A legitimate answer only for a repository whose consumers never
+either. A legitimate value only for a repository whose consumers never
 install the artifact from a registry.
 
 ### `1`
@@ -225,7 +226,7 @@ consumers model a compromised build step as a threat.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the rules every workflow obeys, the publishing one included.
 - [ADR-0012](ADR-0012-delivery.md): `delivery.target`, which decides whether this ADR applies.
@@ -242,6 +243,6 @@ consumers model a compromised build step as a threat.
 reads neither the workflows nor ADR-0012: `build_level: 2` in a repository
 whose release workflow attests nothing passes it, and review catches it.
 
-**An empty key is not an answer.** The value is written in this file and
+**An empty key is not a value.** The value is written in this file and
 nowhere else; whoever needs it links here. See ADR-0001 for the check
 command.
