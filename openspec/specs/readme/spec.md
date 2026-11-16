@@ -36,7 +36,7 @@ is checked. The Architecture row SHALL link to arc42, C4 and LikeC4. The
 Agents row SHALL say that ontrack writes the accepted rules into a managed
 block of `AGENTS.md`. After the table, the README SHALL state that checks
 confirm the wiring is present but not that it is right, and that a
-repository may reject any question that does not fit it.
+repository may reject any convention that does not fit it.
 
 #### Scenario: A domain with no check
 - **WHEN** no ADR of a row's domain has a check
@@ -78,11 +78,11 @@ section SHALL NOT promise that a topic will be covered later.
 
 #### Scenario: Review beyond who merges
 - **WHEN** the section's item on code review is read
-- **THEN** it lists ownership (`CODEOWNERS`) only, and links to ADR-0022, which names it as outside its question
+- **THEN** it lists ownership (`CODEOWNERS`) only, and links to ADR-0022, which names it as outside what it covers
 
 ### Requirement: README shows one ADR excerpt
-The README SHALL show a short excerpt of one shipped ADR: its question, its
-recommended answer and its `traits:` block. The excerpt SHALL be taken from
+The README SHALL show a short excerpt of one shipped ADR: what it proposes, its
+recommended value and its `traits:` block. The excerpt SHALL be taken from
 an ADR whose recommendation names no programming language.
 
 #### Scenario: A Python visitor reads the excerpt

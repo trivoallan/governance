@@ -7,55 +7,50 @@ the traits each one asks for.
 ## Requirements
 
 ### Requirement: Shipped ADRs
-ontrack-engineering SHALL ship exactly these ADRs, each adapted from the named SDR
-unless the table says it is original:
+ontrack-engineering SHALL ship exactly these ADRs:
 
-| ADR | slug | from | status as shipped |
-|---|---|---|---|
-| ADR-0001 | record-architecture-decisions | SDR-0001 | accepted |
-| ADR-0002 | localization | SDR-0002 | proposed |
-| ADR-0003 | architecture | SDR-0003 | proposed |
-| ADR-0004 | languages | SDR-0004 | proposed |
-| ADR-0005 | validation | SDR-0005 | proposed |
-| ADR-0006 | commits | SDR-0006 | proposed |
-| ADR-0007 | tests | SDR-0007 | proposed |
-| ADR-0008 | documentation | SDR-0008 | proposed |
-| ADR-0009 | branching | SDR-0009 | proposed |
-| ADR-0010 | architecture-documentation | SDR-0003 (`architecture.document` only) | proposed |
-| ADR-0011 | forge-and-ci | SDR-0010 | proposed |
-| ADR-0012 | delivery | SDR-0011 | proposed |
-| ADR-0013 | frontend | SDR-0013 | proposed |
-| ADR-0014 | work-tracking | SDR-0014 | proposed |
-| ADR-0015 | secrets | none (original to ontrack-engineering) | proposed |
-| ADR-0016 | changes | none (original to ontrack-engineering) | proposed |
-| ADR-0017 | agent-tooling | none (original to ontrack-engineering) | proposed |
-| ADR-0018 | dependencies | none (original to ontrack-engineering) | proposed |
-| ADR-0019 | vulnerabilities | none (original to ontrack-engineering) | proposed |
-| ADR-0020 | adding-dependencies | none (original to ontrack-engineering) | proposed |
-| ADR-0021 | build-provenance | none (original to ontrack-engineering) | proposed |
-| ADR-0022 | review-and-merge | none (original to ontrack-engineering) | proposed |
-| ADR-0023 | license | none (original to ontrack-engineering) | proposed |
-| ADR-0024 | code-scanning | none (original to ontrack-engineering) | proposed |
-| ADR-0025 | tools | none (original to ontrack-engineering) | proposed |
-| ADR-0026 | agent-identity | none (original to ontrack-engineering) | proposed |
-
-SDR-0000 (service baseline) SHALL NOT be adapted.
+| ADR | slug | status as shipped |
+|---|---|---|
+| ADR-0001 | record-architecture-decisions | accepted |
+| ADR-0002 | localization | proposed |
+| ADR-0003 | architecture | proposed |
+| ADR-0004 | languages | proposed |
+| ADR-0005 | validation | proposed |
+| ADR-0006 | commits | proposed |
+| ADR-0007 | tests | proposed |
+| ADR-0008 | documentation | proposed |
+| ADR-0009 | branching | proposed |
+| ADR-0010 | architecture-documentation | proposed |
+| ADR-0011 | forge-and-ci | proposed |
+| ADR-0012 | delivery | proposed |
+| ADR-0013 | frontend | proposed |
+| ADR-0014 | work-tracking | proposed |
+| ADR-0015 | secrets | proposed |
+| ADR-0016 | changes | proposed |
+| ADR-0017 | agent-tooling | proposed |
+| ADR-0018 | dependencies | proposed |
+| ADR-0019 | vulnerabilities | proposed |
+| ADR-0020 | adding-dependencies | proposed |
+| ADR-0021 | build-provenance | proposed |
+| ADR-0022 | review-and-merge | proposed |
+| ADR-0023 | license | proposed |
+| ADR-0024 | code-scanning | proposed |
+| ADR-0025 | tools | proposed |
+| ADR-0026 | agent-identity | proposed |
 
 #### Scenario: Catalog matches the directory
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
 - **THEN** they are exactly the twenty-six files in the table, with the slugs shown
 
-#### Scenario: No service baseline
-- **WHEN** `adr/` is searched for an ADR adapted from SDR-0000 or mentioning aresis
+#### Scenario: No other track is named
+- **WHEN** `adr/` is searched for the name of the track these ADRs were first adapted from, or for one of its decision numbers
 - **THEN** none is found
 
 ### Requirement: ADR-0001 describes the ruling mechanics
 ADR-0001 SHALL ship `accepted`, at `revision: 4`, with the trait
 `record-architecture-decisions.format` set to `nygard` (the template of
-`/pm-skills:develop-adr`) in place of SDR-0001's `MADR`, and with
-`check: npx --no-install ontrack-engineering-check ADR-0001`. Its Consequences SHALL state
-that ontrack-engineering is an adaptation of surdesrails meant to be imported instead
-of it, and that nothing detects when an SDR it adapts changes. Its Decision
+`/pm-skills:develop-adr`), and with
+`check: npx --no-install ontrack-engineering-check ADR-0001`. Its Decision
 SHALL state that the freeze of a ruled body applies to a repository's
 ruling, that ontrack-engineering revises the ADRs it ships through `revision`, and
 that a `Suggested skills` line changes no `revision`. It SHALL also state that
@@ -72,9 +67,9 @@ command and no release binary. Its Revisions list SHALL hold a
 `Revision 4:` entry saying rule 7 changed and that there is nothing to
 rule on again.
 
-#### Scenario: Drift is written down
+#### Scenario: Consequences name no other track
 - **WHEN** the Consequences of ADR-0001 are read
-- **THEN** they name surdesrails and state that drift from it is detected only by reading the References source lines
+- **THEN** they name no other track and no source line
 
 #### Scenario: Revised once for the new rules
 - **WHEN** a repository that imported ADR-0001 at revision 3 runs `ontrack plan` after this change
@@ -89,9 +84,8 @@ rule on again.
 - **THEN** it says `ontrack-engineering-check ADR-0001` runs the schema and refuses a half-ruled ADR, and names neither `npx @jackchuka/mdschema` nor a copy of `.mdschema.yml`
 
 ### Requirement: Traits carried over unchanged
-ADR-0002, ADR-0005, ADR-0006, ADR-0007 and ADR-0009 SHALL ask the
-same traits as their SDR, with the same keys and the same enum values
-translated to English (for example `français` becomes `french`):
+ADR-0002, ADR-0005, ADR-0006, ADR-0007 and ADR-0009 SHALL ask
+these traits, with enum values in English:
 
 | ADR | traits |
 |---|---|
@@ -101,16 +95,16 @@ translated to English (for example `français` becomes `french`):
 | ADR-0007 | `tests.coverage_target` |
 | ADR-0009 | `branching.model`, `branching.merge`, `branching.prefixes` |
 
-#### Scenario: Same keys as the source
-- **WHEN** the `traits:` block of ADR-0006 is compared with SDR-0006 revision 1
-- **THEN** it has the same keys, `commits.scopes` and `commits.tool`
+#### Scenario: Keys of the commits convention
+- **WHEN** the `traits:` block of ADR-0006 is read
+- **THEN** it has the keys `commits.scopes` and `commits.tool`
 
 #### Scenario: Enum values in English
 - **WHEN** the enum of `localization.language.default` in ADR-0002 is read
 - **THEN** its values are `french` and `english`
 
 ### Requirement: Adapted traits
-The remaining ADRs SHALL adapt their SDR's traits as follows:
+The remaining ADRs among ADR-0003 to ADR-0014 SHALL ask their traits as follows:
 - ADR-0003 SHALL ask `architecture.pattern` only, recommending `hexagonal`.
 - ADR-0010 SHALL ask `architecture.document` (`arc42`, `elsewhere`, `none`),
   recommending `arc42` as a `docs/architecture/arc42/` directory with one
@@ -124,12 +118,11 @@ The remaining ADRs SHALL adapt their SDR's traits as follows:
   recommending `starlight` (with its `docs` collection pointed at `docs/`)
   and `public`, with a `docs.tool` enum of `starlight`, `docusaurus`,
   `mkdocs` and `none`, and an
-  `audience` enum of `single-user`, `team` and `public`: SDR-0008's
-  scale translated, without the enterprise-only steps `LS` and `groupe`.
+  `audience` enum of `single-user`, `team` and `public`.
 - ADR-0011 SHALL assume GitHub as the forge, SHALL NOT ask `forge.vendor`,
   and SHALL ask `forge.gate` and, from revision 2, `forge.audit`.
 - ADR-0012 SHALL ask `delivery.target` (`container`, `platform`, `package`,
-  `none`) in place of SDR-0011's `hosting.offer`, plus `delivery.environments`,
+  `none`), plus `delivery.environments`,
   `delivery.release_tool` (recommended `release-please`), `delivery.registry`
   and `deployment.manifests`.
 - ADR-0013 SHALL ask `frontend.framework` as a free string, recommending
@@ -281,7 +274,7 @@ workflow that merges its pull requests obeys ADR-0011's rules.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0018's References are read
-- **THEN** they state that no surdesrails SDR proposes this convention
+- **THEN** they state that the ADR is original to ontrack-engineering
 
 ### Requirement: ADR-0006 ships its check
 ADR-0006 SHALL ship with a `check:` line calling `ontrack-engineering-check ADR-0006`,
@@ -336,7 +329,7 @@ ADR-0019's `revision` SHALL NOT change for the reference to `review.by`.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0019's References are read
-- **THEN** they state that no surdesrails SDR proposes this convention
+- **THEN** they state that the ADR is original to ontrack-engineering
 
 ### Requirement: ADR-0020 asks who lets a new dependency in
 ADR-0020 SHALL ask `admission.approver` (`person`, `agent`), recommending
@@ -390,7 +383,7 @@ name installed is the distribution name, never the import name.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0020's References are read
-- **THEN** they state that no surdesrails SDR proposes this convention
+- **THEN** they state that the ADR is original to ontrack-engineering
 
 ### Requirement: ADR-0021 asks what proves where an artifact was built
 ADR-0021 SHALL ask `supply_chain.build_level` (`0`, `1`, `2`, `3`), the SLSA
@@ -439,7 +432,7 @@ Its Alternatives Considered SHALL state the cost of level `3`.
 
 #### Scenario: Original to ontrack-engineering
 - **WHEN** ADR-0021's References are read
-- **THEN** they state that no surdesrails SDR proposes this convention
+- **THEN** they state that the ADR is original to ontrack-engineering
 
 ### Requirement: Wiring ADRs ship their check
 ADR-0008, ADR-0010, ADR-0011, ADR-0012, ADR-0018, ADR-0021 and ADR-0024
