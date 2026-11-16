@@ -25,12 +25,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -38,7 +39,7 @@ Proposed
 
 While these keys are empty, an agent finishing a change does not know
 whether merging puts it in front of users or only onto the default branch,
-nor what produces a version. Of all the questions ontrack-engineering asks, this is
+nor what produces a version. Of all the conventions ontrack-engineering proposes, this is
 the one where a wrong guess reaches people outside the repository.
 
 **Releasing and deploying are two acts.** Releasing makes a named version
@@ -48,7 +49,7 @@ service (each environment's trigger). A repository can do one without the
 other: a library releases and never deploys; a service can deploy every
 merge without naming versions.
 
-**Semantic versioning is not a question here**: `feat` gives a minor
+**Semantic versioning is not ruled here**: `feat` gives a minor
 version, `fix` and `perf` a patch, a breaking change a major. The commit
 format is [ADR-0006](ADR-0006-commits.md). Calendar versioning would be a
 departure, declared in your own ADR.
@@ -100,7 +101,7 @@ elsewhere is not covered: declare it in your own ADR.
 
 **`manual` is not `none`.** `manual` means versions are made by hand (number,
 changelog, tag). `none` means there are no versions at all. A repository
-that publishes a package answers `manual`, never `none`. A tool that does
+that publishes a package rules `manual`, never `none`. A tool that does
 only half the job (publishes without a changelog) still counts: say
 "changelog by hand" under Consequences.
 
@@ -155,7 +156,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -249,15 +250,14 @@ cost is that the act is written nowhere.
 
 ### `releaser-pleaser`
 
-surdesrails' recommendation, because it covers GitHub and GitLab alike, and
-it is proven on GitHub Actions. ontrack-engineering assumes GitHub only, where
+It covers GitHub and GitLab
+alike, and it is proven on GitHub Actions. ontrack-engineering assumes GitHub only, where
 `release-please` is the more widely used choice. A repository already on
 `releaser-pleaser` has no reason to migrate.
 
 ## References
 
 - Suggested skills: `deploy-checklist` from `engineering@knowledge-work-plugins`; `verification-before-completion` from `superpowers@superpowers-marketplace`, for the last tasks of a change; `deliver-release-notes` from `pm-skills@product-on-purpose`, for the highlights.
-- Adapted from surdesrails [SDR-0011](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0011-delivery.md), revision 1 (its internal hosting-offer trait `hosting.offer` replaced by `delivery.target`; recommends `release-please` instead of `releaser-pleaser`).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [release-please](https://github.com/googleapis/release-please) and [Semantic Versioning](https://semver.org/).
 
@@ -284,13 +284,13 @@ an artifact; it puts nothing in service. A registry is not an environment.
 no image, as in a documentation, schema or configuration repository. It is
 not the same as deploying by hand, which is `manual`.
 
-**All six keys are required**: an empty key is not an answer. This file
+**All six keys are required**: an empty key is not a value. This file
 decides when, where and what is delivered; the rules a pipeline follows are
 ADR-0011's. The value is written in this file and nowhere else; whoever
 needs it links here. See ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
 - Revision 2: with `release-please` and a version below 1.0.0, `release-please-config.json` sets `"bump-minor-pre-major": true`. No key changed: if your repository is below 1.0.0, set the option.
-- Revision 3: a new key, `delivery.release_notes` (`changelog`, `highlights` or `none`, recommended `highlights`), and a change's last tasks now include updating the documentation it makes false. Answer `delivery.release_notes`; nothing else to re-answer.
+- Revision 3: a new key, `delivery.release_notes` (`changelog`, `highlights` or `none`, recommended `highlights`), and a change's last tasks now include updating the documentation it makes false. Rule on `delivery.release_notes`; nothing else to rule on again.

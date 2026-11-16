@@ -18,12 +18,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -58,7 +59,7 @@ apart is part of the answer, not a detail of it.
 
 **Not concerned:** repositories with several maintainers, ownership
 (`CODEOWNERS`) and the assignment of reviewers. Where the review happens
-stays ADR-0022's question; this ADR decides who the agent is when it
+stays ADR-0022's convention; this ADR decides who the agent is when it
 proposes.
 
 ## Decision
@@ -69,7 +70,7 @@ proposes.
 | --- | --- | --- |
 | `agent.identity` | `maintainer` | for one person, a second identity, a token kept apart and an approval on every agent pull request cost more to set up and keep than the deny entries ADR-0022 already asks for |
 
-`own` is the stronger answer. It is worth its setup when **the history must
+`own` is the stronger value. It is worth its setup when **the history must
 tell the agent from the person** (an audit, a repository others depend on),
 or when **the person's review must be an approval GitHub enforces** rather
 than a merge the agent host holds the agent back from. Rule `own` for
@@ -169,7 +170,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -264,7 +265,7 @@ maintainers, as ADR-0022 says.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0015](ADR-0015-secrets.md): where the agent's token is stored.
 - [ADR-0017](ADR-0017-agent-tooling.md): `agent.hosts`, which decides how the credentials are kept apart.
@@ -278,6 +279,6 @@ maintainers, as ADR-0022 says.
 | --- | --- | --- |
 | `agent.identity` | under whose GitHub identity the agent commits, pushes and opens pull requests | `maintainer`, `own` (then ADR-0022 `review.by: peer`) |
 
-**An empty key is not an answer.** The value is written in this file and
+**An empty key is not a value.** The value is written in this file and
 nowhere else; whoever needs it links here. See ADR-0001 for the check
 command.

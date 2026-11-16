@@ -162,3 +162,9 @@ SHALL fail when a shipped ADR's `revision` and its list disagree.
 
 - FROM: `### Requirement: Revision tracks the question`
 - TO: `### Requirement: Revision tracks the convention`
+
+## REMOVED Requirements
+
+### Requirement: Source line
+**Reason**: The shipped ADRs no longer name surdesrails or the SDR an ADR was adapted from.
+**Migration**: None. A repository's ruled copies keep the source line they imported; nothing reads it.

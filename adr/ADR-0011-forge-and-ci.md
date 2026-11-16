@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -72,7 +73,7 @@ model ([ADR-0009](ADR-0009-branching.md)), the delivery
 and write `none`. `rejected` has one use only, a forge other than GitHub.
 
 Who reviews a change to this repository, and who merges it, is
-[ADR-0022](ADR-0022-review-and-merge.md)'s question: `review.by`.
+[ADR-0022](ADR-0022-review-and-merge.md)'s convention: `review.by`.
 
 **What ontrack-engineering fixes, whatever you rule.** Five rules apply to every
 workflow job, not only to deployment:
@@ -131,7 +132,7 @@ silent bypass is not a departure.
 | `deploy` | `deployment.manifests` is a relative path; one job per entry of `delivery.environments`, in order, each with its own trigger | the manifests in that path |
 | propose elsewhere | `deployment.manifests` is a URL; this replaces `deploy` | that address |
 
-An absent stage is a full answer: an agent that adds a job in these cases
+An absent stage is a full ruling: an agent that adds a job in these cases
 has invented one. A command named only in an agent instructions file does
 not create a stage. If `deployment.manifests` is neither a relative path to
 an existing directory nor a URL with a scheme, the agent asks and writes
@@ -163,7 +164,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -202,7 +203,7 @@ runs it from your repository's root. It reads the keys you ruled:
 - `forge.audit`: with `zizmor`, it runs `zizmor --offline --no-config` on
   the committed workflows and fails on any finding no inline ignore covers.
   This one reads what the workflows say. It loads no configuration, so a
-  `zizmor.yml` in your repository does not change its verdict. It takes
+  `zizmor.yml` in your repository does not change its result. It takes
   zizmor from mise when [ADR-0025](ADR-0025-tools.md) rules
   `tools.manager: mise`, from the `PATH` otherwise, never from
   `node_modules/.bin`, and prints the version it ran. The online audits run
@@ -292,7 +293,6 @@ from here; copy those you keep into your own ADR.
 ## References
 
 - Suggested skills: `setup` from `actionlint@melodic-software`, to install and wire actionlint.
-- Adapted from surdesrails [SDR-0010](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0010-forge-and-ci.md), revision 2 (GitHub only: `forge.vendor` and the sections for the other forge dropped; the `image` stage follows `delivery.target` instead of `hosting.offer`).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [actionlint](https://github.com/rhysd/actionlint) and [act](https://github.com/nektos/act).
 - zizmor: [audits](https://docs.zizmor.sh/audits/), [usage and ignores](https://docs.zizmor.sh/usage/), [configuration](https://docs.zizmor.sh/configuration/), [zizmorcore/zizmor-action](https://github.com/zizmorcore/zizmor-action). Measured with zizmor 1.32.0 on 2026-11-15.
@@ -315,7 +315,7 @@ checked against the checksum file each project publishes, in
 | 2. the predicted jobs are there | `act -l` (needs no Docker daemon) | at least the jobs the stage table predicts, and none it excludes |
 | 3. they run | `act -P ubuntu-latest=catthehacker/ubuntu:act-latest --env-file /dev/null --secret-file /dev/null --var-file /dev/null` | lint, test and build green; deploy red, since it runs against nothing |
 
-Notes on `act`, measured in surdesrails on 2026-09-20:
+Notes on `act`, measured on 2026-09-20:
 
 - **Always pass `-P`.** Otherwise `act` asks which image to use, and a
   non-interactive run fails with a bare `level=fatal msg=EOF`.
@@ -360,13 +360,13 @@ then check that each hit is bound to the default branch through `on:` and
   elsewhere, environment protections and rulesets.
 - A job that publishes Pages, for example, is a false positive.
 
-**An empty key is not an answer**: both are required. The value is
+**An empty key is not a value**: both are required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
-- Revision 2: a new key, `forge.audit` (`zizmor`, another tool or `none`, recommended `zizmor`), three rules for `zizmor`, and an `audit` stage. Answer `forge.audit`; nothing else to re-answer.
-- Revision 3: a new key, `forge.review` (`peer`, `author` or `agent`, recommended `peer`), which says who can accept a change, and what `author` leaves beside each value of `forge.gate`. Answer `forge.review`; nothing else to re-answer.
-- Revision 4: `forge.review` moves to [ADR-0022](ADR-0022-review-and-merge.md) as `review.by`, with what it leaves beside each value of `forge.gate`. Answer `review.by` there, then delete `forge.review` from this file: the check fails while it remains.
+- Revision 2: a new key, `forge.audit` (`zizmor`, another tool or `none`, recommended `zizmor`), three rules for `zizmor`, and an `audit` stage. Rule on `forge.audit`; nothing else to rule on again.
+- Revision 3: a new key, `forge.review` (`peer`, `author` or `agent`, recommended `peer`), which says who can accept a change, and what `author` leaves beside each value of `forge.gate`. Rule on `forge.review`; nothing else to rule on again.
+- Revision 4: `forge.review` moves to [ADR-0022](ADR-0022-review-and-merge.md) as `review.by`, with what it leaves beside each value of `forge.gate`. Rule on `review.by` there, then delete `forge.review` from this file: the check fails while it remains.

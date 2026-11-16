@@ -18,12 +18,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -56,7 +57,7 @@ number comparable from one repository to the next:
 
 **This recommendation does not bind your repository.** A repository that
 aims higher says so; a repository that aims lower says so too, and writes
-why. What is not an answer is a number nobody holds.
+why. What is not a value is a number nobody holds.
 
 **The threshold applies to the main language**, the one
 [ADR-0004](ADR-0004-languages.md) declares. A repository with several
@@ -78,7 +79,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -139,13 +140,12 @@ The one you hold and can defend. Recommended, at `90`.
 ### `none`
 
 For a language with no coverage tool, or a repository where the measure
-would teach nothing. **It is an answer**, and it is justified in this file
+would teach nothing. **It is a value**, and it is justified in this file
 like any other.
 
 ## References
 
 - Suggested skills: `test-driven-development` from `superpowers@superpowers-marketplace`.
-- Adapted from surdesrails [SDR-0007](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0007-tests.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): the main language the threshold applies to.
 
@@ -159,8 +159,8 @@ like any other.
 or coverage tool. ontrack-engineering does not carry them: it does not know what your
 repository runs.
 
-**An empty key is not an answer**: this one is required, and `none` is an
-answer where empty is not. **On this point the check does not protect
+**An empty key is not a value**: this one is required, and `none` is a
+value where empty is not. **On this point the check does not protect
 you.** It can refuse a value outside a closed set, but here the value is a
 number or the word `none`, and no type covers both, so **an empty key
 passes**. Review catches it, and it is better to know that than to find out.

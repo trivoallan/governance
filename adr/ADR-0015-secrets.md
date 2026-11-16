@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -124,7 +125,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -210,7 +211,7 @@ depends on your platform and on whether secrets are shared.
 ### A `.env` file of clear values, gitignored (`env-file`)
 
 No tool, and the convention most repositories already follow. It keeps
-values out of git, but not out of an agent's context. A legitimate answer
+values out of git, but not out of an agent's context. A legitimate value
 when you accept that cost: write `env-file`, and name the cost in your
 Consequences.
 
@@ -239,7 +240,7 @@ which is when revocation becomes mandatory.
 ## References
 
 - Suggested skills: `claude-security` from `claude-security@claude-plugins-official`, to scan the repository or a diff.
-- Original to ontrack-engineering: no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): where CI secrets live, and the rules that keep them out of logs and forks.
 - [ADR-0005](ADR-0005-validation.md): environment variables are a boundary; their shape is validated there, their values are kept here.
@@ -256,7 +257,7 @@ which is when revocation becomes mandatory.
 that you have not decided where they go. A repository that reads an API key
 writes where that key lives.
 
-**`guard: none` is an answer, and a weak one**: the guard exists for the
+**`guard: none` is a value, and a weak one**: the guard exists for the
 accident, which happens just as well in a repository that "has no secrets".
 
 **`rejected` is hard to justify here.** The two fixed rules apply whatever
@@ -264,6 +265,6 @@ you rule. A repository with no secret and no guard writes `none` twice, so
 an agent knows it was decided.
 
 **Neither key is checked against a list.** The schema checks that you
-answered, never that the answer is right. Both keys are required: an empty
-key is not an answer. The value is written in this file and nowhere else;
+gave a value, never that the value is right. Both keys are required: an empty
+key is not a value. The value is written in this file and nowhere else;
 whoever needs it links here. See ADR-0001 for the check command.

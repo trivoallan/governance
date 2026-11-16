@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -37,7 +38,7 @@ written, it reads it and sticks to it.
 
 The main language is not the only language in the repository: it is the one
 code is written in by default, and the one whose tooling is the reference.
-A repository can hold others without changing the answer.
+A repository can hold others without changing the ruling.
 
 ## Decision
 
@@ -76,7 +77,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -126,7 +127,7 @@ what makes a decision different from an accepted default.
 ### Neutral
 
 - Secondary languages (shell scripts, SQL, configuration) are not declared
-  here and do not change the answer.
+  here and do not change the ruling.
 
 ## Alternatives Considered
 
@@ -141,10 +142,10 @@ One language from browser to server, gradual typing, `zod` for validation.
 
 ### `Go`
 
-One binary to deploy, fast compilation, simple concurrency. surdesrails
-recommends it; ontrack-engineering does not, because its repositories rarely need a
+One binary to deploy, fast compilation, simple concurrency. ontrack-engineering does
+not recommend it, because its repositories rarely need a
 static binary and one fewer language keeps the other recommendations
-shorter. It remains a valid answer when justified.
+shorter. It remains a valid value when justified.
 
 ### Another language
 
@@ -158,9 +159,8 @@ For a documentation, configuration or infrastructure repository. Rule
 
 ## References
 
-- Adapted from surdesrails [SDR-0004](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0004-languages.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
-- [ADR-0005](ADR-0005-validation.md) and [ADR-0007](ADR-0007-tests.md): validation and coverage, which depend on this answer.
+- [ADR-0005](ADR-0005-validation.md) and [ADR-0007](ADR-0007-tests.md): validation and coverage, which depend on this ruling.
 
 **The key.**
 
@@ -173,6 +173,6 @@ threshold, lint command or tool. The coverage threshold is ADR-0007's;
 commands are not carried by ontrack-engineering, which does not know what your
 repository runs.
 
-**An empty key is not an answer**: this one is required. The value is
+**An empty key is not a value**: this one is required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

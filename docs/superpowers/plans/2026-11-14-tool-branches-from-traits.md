@@ -15,7 +15,7 @@ maps them to prefixes, and that map replaces the hard-coded `TOOL_BRANCHES`.
 ## Global Constraints
 
 - Prefix map, exactly: `release-please` → `release-please--`, `releaser-pleaser` → `releaser-pleaser--` (from `delivery.release_tool`); `dependabot` → `dependabot/`, `renovate` → `renovate/` (from `dependencies.updater`). Any other value exempts nothing.
-- No answer means no exemption. That covers a missing ADR file, an empty key, and no `traits:` block.
+- No ruling means no exemption. That covers a missing ADR file, an empty key, and no `traits:` block.
 - No new trait, no ADR-0009 revision bump, no new dependency.
 - Line coverage stays ≥ 90 (`npm test`).
 - Commit scope `checks`, branch renamed to `feat/tool-branches-from-traits` before the first push.
@@ -25,7 +25,7 @@ maps them to prefixes, and that map replaces the hard-coded `TOOL_BRANCHES`.
 1. A Dependabot branch in a repository without ADR-0018 fails, and stderr names `ADR-0018` and `dependencies.updater`. Test: `ADR-0009: tool branch refused without its ADR`.
 2. `updater: renovate` does not exempt `dependabot/…`, and vice versa. Test: `ADR-0009: tool branch refused when another tool is ruled`.
 3. A rejected ADR-0018 (no `traits:`) behaves like a missing one. Test: `ADR-0009: rejected ADR exempts nothing`.
-4. Two ADR-0018 files fail the check with `several files match`, instead of being treated as no answer. Test: `ADR-0009: duplicate tool ADR fails`.
+4. Two ADR-0018 files fail the check with `several files match`, instead of being treated as no ruling. Test: `ADR-0009: duplicate tool ADR fails`.
 5. The prefix still needs its separator: `dependabot-tweaks` fails even with `updater: dependabot`. This is covered by updating the existing test `tool prefix needs its separator`.
 
 ---
@@ -97,14 +97,14 @@ In `branching()`, exempt when `name.startsWith(prefix)`, and log
 form check fails and the name starts with a known tool prefix that was not
 exempted, append ` (not exempt: <ADR> <group>.<key> is not <tool>)` to the
 existing error. Update the comment above the table: the list follows from
-ADR-0012 and ADR-0018, and an unanswered ADR exempts nothing.
+ADR-0012 and ADR-0018, and an unruled ADR exempts nothing.
 
 - [ ] **Step 4: Update the ADR-0009 bullet**
 
 In `adr/ADR-0009-branching.md`, replace the tool-branch bullet with this one: a branch
 opened by the release tool ruled in ADR-0012 (`release-please--`,
 `releaser-pleaser--`) or the updater ruled in ADR-0018 (`dependabot/`,
-`renovate/`) passes. One that no ruled answer names must follow the prefixes.
+`renovate/`) passes. One that no ruling names must follow the prefixes.
 Leave `docs/adr/trivoallan/ADR-0009-branching.md` unchanged: it has no such
 bullet (checked: only its `tritri/` lines mention tools).
 

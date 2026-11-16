@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -204,7 +205,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -352,7 +353,7 @@ extra step proves nothing the merge does not already prove.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0009](ADR-0009-branching.md): one change, one branch, one pull request.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the required checks a merge waits for.
@@ -367,12 +368,12 @@ extra step proves nothing the merge does not already prove.
 | `review.by` | where the review a person does happens | `maintainer` (the maintainer's merge), `peer` (another account's approval of the latest push), `agent` (no person) |
 | `review.approvals` | the approvals the default branch's ruleset requires | `0` with `maintainer` and `agent`; `1` or more with `peer` |
 
-**An empty key is not an answer**: both are required. The values are
+**An empty key is not a value**: both are required. The values are
 written in this file and nowhere else; whoever needs them links here. See
 ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
-- Revision 2: `review.merge_by` is replaced by `review.by` and `review.approvals`, which also take over ADR-0011's `forge.review`. The agent never approves; with `peer` it may merge once GitHub accepts it. Re-answer both keys and delete `review.merge_by`: `forge.review: author` with `merge_by: person` becomes `maintainer` with `approvals: 0`; `forge.review: peer` becomes `peer` with the approvals your ruleset requires, at least `1`; `merge_by: agent` becomes `agent` with `approvals: 0`. Add the `Bash(gh pr review:*)` deny.
-- Revision 3: the denies are required on each host of ADR-0017's `agent.hosts`, and the Decision shows the opencode rules. The keys are unchanged: nothing to re-answer; a repository whose `agent.hosts` holds `opencode` adds the denies to `opencode.json`.
+- Revision 2: `review.merge_by` is replaced by `review.by` and `review.approvals`, which also take over ADR-0011's `forge.review`. The agent never approves; with `peer` it may merge once GitHub accepts it. Rule on both keys again and delete `review.merge_by`: `forge.review: author` with `merge_by: person` becomes `maintainer` with `approvals: 0`; `forge.review: peer` becomes `peer` with the approvals your ruleset requires, at least `1`; `merge_by: agent` becomes `agent` with `approvals: 0`. Add the `Bash(gh pr review:*)` deny.
+- Revision 3: the denies are required on each host of ADR-0017's `agent.hosts`, and the Decision shows the opencode rules. The keys are unchanged: nothing to rule on again; a repository whose `agent.hosts` holds `opencode` adds the denies to `opencode.json`.

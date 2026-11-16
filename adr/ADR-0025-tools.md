@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -65,7 +66,7 @@ network, and it fetches others.
 | --- | --- | --- |
 | `tools.manager` | `script` with one tool; `mise` or `aqua` with several | one pinned script is a few lines anyone can read, and a manager is one more binary to pin for a single tool. With several, a manager keeps every version and checksum in one committed file, where a script grows a download and a checksum line per tool and per platform |
 
-`none` is an answer only when no accepted ADR names such a tool.
+`none` is a valid value only when no accepted ADR names such a tool.
 
 **What ontrack-engineering fixes, whatever you rule:**
 
@@ -115,14 +116,14 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write what keeps the
    pins current (rule 4), and the reason for your decision wherever you
    depart from the recommendation.
 
 **The `check:` line stays.** Once this ADR is `accepted`, `ontrack check`
-runs it from your repository's root. It lists the tools your answers name
+runs it from your repository's root. It lists the tools your rulings name
 outside the package manager: the value of `secrets.guard`
 ([ADR-0015](ADR-0015-secrets.md)) and of `forge.audit`
 ([ADR-0011](ADR-0011-forge-and-ci.md)), when those ADRs are accepted and not
@@ -230,19 +231,19 @@ asks. Rejected.
 ### `none` while a tool is named
 
 Nothing to maintain. Each place installs the tool its own way, which is
-the situation this ADR was written to end. `none` stays an answer for a
+the situation this ADR was written to end. `none` stays a value for a
 repository where no accepted ADR names such a tool.
 
 ### A revision of ADR-0011 or ADR-0015
 
-ADR-0011 is about the runner and ADR-0015 about one tool. The question
+ADR-0011 is about the runner and ADR-0015 about one tool. The convention
 covers the workstation and the agent session too, and every tool. A
 revision would also have asked every repository to rule again on a
-question it had already answered.
+convention it had already ruled on.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the pinning rule for actions and images.
 - [ADR-0015](ADR-0015-secrets.md) and [ADR-0019](ADR-0019-vulnerabilities.md): the tools they name.
@@ -261,6 +262,6 @@ question it had already answered.
 | --- | --- | --- |
 | `tools.manager` | how tools outside the package manager are installed and pinned | `mise`, `aqua`, `script`, `none` |
 
-**An empty key is not an answer.** The value is written in this file and
+**An empty key is not a value.** The value is written in this file and
 nowhere else; whoever needs it links here. See ADR-0001 for the check
 command.

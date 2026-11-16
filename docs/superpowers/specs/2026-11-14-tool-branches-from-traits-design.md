@@ -29,11 +29,11 @@ not need a local workaround.
   them would go stale.
 - No exemption for the Claude Code app's session branches (`tritri/…`).
   AGENTS.md keeps asking for those to be renamed.
-- No revision bump for ADR-0009: the question stays the same.
+- No revision bump for ADR-0009: the convention stays the same.
 
 ## Constraints
 
-- **No answer means no exemption** (approach A, chosen). This covers an
+- **No ruling means no exemption** (approach A, chosen). This covers an
   ADR-0012 or ADR-0018 that is missing from `docs/adr/*/`, still `proposed`
   with an empty key, or `rejected` with no `traits:`. In all these cases the
   tool's branches must match `branching.prefixes`.
@@ -45,10 +45,10 @@ not need a local workaround.
 
 ## Approaches
 
-- **A. Derive from traits, nothing when unanswered** (chosen). The rule
+- **A. Derive from traits, nothing when unruled** (chosen). The rule
   follows the repository's ruling strictly, and a missing ruling surfaces as
   a blocked pull request with an actionable message.
-- **B. Derive from traits, but fall back to the full list when unanswered**
+- **B. Derive from traits, but fall back to the full list when unruled**
   (rejected). Nothing breaks before ruling, but it keeps exempting tools
   nobody chose, which is the defect being fixed.
 
@@ -63,10 +63,10 @@ not need a local workaround.
   the bullet list.
 - Tests in `checks/governance-check.test.ts`: exempted when the trait
   matches, refused when it differs, refused when the ADR is missing or
-  unanswered.
+  unruled.
 
 ## Left to the builder
 
 - Exact wording of the log and error lines.
 - Whether a `findAdr` "several files match" error fails the check or counts
-  as no answer. Builder's call: let it fail, since it is a broken setup.
+  as no ruling. Builder's call: let it fail, since it is a broken setup.

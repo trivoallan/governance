@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -231,7 +232,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -332,7 +333,7 @@ copy, and the repository carries the content of every skill it uses.
 ### A trait per ADR listing its skills
 
 Puts the skill next to the decision, but copies what
-`.claude/settings.json` already holds, and couples every ADR's answer to
+`.claude/settings.json` already holds, and couples every ADR's ruling to
 plugin names that change.
 
 ### No policy
@@ -343,8 +344,8 @@ sessions are guaranteed the same tools.
 ## References
 
 - Suggested skills: `plugin-structure` and `skill-development` from `plugin-dev@claude-plugins-official`; `check` from `skill-quality@melodic-software`, before vendoring a skill.
-- Original to ontrack-engineering; no surdesrails SDR. The vendoring rule follows the
-  one surdesrails SDR-0013 applies to its Angular skill.
+- Original
+  to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on, and why `Suggested skills` lines change no `revision`.
 - [ADR-0016](ADR-0016-changes.md): skills listed by an OpenSpec schema.
 - Claude Code documentation: [plugins for a team](https://code.claude.com/docs/en/plugins/org.md), [marketplace reference](https://code.claude.com/docs/en/plugins/marketplace-reference.md) and [skills](https://code.claude.com/docs/en/skills.md), read on 2026-11-14.
@@ -362,12 +363,12 @@ not a list, and an unknown host. It reads neither the settings files nor the
 marketplace file: an entry with no `sha` or no exact version passes it, and
 review catches it.
 
-**An empty key is not an answer**: this one is required. The value is
+**An empty key is not a value**: this one is required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
-- Revision 2: `agent.host` (one value) became `agent.hosts`, a list of `claude-code` and `opencode`, with rules for `opencode`. Re-answer: write your former value as a one-item list (`agent.hosts: [claude-code]`), or `agent.hosts: []` for `none`; add `opencode` if contributors use it.
-- Revision 3: `copilot` (GitHub Copilot CLI) joins `agent.hosts`, with its rules. Nothing to re-answer unless contributors use Copilot CLI: then add `copilot`, and the `PreToolUse` hooks ADR-0022 shows.
+- Revision 2: `agent.host` (one value) became `agent.hosts`, a list of `claude-code` and `opencode`, with rules for `opencode`. Rule again: write your former value as a one-item list (`agent.hosts: [claude-code]`), or `agent.hosts: []` for `none`; add `opencode` if contributors use it.
+- Revision 3: `copilot` (GitHub Copilot CLI) joins `agent.hosts`, with its rules. Nothing to rule on again unless contributors use Copilot CLI: then add `copilot`, and the `PreToolUse` hooks ADR-0022 shows.

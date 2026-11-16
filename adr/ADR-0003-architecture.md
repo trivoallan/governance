@@ -18,12 +18,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -34,11 +35,11 @@ invents a structure, and invents a different one each time, because it
 infers from whichever file it has open. Once the value is written, it knows
 where code goes and what may depend on what.
 
-The question comes early because it is expensive to undo: a directory
+The convention comes early because it is expensive to undo: a directory
 layout and dependency boundaries change one module at a time, long after
 anyone stopped thinking about them.
 
-Where the architecture is *documented* is a separate question, asked by
+Where the architecture is *documented* is a separate convention, proposed by
 [ADR-0010](ADR-0010-architecture-documentation.md).
 
 ## Decision
@@ -57,8 +58,8 @@ knows whether it broke something instead of assuming it did not.
 
 **This recommendation does not bind your repository.** It holds for an
 application service of moderate size. Under about 500 lines, or for a
-repository that is not a service, `monolithic` is often the honest answer;
-and if the question has no object here, rule `rejected`.
+repository that is not a service, `monolithic` is often the honest value;
+and if the convention has no object here, rule `rejected`.
 
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
@@ -74,7 +75,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -153,7 +154,6 @@ Shared services, coupled through contracts.
 ## References
 
 - Suggested skills: `architecture` and `system-design` from `engineering@knowledge-work-plugins`.
-- Adapted from surdesrails [SDR-0003](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0003-architecture.md), revision 1 (its `architecture.pattern` key; `architecture.document` is asked by ADR-0010).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 
 **The key.**
@@ -167,6 +167,6 @@ package names or dependency rules: they are decided in your repository and
 written in this ADR's body. The trait carries only what an agent must read
 without interpreting.
 
-**An empty key is not an answer**: this one is required. The value is
+**An empty key is not a value**: this one is required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

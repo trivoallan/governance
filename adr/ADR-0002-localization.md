@@ -23,12 +23,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -40,11 +41,11 @@ or how to write a commit message. It guesses, and guesses differently each
 time. Once the values are written, it reads and applies them without asking
 you again.
 
-The question exists because each medium has different readers.
+The convention exists because each medium has different readers.
 Documentation is read by the people who use and maintain the repository; a
 symbol by anyone who reads the code, including tools; a comment by whoever
 rereads a function in six months; a commit message by whoever walks the
-history in two years. "The same language everywhere" is an answer, but it
+history in two years. "The same language everywhere" is a value, but it
 is one you choose, and `default` is where you say it.
 
 ## Decision
@@ -64,8 +65,7 @@ Removing the key says the same thing, and both forms pass the check.
 **This recommendation does not bind your repository.** It exists so there
 is something to react to instead of a blank page: keep it, amend it or set
 it aside. A team that works in French and writes for itself has good
-reasons to answer `default: french` with `code: english`, which is what
-surdesrails recommends.
+reasons to rule `default: french` with `code: english`.
 
 Everything below disappears when you rule, from this sentence up to the
 Consequences heading, which stays.
@@ -81,7 +81,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -135,7 +135,7 @@ what makes a decision different from an accepted default.
 
 ### Neutral
 
-- Changing the answer later means rewriting documentation, not code: the
+- Changing the ruling later means rewriting documentation, not code: the
   history keeps the old commit language either way.
 
 ## Alternatives Considered
@@ -149,7 +149,7 @@ non-French readers.
 
 ### French prose, English symbols
 
-surdesrails' recommendation: `default: french`, `code: english`. A good fit
+`default: french`, `code: english`. A good fit
 for a French-speaking team; ontrack-engineering does not recommend it because its
 repositories are written for a wider audience, and two languages means one
 more rule to apply.
@@ -162,7 +162,6 @@ override is one more thing to remember.
 
 ## References
 
-- Adapted from surdesrails [SDR-0002](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0002-localization.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 
 **The keys.**
@@ -176,7 +175,7 @@ override is one more thing to remember.
 | `comments` | code comments, if they differ | `french`, `english` |
 
 **Only `default` is required.** The other four are overrides: an empty or
-removed key means "same as `default`", and that is an answer, not an
+removed key means "same as `default`", and that is a value, not an
 oversight. The value is written in this file and nowhere else; whoever needs
 it links here.
 

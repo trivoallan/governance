@@ -389,7 +389,7 @@ function wiring(number: string, entries: Entry[]): Check {
 
 // Traits that name a tool outside the package manager (ADR-0025). The value is the
 // binary, `none` names nothing; `known` are the values this package's checks run.
-// Not a trait: the list follows from those ADRs' answers, as TOOLS below.
+// Not a trait: the list follows from those ADRs' rulings, as TOOLS below.
 const PINNED: [adr: string, group: string, key: string, known: string[]][] = [
   ['ADR-0015', 'secrets', 'guard', ['gitleaks']],
   ['ADR-0011', 'forge', 'audit', ['zizmor']],
@@ -415,7 +415,7 @@ function runTool(root: string, name: string, args: string[], trait: string): num
   const pinned = PINNED.some(([, , , known]) => known.includes(name));
   let bin = name;
   let where = 'on PATH';
-  if (pinned && toolAnswer(root, 'ADR-0025', 'tools', 'manager').value === 'mise') {
+  if (pinned && toolRuling(root, 'ADR-0025', 'tools', 'manager').value === 'mise') {
     const m = miseWhich(root, name);
     if (m.noMise) throw new CheckError(`${trait}, but mise is not installed (${ref('ADR-0025')} tools.manager: mise); install mise, then ${HINT}`);
     if (!m.path) throw new CheckError(`${trait}, but mise does not provide ${name} (${ref('ADR-0025')} tools.manager: mise): ${m.error}\nPin ${name} in mise.toml and mise.lock, then ${HINT}`);
@@ -439,16 +439,16 @@ const Branching = z.object({ prefixes: list().min(1) });
 
 // Branches opened by the release and update tools (ADR-0012, ADR-0018): their names are
 // the tool's, not the repository's. Not a trait: the list follows from those ADRs'
-// answers, and an unanswered ADR (missing, empty key, other tool) exempts nothing.
+// rulings, and an unruled ADR (missing, empty key, other tool) exempts nothing.
 const TOOLS: [adr: string, group: string, key: string, prefixes: Record<string, string>][] = [
   ['ADR-0012', 'delivery', 'release_tool', { 'release-please': 'release-please--', 'releaser-pleaser': 'releaser-pleaser--' }],
   ['ADR-0018', 'dependencies', 'updater', { dependabot: 'dependabot/', renovate: 'renovate/' }],
 ];
 
-// What ADR `adr` answers for `key`, counted only when its copy is accepted and no
+// What ADR `adr` rules for `key`, counted only when its copy is accepted and no
 // accepted ADR supersedes it; `why` says otherwise. `found` is false when no file
 // matches (several files still throw).
-function toolAnswer(root: string, adr: string, group: string, key: string): { found: boolean; value?: unknown; why?: string } {
+function toolRuling(root: string, adr: string, group: string, key: string): { found: boolean; value?: unknown; why?: string } {
   let file: string;
   try {
     file = findAdr(root, adr);
@@ -485,7 +485,7 @@ function branching(root: string, file: string, { branch }: Options): number {
   if (row) {
     const [adr, group, key, toolPrefixes] = row;
     const [tool, prefix] = Object.entries(toolPrefixes).find(([, p]) => name.startsWith(p)) ?? [];
-    const { found, value, why } = toolAnswer(root, adr, group, key);
+    const { found, value, why } = toolRuling(root, adr, group, key);
     if (typeof value === 'string' && Object.hasOwn(toolPrefixes, value) && toolPrefixes[value] === prefix) {
       console.log(`ADR-0009: ${name} is a tool branch (${ref(adr)} ${group}.${key}: ${value}), nothing to check`);
       return 0;
@@ -579,7 +579,7 @@ function unarchived(root: string): boolean {
 
 // ADR-0017: the agent hosts a repository works with. Each host names the settings
 // files it commits and how ADR-0022 finds a command denied in them.
-type Verdict = { ok: boolean; detail: string };
+type Outcome = { ok: boolean; detail: string };
 const SETTINGS = '.claude/settings.json';
 const OPENCODE = ['opencode.json', '.opencode/opencode.json'];
 
@@ -590,7 +590,7 @@ function wildcard(input: string, pattern: string): boolean {
   return new RegExp(`^${re}$`, 's').test(input);
 }
 
-function claudeDeny(root: string, files: string[], commands: string[]): Verdict[] {
+function claudeDeny(root: string, files: string[], commands: string[]): Outcome[] {
   // Tracked only, as wiring rows: a deny never committed protects one machine.
   if (!files.includes(SETTINGS)) return [{ ok: false, detail: `${SETTINGS} is not tracked` }];
   let deny: unknown;
@@ -621,7 +621,7 @@ function coversBash(matcher: unknown): boolean {
 }
 
 // Copilot CLI reads .claude/settings.json but ignores `permissions`: a PreToolUse hook is its guard.
-function copilotHook(root: string, files: string[], commands: string[]): Verdict[] {
+function copilotHook(root: string, files: string[], commands: string[]): Outcome[] {
   if (!files.includes(SETTINGS)) return [{ ok: false, detail: `${SETTINGS} is not tracked` }];
   let pre: unknown;
   try {
@@ -644,7 +644,7 @@ function copilotHook(root: string, files: string[], commands: string[]): Verdict
 // last rule matching the action and the command decides. Replayed on the command
 // alone and with an argument.
 // ponytail: two fixed probes; a deny the probes do not exercise can slip through.
-function opencodeDeny(root: string, files: string[], commands: string[]): Verdict[] {
+function opencodeDeny(root: string, files: string[], commands: string[]): Outcome[] {
   const fail = (detail: string) => [{ ok: false, detail }];
   const jsonc = OPENCODE.map((f) => `${f}c`).find((f) => files.includes(f));
   if (jsonc) return fail(`${jsonc} is tracked, but the check reads only ${jsonc.slice(0, -1)}; move its rules there`);
@@ -723,7 +723,7 @@ const Review = z.object({
 function review(root: string, file: string): number {
   const text = readFileSync(file, 'utf8');
   if (readTraits(text, 'review')?.merge_by !== undefined) {
-    throw new CheckError(`ADR-0022: review.merge_by was replaced by review.by and review.approvals in revision 2; answer them and remove review.merge_by from ${file}`);
+    throw new CheckError(`ADR-0022: review.merge_by was replaced by review.by and review.approvals in revision 2; rule on them and remove review.merge_by from ${file}`);
   }
   const { by, approvals } = traitsOf(Review, 'ADR-0022', 'review', file, text);
   const name = `ADR-0022: review.by is ${by}`;
@@ -740,18 +740,18 @@ function review(root: string, file: string): number {
 }
 
 function denies(root: string, name: string, commands: string[]): boolean {
-  const old = toolAnswer(root, 'ADR-0017', 'agent', 'host');
+  const old = toolRuling(root, 'ADR-0017', 'agent', 'host');
   if (old.value !== undefined) {
     console.error(`${name}, but ${renamed(old.value)}`);
     return false;
   }
-  const answer = toolAnswer(root, 'ADR-0017', 'agent', 'hosts');
-  const v = answer.value;
+  const ruling = toolRuling(root, 'ADR-0017', 'agent', 'hosts');
+  const v = ruling.value;
   // ponytail: a scalar counts as one host, so a malformed list checks more, never less; ADR-0017's check refuses it.
   const hosts = (Array.isArray(v) ? v : v ? [v] : []).map(String);
   if (!hosts.length) {
     const adr17 = ref('ADR-0017');
-    const why = answer.why ?? (answer.found ? `${adr17} agent.hosts is empty` : `${adr17} is not in this repository`);
+    const why = ruling.why ?? (ruling.found ? `${adr17} agent.hosts is empty` : `${adr17} is not in this repository`);
     console.log(`${name}, but ${why}, no deny to check`);
     return true;
   }
@@ -762,10 +762,10 @@ function denies(root: string, name: string, commands: string[]): boolean {
       console.log(`${name}, ${host} is not a host ontrack-engineering knows, no deny to check`);
       continue;
     }
-    for (const verdict of HOSTS[host as Host].deny(root, files, commands)) {
-      if (verdict.ok) console.log(`${name}, ${verdict.detail}`);
+    for (const outcome of HOSTS[host as Host].deny(root, files, commands)) {
+      if (outcome.ok) console.log(`${name}, ${outcome.detail}`);
       else {
-        console.error(`${name}, but ${verdict.detail}`);
+        console.error(`${name}, but ${outcome.detail}`);
         ok = false;
       }
     }
@@ -774,7 +774,7 @@ function denies(root: string, name: string, commands: string[]): boolean {
 }
 
 // The pull_request rule GitHub applies to the default branch, read in CI only:
-// locally, whether gh is signed in would decide the verdict.
+// locally, whether gh is signed in would decide the result.
 type PullRequestRule = { required_approving_review_count?: number; dismiss_stale_reviews_on_push?: boolean; require_last_push_approval?: boolean };
 
 function ruleset(root: string, name: string, by: string, approvals: number): boolean {
@@ -881,9 +881,9 @@ const ForgeAudit = z.object({ audit: one() });
 
 function forge(root: string, file: string, opts: Options): number {
   let failed = forgeGate(root, file, opts) !== 0;
-  // Revision 4 moved the key to ADR-0022; a leftover still reads as an answer to an agent.
+  // Revision 4 moved the key to ADR-0022; a leftover still reads as a ruling to an agent.
   if (readTraits(readFileSync(file, 'utf8'), 'forge')?.review !== undefined) {
-    console.error('ADR-0011: forge.review moved to ADR-0022 review.by; answer it there and remove it here');
+    console.error('ADR-0011: forge.review moved to ADR-0022 review.by; rule on it there and remove it here');
     failed = true;
   }
   let audit: string;
@@ -905,7 +905,7 @@ function forge(root: string, file: string, opts: Options): number {
     return failed ? 1 : 0;
   }
   runTool(root, 'zizmor', ['--version'], name);
-  // --no-config: a repository's zizmor.yml cannot loosen the verdict; inline ignores still apply.
+  // --no-config: a repository's zizmor.yml cannot loosen the result; inline ignores still apply.
   if (runTool(root, 'zizmor', ['--offline', '--no-config', '--no-progress', ...workflows], name) !== 0) {
     console.error(`${name}, and zizmor reported findings no inline ignore covers`);
     failed = true;
@@ -913,7 +913,7 @@ function forge(root: string, file: string, opts: Options): number {
   return failed ? 1 : 0;
 }
 
-// ADR-0025: the tools the repository's answers name, and whether its manager pins them.
+// ADR-0025: the tools the repository's rulings name, and whether its manager pins them.
 const Tools = z.object({ manager: z.enum(['mise', 'aqua', 'script', 'none']) });
 
 function tools(root: string, file: string): number {
@@ -924,7 +924,7 @@ function tools(root: string, file: string): number {
   const named: string[] = [];
   for (const [adr, group, key, known] of PINNED) {
     const at = `${ref(adr)} ${group}.${key}`;
-    const a = toolAnswer(root, adr, group, key);
+    const a = toolRuling(root, adr, group, key);
     if (!a.found || a.why) {
       console.log(`  ${at}: ${a.why ?? `no ${ref(adr)} in this repository`}, names no tool here`);
       continue;
@@ -951,7 +951,7 @@ function tools(root: string, file: string): number {
   }
   if ((manager === 'script' || manager === 'aqua') && named.length) console.log(`ADR-0025: with ${manager}, the pins of the tools above are not verified`);
   if (manager === 'none' && named.length) {
-    console.error(`${name}, but ${named.join(', ')} ${named.length > 1 ? 'are' : 'is'} named: none is an answer only when no accepted ADR names such a tool`);
+    console.error(`${name}, but ${named.join(', ')} ${named.length > 1 ? 'are' : 'is'} named: none is a valid value only when no accepted ADR names such a tool`);
     failed = true;
   }
   return failed ? 1 : 0;

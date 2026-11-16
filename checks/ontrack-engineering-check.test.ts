@@ -1447,7 +1447,7 @@ test('ADR-0011: leftover forge.review', () => {
   const adrs = { 'ADR-0011-forge-and-ci.md': '  forge:\n    gate: blocking\n    audit: none\n    review: author' };
   const r = runWith(wired({ adrs, files: { '.github/workflows/ci.yml': pinned } }), ['ADR-0011'], { PATH: barePath });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /^ADR-0011: forge\.review moved to ADR-0022 review\.by; answer it there and remove it here$/m);
+  assert.match(r.stderr, /^ADR-0011: forge\.review moved to ADR-0022 review\.by; rule on it there and remove it here$/m);
   assert.match(r.stdout, /forge\.audit is none, nothing to check/);
 });
 
@@ -1559,32 +1559,32 @@ test('ADR-0024: fail_on not set', () => {
   assert.match(r.stderr, /code_scanning\.fail_on is not set/);
 });
 
-// --- Answers read from another ADR: accepted and not superseded (adr-checks)
+// --- Rulings read from another ADR: accepted and not superseded (adr-checks)
 
 const adrText = (adr: string, status: string, traits: string, extra = '') =>
   `---\nadr: ${adr}\nstatus: ${status}\n${extra}traits:\n${traits}\n---\n\n# ADR\n`;
 
-test('answer: a proposed copy does not count', () => {
+test('ruling: a proposed copy does not count', () => {
   const files = { 'docs/adr/trivoallan/ADR-0012-delivery.md': adrText('ADR-0012', 'proposed', '  delivery:\n    release_tool: release-please') };
   const r = runWith(branched({ adrs: branchingAdr('[feat]'), files }), ['ADR-0009', '--branch', 'release-please--branches--main']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /not exempt: ADR-0012 is proposed, not accepted/);
 });
 
-test('answer: a local ADR supersedes the package\'s', () => {
+test('ruling: a local ADR supersedes the package\'s', () => {
   const files = { 'docs/adr/local/ADR-0003-updates.md': adrText('ADR-0003', 'accepted', '  updates:\n    bot: none', 'supersedes: [trivoallan/ADR-0018-dependencies]\n') };
   const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /not exempt: ADR-0018 is superseded by local\/ADR-0003-updates/);
 });
 
-test('answer: a block list, by adr value, from the same directory', () => {
+test('ruling: a block list, by adr value, from the same directory', () => {
   const files = { 'docs/adr/trivoallan/ADR-0026-x.md': adrText('ADR-0026', 'accepted', '  x:\n    y: z', 'supersedes:\n  - ADR-0018\n') };
   const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.match(r.stderr, /superseded by trivoallan\/ADR-0026-x/);
 });
 
-test('answer: a superseding ADR that is not accepted supersedes nothing', () => {
+test('ruling: a superseding ADR that is not accepted supersedes nothing', () => {
   const files = { 'docs/adr/local/ADR-0003-updates.md': adrText('ADR-0003', 'proposed', '  updates:\n    bot: none', 'supersedes: [trivoallan/ADR-0018-dependencies]\n') };
   const r = runWith(branched({ adrs: { ...branchingAdr('[feat]'), ...deps('dependabot') }, files }), ['ADR-0009', '--branch', 'dependabot/x']);
   assert.equal(r.status, 0, r.stderr);
@@ -1696,7 +1696,7 @@ test('ADR-0025: script lists without verifying', () => {
 test('ADR-0025: none while a tool is named', () => {
   const r = runWith(wired({ adrs: { ...toolsAdr('none'), ...secretsAdr('gitleaks') } }), ['ADR-0025'], { PATH: barePath });
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /none is an answer only when no accepted ADR names such a tool/);
+  assert.match(r.stderr, /none is a valid value only when no accepted ADR names such a tool/);
 });
 
 test('ADR-0025: none with no tool named passes', () => {

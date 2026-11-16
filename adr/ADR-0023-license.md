@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -33,7 +34,7 @@ Proposed
 **A repository with no licence may not be reused.** Without one, copyright
 law applies by default: whoever reads the code on GitHub may view and fork
 it there, but has no right to copy, change or distribute it. This holds
-whether or not the repository publishes a package, so the question does not
+whether or not the repository publishes a package, so the convention does not
 wait for [ADR-0012](ADR-0012-delivery.md)'s `delivery.target`.
 
 While this key is empty, an agent creating `package.json` or
@@ -61,7 +62,7 @@ in source files.
 | --- | --- | --- |
 | `license.spdx` | `MIT` | short, read the same way everywhere, and the most common licence on npm: whoever installs the package knows what it allows. `Apache-2.0` when an explicit patent grant matters to those who use the code |
 
-Any SPDX expression is an answer. Use `UNLICENSED` for a private
+Any SPDX expression is a value. Use `UNLICENSED` for a private
 repository that nobody outside may reuse.
 
 **Why ontrack-engineering itself is under MIT-0, not MIT.** ontrack-engineering's ADRs are
@@ -97,7 +98,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -185,7 +186,7 @@ users.
 
 ### `UNLICENSED`
 
-Nobody may reuse the code. It is the right answer for a private repository,
+Nobody may reuse the code. It is the right value for a private repository,
 and the wrong one for a public repository that expects contributions or
 reuse.
 
@@ -194,11 +195,11 @@ reuse.
 A licence accompanies a package, but it also applies to a public repository
 that publishes nothing. Putting it in ADR-0012 would tie it to
 `delivery.target`, and would make every repository that ruled ADR-0012
-re-answer it for a question that is not ADR-0012's.
+rule on it again for a convention that is not ADR-0012's.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0012](ADR-0012-delivery.md): what accompanies a version.
 - [ADR-0019](ADR-0019-vulnerabilities.md): leaves dependency licence compliance out.
@@ -210,6 +211,6 @@ re-answer it for a question that is not ADR-0012's.
 | --- | --- | --- |
 | `license.spdx` | the licence others may use the repository under | an SPDX license expression, or `UNLICENSED` |
 
-**An empty key is not an answer.** The value is written in this file and
+**An empty key is not a value.** The value is written in this file and
 nowhere else; whoever needs it links here. See ADR-0001 for the check
 command.

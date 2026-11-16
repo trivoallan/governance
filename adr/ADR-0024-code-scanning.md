@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -53,8 +54,8 @@ see: the alert never exists.
 
 **A scan of small code finds little.** Measured on ontrack-engineering itself, a
 TypeScript CLI that validates its inputs: CodeQL's 87 default queries
-reported one alert, a false positive in a test helper. The question is
-asked for the repositories where routes, queries and paths do come from
+reported one alert, a false positive in a test helper. The convention is
+proposed for the repositories where routes, queries and paths do come from
 outside.
 
 **Not concerned:** the workflows themselves
@@ -70,8 +71,8 @@ outside.
 | `code_scanning.tool` | `codeql` | free on public repositories, supports both languages [ADR-0004](ADR-0004-languages.md) recommends, and its results carry the severity GitHub's merge protection reads. `semgrep` for a private repository without GitHub Code Security |
 | `code_scanning.fail_on` | `high` | the finding is in code this repository wrote, and the agent that wrote it can fix it in the same change. ADR-0019 stops at `critical` because a dependency's fix waits on someone else's release; this one waits on nobody |
 
-`none` is an answer for `tool`, for a repository with no code that handles
-outside input. Any tool that writes SARIF answers it too.
+`none` is a value for `tool`, for a repository with no code that handles
+outside input. Any tool that writes SARIF is a value too.
 
 **What ontrack-engineering fixes, whatever you rule:**
 
@@ -89,7 +90,7 @@ outside input. Any tool that writes SARIF answers it too.
    - The results go to GitHub code scanning as SARIF, where ADR-0019's
      scanner already sends its own. Where the plan does not allow the
      upload, the SARIF stays a job artifact.
-   - Default setup alone does not answer this ADR: it is a setting no file
+   - Default setup alone does not satisfy this ADR: it is a setting no file
      records, and it runs the version GitHub picks.
 3. **How a finding blocks.** CodeQL blocks through the ruleset rule
    "Require code scanning results", with its security-alerts threshold at
@@ -157,7 +158,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -262,13 +263,13 @@ it is an exclusion nobody decided.
 
 ### A key in ADR-0019
 
-ADR-0019 asks what a release contains. This question is about the code the
+ADR-0019 asks what a release contains. This convention is about the code the
 repository writes. One ADR for both would be the catch-all the supply-chain
 ADRs were split to avoid.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): the gate, the pinning rule, and `forge.audit` for workflows.
 - [ADR-0019](ADR-0019-vulnerabilities.md): the dependency scan, its SARIF upload and its rule 4.
@@ -291,6 +292,6 @@ ADRs were split to avoid.
 | `code_scanning.tool` | what analyses the repository's own code | `codeql`, another SARIF-writing tool, or `none` |
 | `code_scanning.fail_on` | the lowest severity that blocks a merge | `critical`, `high`, `medium`, `low`, `none` |
 
-**An empty key is not an answer.** The value is written in this file and
+**An empty key is not a value.** The value is written in this file and
 nowhere else; whoever needs it links here. See ADR-0001 for the check
 command.

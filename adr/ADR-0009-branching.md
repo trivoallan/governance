@@ -21,12 +21,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -39,7 +40,7 @@ get guessed, badly, and differently each time. Once the three values are
 written, it has nothing left to guess.
 
 The three models below work the same on any forge. What a pipeline runs on
-a branch is a separate question, asked by
+a branch is a separate convention, proposed by
 [ADR-0011](ADR-0011-forge-and-ci.md) (forge and CI).
 
 ## Decision
@@ -81,7 +82,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -124,7 +125,7 @@ runs it from your repository's root, and it reads the keys you ruled:
 - on a branch opened by the release tool ruled in ADR-0012
   (`release-please--`, `releaser-pleaser--`) or the updater ruled in
   ADR-0018 (`dependabot/`, `renovate/`), whose name is the tool's, it has
-  nothing to check either, and passes. A branch that no ruled answer names
+  nothing to check either, and passes. A branch that no ruling names
   must follow the prefixes. Rule ADR-0012 and ADR-0018 with (or before) this
   ADR, or your bots' pull requests fail this check.
 
@@ -178,7 +179,6 @@ continuously.
 ## References
 
 - Suggested skills: `worktree` and `pull-request` from `source-control@melodic-software`; `finishing-a-development-branch` from `superpowers@superpowers-marketplace`.
-- Adapted from surdesrails [SDR-0009](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0009-branching.md), revision 1.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0006](ADR-0006-commits.md): the commit format and its eleven types.
 
@@ -204,6 +204,6 @@ and `branching.merge` have a closed set. `branching.prefixes` is a free
 list: the schema checks that you wrote one, never what it contains.
 Consistency with the eleven types is kept by review.
 
-**All three keys are required**: an empty key is not an answer. The value is
+**All three keys are required**: an empty key is not a value. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

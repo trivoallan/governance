@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -56,7 +57,7 @@ the name of the distribution that provides it: `import yaml` comes from
 what it imports installs whatever took that name.
 
 **Not concerned:** moving a dependency that is already there. That is
-[ADR-0018](ADR-0018-dependencies.md)'s question.
+[ADR-0018](ADR-0018-dependencies.md)'s convention.
 
 ## Decision
 
@@ -101,7 +102,7 @@ What is yours to decide is who admits, and whether install code runs.
 | `admission.approver` | `person` | the agent asks **before** running the install command, because installing already runs code. Asking costs one message; a wrong name can cost every secret the session reaches |
 | `admission.install_scripts` | `ignored` | no package code runs at install time. Each exception is named, and naming one is an admission like a new package |
 
-**What `person` looks like in practice.** The agent's question is the
+**What `person` looks like in practice.** The agent's convention is the
 declaration of rule 3, written before it installs anything:
 
 ```text
@@ -157,7 +158,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -214,16 +215,16 @@ what makes a decision different from an accepted default.
 
 ### Neutral
 
-- Updates to existing dependencies remain ADR-0018's question. What a
+- Updates to existing dependencies remain ADR-0018's convention. What a
   repository publishes, and with which provenance, is not this ADR's
-  question.
+  convention.
 
 ## Alternatives Considered
 
 ### `approver: agent`
 
 The agent installs on its own when the fixed rules hold. A legitimate
-answer with `install_scripts: ignored`, where a wrong name runs nothing
+value with `install_scripts: ignored`, where a wrong name runs nothing
 until imported. Without it, the first install of a squatted name runs that
 name's code.
 
@@ -257,7 +258,7 @@ is recommended until a tool documents the exception.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0004](ADR-0004-languages.md): why npm and Python are the ecosystems tabulated.
 - [ADR-0015](ADR-0015-secrets.md): the active leak that install code exploits.
@@ -277,6 +278,6 @@ reads neither the manifest nor `.npmrc`, `pnpm-workspace.yaml` or
 `pyproject.toml`: `install_scripts: ignored` with `ignore-scripts=true`
 passes it, and review catches it.
 
-**An empty key is not an answer**: both are required. The value is
+**An empty key is not a value**: both are required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

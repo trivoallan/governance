@@ -22,12 +22,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -99,7 +100,7 @@ browser and adds nothing to the build.
 **`public` is the strict end of the scale, and that is the point.** A page
 read more widely than it was written for cannot be unpublished, while a
 page written for the public is never wrong for a smaller audience. For a
-private repository, `team` or `single-user` is a legitimate answer: it is
+private repository, `team` or `single-user` is a legitimate value: it is
 taken, not suffered.
 
 **The audience is a scale, not a switch.** Three steps, from narrowest to
@@ -155,7 +156,7 @@ already shows `docs/` at every tag, and there is nothing to publish.
 
 **Diátaxis quadrants are not a key of this ADR, on purpose.** The quadrants
 a repository holds are **observed** once it has pages, and at adoption it has
-none. Asking would force an invented answer or an empty key the schema
+none. Asking would force an invented value or an empty key the schema
 refuses. The classification still applies, page by page, when each is
 written.
 
@@ -173,7 +174,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -272,7 +273,7 @@ default and renders Mermaid through an official theme (which also needs
 version, which `docs.channels` does not need (see below). Its default build was the
 slowest measured, about seven times Starlight's; with `future.faster` and
 `future.v4` turned on it comes within about 25 % of Starlight. LikeC4 views
-need `likec4 codegen webcomponent` before every build. A sound answer:
+need `likec4 codegen webcomponent` before every build. A sound value:
 turn `future.faster` on if you choose it.
 
 ### MkDocs
@@ -285,7 +286,7 @@ More control over order, and one more file to update with every page.
 
 ### No site
 
-Pages are read on the forge. A tenable answer, frequent for a repository
+Pages are read on the forge. A tenable value, frequent for a repository
 with no outside readers; write `docs.tool: none`.
 
 ### Versioned copies
@@ -306,12 +307,11 @@ its default branch readable.
 
 `docs.channels: release | main | both`. Simpler to read, but a later
 value, such as older majors kept online, would turn it into a list and
-break every answer. The list takes that value without breaking any.
+break every ruling. The list takes that value without breaking any.
 
 ## References
 
 - Suggested skills: `write-for-humans` from `docs-hygiene@melodic-software`.
-- Adapted from surdesrails [SDR-0008](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0008-documentation.md), revision 1 (audience scale reduced to three steps; recommends `public` rather than the team step, and `starlight` rather than `docusaurus`).
 - Build times measured on 2026-11-14, Apple M1 Pro, Node 22, three cold
   builds each (outputs and caches removed), on 302 Markdown pages of which 30
   hold a Mermaid diagram, plus one page with a LikeC4 view. Medians:
@@ -348,17 +348,17 @@ ADR-0010 puts it.
 **What these keys do not cover:** the Diátaxis classification, the prose
 style, the language, the architecture document and the ADRs. **And Diátaxis
 itself is not refused here**: `rejected` means you keep no user
-documentation, whatever ADR-0010 answers, not that you classify it
+documentation, whatever ADR-0010 rules, not that you classify it
 differently.
 
 **`docs.tool`, `docs.root` and `docs.audience` are required, and so is
-`docs.channels` unless `docs.tool` is `none`**: an empty key is not an
-answer. The value is
+`docs.channels` unless `docs.tool` is `none`**: an empty key is not a
+value. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
-- Revision 2: the ADR governs the user documentation only; the architecture document and the ADRs are ADR-0010's, and no path moves with `docs.root` any more. Keys and values are unchanged, but the scope of `docs.root` and `docs.audience` narrowed: check that your answers still hold for the user documentation alone.
-- Revision 3: adds `docs.channels`, the versions of the pages the site publishes. A repository whose `docs.tool` is not `none` must answer it, and its deploy workflow must run on the pushes the answer names; with `docs.tool: none`, there is nothing to answer.
+- Revision 2: the ADR governs the user documentation only; the architecture document and the ADRs are ADR-0010's, and no path moves with `docs.root` any more. Keys and values are unchanged, but the scope of `docs.root` and `docs.audience` narrowed: check that your values still hold for the user documentation alone.
+- Revision 3: adds `docs.channels`, the versions of the pages the site publishes. A repository whose `docs.tool` is not `none` must rule on it, and its deploy workflow must run on the pushes the value names; with `docs.tool: none`, there is nothing to rule on.

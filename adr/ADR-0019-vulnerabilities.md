@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -42,7 +43,7 @@ does one of two things: it ignores the finding to turn the check green, or
 it stops every change until someone looks. And nobody can say, a month
 after a release, which versions of which packages that release contained.
 
-**Two artefacts, one question.** The **SBOM** (software bill of materials)
+**Two artefacts, one convention.** The **SBOM** (software bill of materials)
 is the list of components a release contains, written in a standard format
 when the release is built. The **scan** matches a list of components against
 a vulnerability database. The SBOM answers "what did we ship?"; the scan
@@ -159,7 +160,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -230,7 +231,7 @@ every run unless cached (`cache-db`).
 ### `trivy`
 
 One tool for the SBOM, the scan, images, and infrastructure files. A
-legitimate answer, especially for a repository that also wants its
+legitimate value, especially for a repository that also wants its
 Dockerfiles or Terraform checked. Its cost: a wider tool means a wider
 action to trust, and rule 3 of ADR-0011 (pin by SHA) applies to it as to
 any other.
@@ -268,7 +269,7 @@ then reconstructed from its tag, if the lockfile was complete.
 
 ## References
 
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): `forge.gate`, the `scan` stage, and the rules every workflow obeys.
 - [ADR-0012](ADR-0012-delivery.md): the release job that builds and publishes the SBOM.
@@ -290,6 +291,6 @@ then reconstructed from its tag, if the lockfile was complete.
 **What the check does not see.** The schema refuses an empty key and an
 unknown `sbom` or `fail_on`. It reads neither the workflows nor ADR-0011:
 `fail_on: critical` with `forge.gate: informative` passes it, and review
-catches it. An empty key is not an answer: all three are required. The
+catches it. An empty key is not a value: all three are required. The
 value is written in this file and nowhere else; whoever needs it links
 here. See ADR-0001 for the check command.

@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -64,7 +65,7 @@ repository admin role under
 without proposing an update. They inform, under
 [ADR-0019](ADR-0019-vulnerabilities.md); this ADR is about what keeps the
 repository current. Nor is adding a new dependency: that is
-[ADR-0020](ADR-0020-adding-dependencies.md)'s question.
+[ADR-0020](ADR-0020-adding-dependencies.md)'s convention.
 
 ## Decision
 
@@ -151,7 +152,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -241,7 +242,7 @@ Native automerge per rule (`packageRules` with `matchUpdateTypes`),
 Dockerfile or a Makefile, and a dashboard issue listing every pending
 update. The cost: a third-party GitHub App with write access, or a
 self-hosted runner to maintain. Its multi-forge reach buys nothing here,
-since ADR-0011 fixes GitHub. A legitimate answer when pinning or custom
+since ADR-0011 fixes GitHub. A legitimate value when pinning or custom
 managers matter more than the app.
 
 ### `updater: none`
@@ -262,7 +263,7 @@ pile up first.
 ## References
 
 - Suggested skills: `github-project` from `github-project@netresearch-claude-code-marketplace`, for auto-merge of Dependabot pull requests and the repository settings it needs.
-- Original to ontrack-engineering; no surdesrails SDR asks this question.
+- Original to ontrack-engineering.
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0011](ADR-0011-forge-and-ci.md): `forge.gate`, and the rules every workflow obeys, the automerge one included.
 - [ADR-0009](ADR-0009-branching.md): the merge method `gh pr merge` uses.
@@ -280,6 +281,6 @@ reads neither `.github/dependabot.yml` nor `renovate.json`, nor ADR-0011:
 `automerge: patch` with `forge.gate: informative` passes it, and review
 catches it.
 
-**An empty key is not an answer**: both are required. The value is
+**An empty key is not a value**: both are required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -126,7 +127,7 @@ Adding these as `rules:` in `openspec/config.yaml` instead of forking does
 not work: rules are appended to the instruction they contradict, and the
 agent is left to choose between them.
 
-**Three rules whatever the verdict**, including `proposed` and `rejected`:
+**Three rules whatever the ruling**, including `proposed` and `rejected`:
 
 1. **The value is checked by a command.** `changes.schema` is valid when
    `openspec schema validate <name>` passes in this repository.
@@ -154,7 +155,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -275,8 +276,8 @@ No framework: the intent of a change is written in its pull request. Write
 
 ## References
 
-- Not adapted from surdesrails: no SDR asks this question, although
-  SDR-0014 assumes OpenSpec changes as this one does.
+- Original
+  to ontrack-engineering.
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec): the framework.
 - [openspec-schemas](https://github.com/intent-driven-dev/openspec-schemas):
   `spec-driven-with-adr` and the other schemas named here; read at commit
@@ -302,12 +303,12 @@ tasks as not checked. **`rejected` means no framework
 is decided here**, and the reason says how intent is recorded instead; the
 three rules still apply to any agent that installs a schema.
 
-**Both keys are required**: an empty key is not an answer. The value is
+**Both keys are required**: an empty key is not a value. The value is
 written in this file and nowhere else, `openspec/config.yaml` applies it;
 whoever needs it links here. See ADR-0001 for the check command.
 
-**Revisions.** What changed in the question at each revision, and what
-a repository that already ruled must re-answer.
+**Revisions.** What changed in the convention at each revision, and what
+a repository that already ruled must rule on again.
 
 - Revision 2: a change is also opened on explicit request (in the session, or by a tracker gesture the repository declares), even when no behaviour moves. No key changed: check that your reason still fits the recommendation.
 - Revision 3: a change is archived in the pull request that checks its last task, and the check fails on a complete change left in `openspec/changes/`. No key changed: archive any complete change you left there.

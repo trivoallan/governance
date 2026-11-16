@@ -19,12 +19,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -68,7 +69,7 @@ if confirmed: the line becomes `pending`. An agent without tracker access
 asks a person, and writes `pending` without an answer. Nothing checks that
 the line is present or that the issue exists; review is the only control.
 
-**Four rules for an agent with tracker access**, whatever the verdict,
+**Four rules for an agent with tracker access**, whatever the ruling,
 including `proposed` and `rejected`:
 
 1. **The token lives outside the repository**, in an environment variable or
@@ -102,7 +103,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -167,7 +168,7 @@ A faster tracker with cycles and projects, and one more account and token.
 
 ### `jira`
 
-The enterprise default, which surdesrails requires. Heavier than either for
+The enterprise default. Heavier than either for
 a personal repository.
 
 ### `none`
@@ -179,7 +180,6 @@ themselves.
 ## References
 
 - Suggested skills: `track` from `work-items@melodic-software`, within rule 2 (no tracker write without an explicit request).
-- Adapted from surdesrails [SDR-0014](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0014-work-tracking.md), revision 1 (the tool becomes a trait instead of a requirement; the `proposal.md` line and the four agent rules kept).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0016](ADR-0016-changes.md): where the first artefact of a change lives.
 
@@ -195,6 +195,6 @@ project passes the check. **`rejected` means this repository's work is not
 tracked anywhere**, and the reason says what replaces it; the four rules
 still apply to any agent that has tracker access.
 
-**Both keys are required**: an empty key is not an answer. The value is
+**Both keys are required**: an empty key is not a value. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.

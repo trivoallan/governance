@@ -20,12 +20,13 @@ traits:
 
 Proposed
 
-> **What is this file?** A question ontrack-engineering asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
+> **What is this file?** A convention ontrack-engineering proposes to your
+> repository, with the values it recommends. While it says
+> `status: proposed`, you may edit it freely. `revision:` dates the
+> convention, not the file: you do not fill it, and it only moves when the
+> convention changes. `rejected` is a full ruling: when the convention
+> does not apply here, rule `rejected`, remove the whole `traits:` block,
+> and say what stands in for it.
 > [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
 > mechanics.
 
@@ -61,14 +62,14 @@ from one repository to the next.
 | `commits.tool` | `commitlint` | **if this repository generates its versions from commit messages**: an off-format message then produces a wrong version, and review does not catch it reliably |
 
 **Check that premise first.** If you set versions by hand, the
-recommendation falls, and `none` is just as good an answer. The reason rests
+recommendation falls, and `none` is just as good a value. The reason rests
 on that premise and only holds for repositories it describes.
 
-**For `commits.scopes`, ontrack-engineering has no answer to recommend**, and that is
+**For `commits.scopes`, ontrack-engineering has no value to recommend**, and that is
 information: scopes name **your** areas, and ontrack-engineering does not know them.
 A default list would be a guess dressed as a recommendation. Write one word
 per area you want to be able to filter on, and not one more. **`[]` is a
-full answer**: a single-area repository has nothing to name, and a list
+full value**: a single-area repository has nothing to name, and a list
 invented on adoption ages worse than no list.
 
 Everything below disappears when you rule, from this sentence up to the
@@ -85,7 +86,7 @@ commit.
    rule; `authors:`, the names of the people who decided, without email
    addresses.
 4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
+   for your ruling: what it makes easier, and what it costs.
 5. **Last, delete this block**, from its first sentence up to the
    Consequences heading, which stays. In its place, write the reason for
    your decision wherever you depart from the recommendation, or, if you
@@ -160,7 +161,7 @@ list needs updating when areas change.
 
 ### No scopes
 
-`feat:` with no parentheses. A sound answer for a single-area repository;
+`feat:` with no parentheses. A sound value for a single-area repository;
 write `[]`, not nothing.
 
 ### `commitlint`
@@ -180,7 +181,6 @@ Review keeps the convention. Enough when versions are set by hand.
 ## References
 
 - Suggested skills: `commit` from `source-control@melodic-software`.
-- Adapted from surdesrails [SDR-0006](https://github.com/trivoallan/surdesrails/blob/main/resources/docs/adr/SDR-0006-commits.md), revision 1.
 - [Conventional Commits](https://www.conventionalcommits.org/).
 - [ADR-0001](ADR-0001-record-architecture-decisions.md): how ontrack-engineering ADRs are ruled on.
 - [ADR-0009](ADR-0009-branching.md): with `squash`, the merge message is the one that carries the type.
@@ -195,6 +195,6 @@ Review keeps the convention. Enough when versions are set by hand.
 **What these keys do not cover:** the eleven types and the breaking-change
 syntax. They come from ontrack-engineering and are not declared here.
 
-**An empty key is not an answer**: both are required. `[]` and `none` are
-answers; empty is not. The value is written in this file and nowhere else;
+**An empty key is not a value**: both are required. `[]` and `none` are
+values; empty is not. The value is written in this file and nowhere else;
 whoever needs it links here. See ADR-0001 for the check command.
