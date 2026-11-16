@@ -21,7 +21,7 @@
 ## 4. Specs
 
 - [x] 4.1 Reword in place the prose of `adr-catalog`
-- [ ] 4.2 Once the change is archived, rename in `openspec/specs/` the scenario titles a delta cannot rename ("Shipped unanswered", "Block present on a shipped question", "Shipped question fails", "Consumer reads what to re-answer"), and the three of `adr-catalog` whose content changed ("No service baseline", "Drift is written down", "Same keys as the source")
+- [x] 4.2 Once the change is archived, rename in `openspec/specs/` the scenario titles a delta cannot rename ("Shipped unanswered", "Block present on a shipped question", "Shipped question fails", "Consumer reads what to re-answer"), and the three of `adr-catalog` whose content changed ("No service baseline", "Drift is written down", "Same keys as the source")
 
 ## 5. surdesrails
 
@@ -32,6 +32,6 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Search `adr/`, `checks/`, `README.md` and `openspec/specs/` for "question", "answer" and "verdict": every hit left is an everyday sense
+- [x] 6.1 Search `adr/`, `checks/`, `README.md` and `openspec/specs/` for "question", "answer" and "verdict": every hit left is an everyday sense
 - [x] 6.2 In a repository that imported the track, run `npx ontrack plan` against this branch: every ADR is `unchanged`
 - [ ] 6.3 After ontrack's release is installed here, run `npx ontrack apply`: `AGENTS.md` gets the heading `## Project instructions (ontrack)`

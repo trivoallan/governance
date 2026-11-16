@@ -282,7 +282,7 @@ or `main` or `master` when `origin/HEAD` is not set), the check SHALL print
 that there is nothing to check and exit `0`. When the name starts with the prefix of a tool the repository's ADRs
 rule, the check SHALL print that it is a tool branch with nothing to check and exit `0`.
 A tool is ruled when ADR-0012 `delivery.release_tool` or ADR-0018
-`dependencies.updater` names it, in a copy read as an answer, and its prefix is `release-please--` for
+`dependencies.updater` names it, in a copy read as a ruling, and its prefix is `release-please--` for
 `release-please`, `releaser-pleaser--` for `releaser-pleaser`, `dependabot/`
 for `dependabot` and `renovate/` for `renovate`. An ADR that is missing,
 not accepted, superseded, whose key is empty, or that names another tool, SHALL exempt nothing, and the
@@ -731,14 +731,14 @@ The check SHALL exit non-zero when either key fails, and SHALL report both.
 - **WHEN** `forge.audit` is `zizmor` and zizmor is not on the `PATH`
 - **THEN** the check exits non-zero and says zizmor is not installed
 
-### Requirement: Another ADR read as an answer
+### Requirement: Another ADR read as a ruling
 When a check reads a trait from an ADR other than the one it checks, it
-SHALL count that ADR's answer only when the copy's `status:` is `accepted`
+SHALL count that ADR's ruling only when the copy's `status:` is `accepted`
 and no `accepted` ADR in the repository supersedes it. An ADR supersedes
 another as ontrack reads it: its `supersedes:` key names the other by its
 `adr:` value or its file name, plainly in the same directory, or as
 `<namespace>/<name>` or `local/<name>` from another directory. When the
-answer does not count, the check's message SHALL say whether the ADR is
+ruling does not count, the check's message SHALL say whether the ADR is
 missing, not accepted, or superseded, and name the ADR that supersedes it.
 
 #### Scenario: Proposed copy ignored
@@ -751,7 +751,7 @@ missing, not accepted, or superseded, and name the ADR that supersedes it.
 
 #### Scenario: Superseding ADR not accepted
 - **WHEN** the only ADR naming `trivoallan/ADR-0015-secrets` in `supersedes:` is `proposed`
-- **THEN** `trivoallan/ADR-0015` still counts as an answer
+- **THEN** `trivoallan/ADR-0015` still counts as a ruling
 
 ### Requirement: Namespace in references to another ADR
 When a check's message names an ADR of this package other than the one it
@@ -783,7 +783,7 @@ without failing. When mise is not installed, it SHALL exit non-zero.
 
 With `script` or `aqua`, it SHALL list the tools and print that their pins
 are not verified. With `none`, it SHALL exit non-zero when at least one tool
-is listed, saying that `none` is an answer only when no accepted ADR names
+is listed, saying that `none` is a valid value only when no accepted ADR names
 such a tool, and exit `0` otherwise.
 
 #### Scenario: Every tool pinned
@@ -808,7 +808,7 @@ such a tool, and exit `0` otherwise.
 
 #### Scenario: None while a tool is named
 - **WHEN** `tools.manager` is `none` and ADR-0015 is accepted with `secrets.guard: gitleaks`
-- **THEN** the check exits non-zero and says `none` is an answer only when no accepted ADR names such a tool
+- **THEN** the check exits non-zero and says `none` is a valid value only when no accepted ADR names such a tool
 
 #### Scenario: Manager not set
 - **WHEN** `tools.manager` has no value
@@ -874,7 +874,7 @@ ADR-0022's `review.by` as the key's new place. It SHALL still report
 
 #### Scenario: Leftover key
 - **WHEN** a ruled ADR-0011 holds `forge.review: author`
-- **THEN** the check exits non-zero and prints `ADR-0011: forge.review moved to ADR-0022 review.by; answer it there and remove it here`
+- **THEN** the check exits non-zero and prints `ADR-0011: forge.review moved to ADR-0022 review.by; rule on it there and remove it here`
 
 #### Scenario: Key removed
 - **WHEN** a ruled ADR-0011 holds no `forge.review`
