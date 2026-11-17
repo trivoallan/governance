@@ -1,5 +1,7 @@
 <!-- ontrack:begin -->
-## Project rules (ontrack)
+## Project instructions (ontrack)
+
+When asked to review, rule on or supersede an ADR, run `npx ontrack review [adr]` and follow its output.
 
 ### Record architecture decisions (trivoallan/ADR-0001-record-architecture-decisions)
 
@@ -91,7 +93,6 @@ architecture:
 forge:
   gate: blocking
   audit: zizmor
-  review: author
 ```
 
 ### Delivery (trivoallan/ADR-0012-delivery)
@@ -137,7 +138,7 @@ changes:
 
 ```yaml
 agent:
-  host: claude-code
+  hosts: [claude-code]
 ```
 
 ### Dependencies (trivoallan/ADR-0018-dependencies)
@@ -176,7 +177,8 @@ supply_chain:
 
 ```yaml
 review:
-  merge_by: person
+  by: maintainer
+  approvals: 0
 ```
 
 ### License (trivoallan/ADR-0023-license)
@@ -199,6 +201,13 @@ code_scanning:
 ```yaml
 tools:
   manager: mise
+```
+
+### Agent identity (trivoallan/ADR-0026-agent-identity)
+
+```yaml
+agent:
+  identity: maintainer
 ```
 
 <!-- ontrack:end -->

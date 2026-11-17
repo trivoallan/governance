@@ -16,8 +16,8 @@
 
 ## 3. First release under the new name (the person)
 
-- [ ] 3.1 Declare `release.yml` as trusted publisher of `@trivoallan/ontrack-engineering` on npmjs, publishing the first version by hand if npmjs requires an existing package (design)
-- [ ] 3.2 Merge the release pull request for 0.6.0; verify `npm view @trivoallan/ontrack-engineering version` prints `0.6.0` and `npm audit signatures` passes on an install of it
-- [ ] 3.3 Run `npm deprecate @trivoallan/ontrack-governance "Renamed @trivoallan/ontrack-engineering"`; verify `npm view @trivoallan/ontrack-governance deprecated` prints that message
-- [ ] 3.4 On or after three days after 0.6.0, point the `trivoallan` devDependency at `npm:@trivoallan/ontrack-engineering@^0.6.0`; verify `npm ci` passes and `node_modules/trivoallan/adr/` exists
-- [ ] 3.5 Tell tambouille's maintainer the alias target changed
+- [x] 3.1 Declare `release.yml` as trusted publisher of `@trivoallan/ontrack-engineering` on npmjs, publishing the first version by hand if npmjs requires an existing package (design)
+- [x] 3.2 Merge the release pull request for 0.6.0; verify `npm view @trivoallan/ontrack-engineering version` prints `0.6.0` and `npm audit signatures` passes on an install of it
+- [x] 3.3 Run `npm deprecate @trivoallan/ontrack-governance "Renamed @trivoallan/ontrack-engineering"`; verify `npm view @trivoallan/ontrack-governance deprecated` prints that message
+- [x] 3.4 On or after three days after 0.6.0, point the `trivoallan` devDependency at `npm:@trivoallan/ontrack-engineering@^0.6.0`; verify `npm ci` passes and `node_modules/trivoallan/adr/` exists
+- [x] 3.5 Tell tambouille's maintainer the alias target changed
