@@ -31,7 +31,7 @@ plainly when nothing is checked. The Architecture row SHALL link to arc42,
 C4 and LikeC4. The Agents row SHALL say that ontrack writes the accepted
 rules into a managed block of `AGENTS.md`. After the table, the README
 SHALL state that checks confirm the wiring is present but not that it is
-right, and that a repository may reject any convention that does not fit it.
+right, and that a repository may reject any question that does not fit it.
 
 #### Scenario: A domain with no check
 - **WHEN** no ADR of a row's domain has a check

@@ -34,4 +34,4 @@
 
 - [x] 6.1 Search `adr/`, `checks/`, `README.md` and `openspec/specs/` for "question", "answer" and "verdict": every hit left is an everyday sense
 - [x] 6.2 In a repository that imported the track, run `npx ontrack plan` against this branch: every ADR is `unchanged`
-- [ ] 6.3 After ontrack's release is installed here, run `npx ontrack apply`: `AGENTS.md` gets the heading `## Project instructions (ontrack)`
+- [x] 6.3 After ontrack's release is installed here, run `npx ontrack apply`: `AGENTS.md` gets the heading `## Project instructions (ontrack)`

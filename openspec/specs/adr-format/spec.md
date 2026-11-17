@@ -47,7 +47,7 @@ Its Decision section SHALL state the value ontrack-engineering recommends for ea
 trait with its reasons, and SHALL say when ontrack-engineering has no value to
 recommend.
 
-#### Scenario: Shipped without values
+#### Scenario: Shipped unruled
 - **WHEN** a convention is read straight from ontrack-engineering
 - **THEN** its status is `proposed` and no trait has a value
 

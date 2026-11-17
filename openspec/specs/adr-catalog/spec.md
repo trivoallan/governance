@@ -42,7 +42,7 @@ ontrack-engineering SHALL ship exactly these ADRs:
 - **WHEN** the `ADR-*.md` files in `adr/` are listed once all batches are done
 - **THEN** they are exactly the twenty-six files in the table, with the slugs shown
 
-#### Scenario: No source track named
+#### Scenario: No other track is named
 - **WHEN** `adr/` is searched for the name of the track these ADRs were first adapted from, or for one of its decision numbers
 - **THEN** none is found
 
@@ -95,7 +95,7 @@ these traits, with enum values in English:
 | ADR-0007 | `tests.coverage_target` |
 | ADR-0009 | `branching.model`, `branching.merge`, `branching.prefixes` |
 
-#### Scenario: Keys of ADR-0006
+#### Scenario: Keys of the commits convention
 - **WHEN** the `traits:` block of ADR-0006 is read
 - **THEN** it has the keys `commits.scopes` and `commits.tool`
 
