@@ -3,16 +3,15 @@ adr: ADR-0011
 slug: forge-and-ci
 title: Forge and continuous integration
 status: accepted
-revision: 3
-date: 2026-11-15
+revision: 4
+date: 2026-11-17
 authors: [Tristan Rivoallan]
 supersedes: []
-check: npx --no-install governance-check ADR-0011
+check: npx --no-install ontrack-engineering-check ADR-0011
 traits:
   forge:
     gate: blocking
     audit: zizmor
-    review: author
 ---
 
 # Forge and continuous integration
@@ -59,24 +58,12 @@ model ([ADR-0009](ADR-0009-branching.md)), the delivery
 | --- | --- | --- |
 | `forge.gate` | `blocking` | a check that prevents nothing is not a check, it is a report. Make it real with a ruleset that requires the pipeline's checks on the default branch |
 | `forge.audit` | `zizmor` | it reads workflows for what this ADR's rules forbid: a movable action reference, `pull_request_target`, a template expanded into `run:`, permissions wider than a job needs. actionlint checks that a workflow parses, not that it is safe |
-| `forge.review` | `peer` | a change its author alone accepted was read by nobody else. `author` is tenable when one person alone has write access: there is no peer to ask. `agent` gives that person a second reader |
 
 `none` is how a repository says it has no pipeline at all: keep `traits:`
 and write `none`. `rejected` has one use only, a forge other than GitHub.
 
-`forge.review` says who can accept a change to this repository: with
-`peer`, a person with write access other than the author; with `author`,
-the author's own review is enough; with `agent`, the review of an agent
-that did not write the change is enough. It concerns this repository's own
-changes, not a change it proposes elsewhere. Who merges is another
-question, which [ADR-0022](ADR-0022-review-and-merge.md) asks.
-
-**What `author` leaves, beside each value of `forge.gate`.** With `none`,
-no control at all: no pipeline runs and nobody else reads the change. With
-`blocking`, the pipeline is the control: what it does not test, nothing
-checks. With `informative`, the pipeline reports and the author alone
-decides what to do with a red. `agent` adds one reader to each of these
-and no person: what the agent's review misses, only the gate can catch.
+Who reviews a change to this repository, and who merges it, is
+[ADR-0022](ADR-0022-review-and-merge.md)'s question: `review.by`.
 
 **What governance fixes, whatever you rule.** Five rules apply to every
 workflow job, not only to deployment:
@@ -105,9 +92,9 @@ workflow job, not only to deployment:
    the online audits, with the job's `GITHUB_TOKEN`.
 2. **A finding is silenced only inline**, on its line, with its reason:
    `# zizmor: ignore[template-injection] the title is only echoed`. The
-   agent proposes it and a person merges it, as
-   [ADR-0019](ADR-0019-vulnerabilities.md) rule 4 has for an ignore rule
-   and [ADR-0022](ADR-0022-review-and-merge.md) for any merge. A
+   agent proposes it and a person approves or merges it, as
+   [ADR-0022](ADR-0022-review-and-merge.md)'s `review.by` says and as
+   [ADR-0019](ADR-0019-vulnerabilities.md) rule 4 has for an ignore rule. A
    `zizmor.yml` that loosens or disables an audit is not a way to silence:
    the check does not read it.
 3. **Every action is pinned by hash**, GitHub's own (`actions/*`)
@@ -154,7 +141,7 @@ the manifest, not the policy), a secret is missing (set it, named as
 listed), an image is not found (check it was pushed and matches the pin).
 
 Adopted as recommended. The repository is on GitHub and ships code that
-other repositories run (`governance-check`), so a red pipeline must block
+other repositories run (`ontrack-engineering-check`), so a red pipeline must block
 the merge. The workflows exist, and a ruleset requires `test`, `scan` and `zizmor` on
 `main`.
 
@@ -167,9 +154,9 @@ from the pull request. The `zizmor` job of
 version `mise.toml` pins ([ADR-0025](ADR-0025-tools.md)), and the
 ruleset makes it required.
 
-**Departure: `forge.review: author`, not `peer`.** One person alone has
-write access to this repository, so there is no peer to ask. With
-`forge.gate: blocking`, the pipeline is the control.
+Revision 4, ruled on 2026-11-17: `forge.review` is removed from this file.
+Who reviews is ruled in [ADR-0022](ADR-0022-review-and-merge.md), as
+`review.by`.
 
 ## Consequences
 
@@ -216,24 +203,6 @@ executable code.
 Nothing reads the workflows but review. Tenable when no workflow exists,
 or when a person writes and reads every one of them.
 
-### `forge.review: peer`
-
-Someone other than the author accepts each change. Recommended. It needs
-a second person with write access, and a change waits for them.
-
-### `forge.review: author`
-
-The author's own review is enough. Tenable when one person alone has
-write access. In a team, it removes the one reading a change gets from
-someone who did not write it.
-
-### `forge.review: agent`
-
-An agent that did not write the change reviews it, and its review is
-enough. Tenable when one person alone has write access and wants a second
-reading. No person other than the author reads the change, and an
-agent's review can be wrong with confidence.
-
 ### actionlint only
 
 It catches a workflow that does not parse or a wrong expression type. It
@@ -271,7 +240,6 @@ from here; copy those you keep into your own ADR.
 | --- | --- | --- |
 | `forge.gate` | what a red pipeline prevents | `blocking` (nothing merges on red), `informative` (it reports, review decides), `none` (no pipeline) |
 | `forge.audit` | what reads the workflows for what the rules forbid | `zizmor`, another named tool, or `none` |
-| `forge.review` | who can accept a change to this repository | `peer` (a person with write access other than the author), `author` (the author's own review is enough), `agent` (the review of an agent that did not write the change is enough) |
 
 **Testing a workflow before pushing**, in three steps, cheapest first. Install
 `actionlint` and `act` as standalone binaries from their GitHub releases,
@@ -329,7 +297,7 @@ then check that each hit is bound to the default branch through `on:` and
   elsewhere, environment protections and rulesets.
 - A job that publishes Pages, for example, is a false positive.
 
-**An empty key is not an answer**: all three are required. The value is
+**An empty key is not an answer**: both are required. The value is
 written in this file and nowhere else; whoever needs it links here. See
 ADR-0001 for the check command.
 
@@ -338,3 +306,4 @@ a repository that already ruled must re-answer.
 
 - Revision 2: a new key, `forge.audit` (`zizmor`, another tool or `none`, recommended `zizmor`), three rules for `zizmor`, and an `audit` stage. Answer `forge.audit`; nothing else to re-answer.
 - Revision 3: a new key, `forge.review` (`peer`, `author` or `agent`, recommended `peer`), which says who can accept a change, and what `author` leaves beside each value of `forge.gate`. Answer `forge.review`; nothing else to re-answer.
+- Revision 4: `forge.review` moves to [ADR-0022](ADR-0022-review-and-merge.md) as `review.by`, with what it leaves beside each value of `forge.gate`. Answer `review.by` there, then delete `forge.review` from this file: the check fails while it remains.

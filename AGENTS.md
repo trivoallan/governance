@@ -93,7 +93,6 @@ architecture:
 forge:
   gate: blocking
   audit: zizmor
-  review: author
 ```
 
 ### Delivery (trivoallan/ADR-0012-delivery)
@@ -139,7 +138,7 @@ changes:
 
 ```yaml
 agent:
-  host: claude-code
+  hosts: [claude-code]
 ```
 
 ### Dependencies (trivoallan/ADR-0018-dependencies)
@@ -178,7 +177,8 @@ supply_chain:
 
 ```yaml
 review:
-  merge_by: person
+  by: maintainer
+  approvals: 0
 ```
 
 ### License (trivoallan/ADR-0023-license)
@@ -202,6 +202,10 @@ code_scanning:
 tools:
   manager: mise
 ```
+
+### Not yet decided
+
+- Agent identity (trivoallan/ADR-0026-agent-identity)
 
 <!-- ontrack:end -->
 
