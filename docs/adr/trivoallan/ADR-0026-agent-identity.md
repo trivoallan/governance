@@ -2,30 +2,21 @@
 adr: ADR-0026
 slug: agent-identity
 title: Agent identity
-status: proposed
+status: accepted
 revision: 1
-date:
-authors: []
+date: 2026-11-17
+authors: [Tristan Rivoallan]
 supersedes: []
 traits:
   agent:
-    identity:
+    identity: maintainer
 ---
 
 # Agent identity
 
 ## Status
 
-Proposed
-
-> **What is this file?** A question governance asks your repository, with
-> the answer it recommends. While it says `status: proposed`, you may edit
-> it freely. `revision:` dates the question, not the file: you do not fill
-> it, and it only moves when the question changes. `rejected` is a full
-> answer: when the question does not apply here, rule `rejected`, remove
-> the whole `traits:` block, and say what stands in for it.
-> [ADR-0001](ADR-0001-record-architecture-decisions.md) explains the
-> mechanics.
+Accepted
 
 ## Context
 
@@ -155,80 +146,31 @@ as above, and hand it the agent's token.
 the agent where the maintainer's credentials do not exist, as above, and
 hand it the agent's token.
 
-Everything below disappears when you rule, from this sentence up to the
-Consequences heading, which stays.
-
-**How to rule: five steps, all in this file.** Read all of them before
-doing any, because the last one deletes the other four, and do them in one
-commit.
-
-1. **Write the value of the key** under `traits:` in the frontmatter, or,
-   if you rule `rejected`, **remove the whole `traits:` block**.
-2. **Change `status:`** from `proposed` to `accepted` or `rejected`.
-3. **Fill `date:` and `authors:`**: `date:` as `YYYY-MM-DD`, the day you
-   rule; `authors:`, the names of the people who decided, without email
-   addresses.
-4. **Rewrite the Positive, Negative and Neutral lists under Consequences**
-   for your verdict: what it makes easier, and what it costs.
-5. **Last, delete this block**, from its first sentence up to the
-   Consequences heading, which stays. In its place, write the reason for
-   your decision wherever you depart from the recommendation, or, if you
-   adopt it as is, one line that says so.
-
-The first step is the one people forget: a decision written only in prose
-leaves an agent guessing. This is what the frontmatter looks like once
-filled, and it is the one part of the file an agent reads without
-interpreting it:
-
-```yaml
----
-adr: ADR-0026
-slug: agent-identity
-title: Agent identity
-status: accepted
-revision: 1
-date: 2026-11-15
-authors: [Your Name]
-supersedes: []
-traits:
-  agent:
-    identity: maintainer
----
-```
-
-If you rule `own`, rule ADR-0022 `review.by: peer` with
-`review.approvals: 1` in the same commit.
-
-**There is no check of its own.** The identity and the token's isolation
-live on GitHub and on the maintainer's machine, not in a tracked file.
-ADR-0022's check already reads, in CI, the approvals the ruleset requires;
-it cannot see the bypass list, so the admin role's place in it is not
-verified either.
-
-The Alternatives Considered below were weighed by governance without
-knowing your context. Weighing them against yours is still to do, and it is
-what makes a decision different from an accepted default.
+Adopted as recommended. One person keeps this repository and is its only
+collaborator; the agent works with their `gh` session, and its commits and
+pull requests are recorded under their name. No second identity, token or
+approval is set up. [ADR-0022](ADR-0022-review-and-merge.md) stays ruled
+`review.by: maintainer`, with its denies in `.claude/settings.json`.
 
 ## Consequences
 
 ### Positive
 
-- An agent knows which credentials it is meant to use.
-- With `own`, the history tells the agent's work from the maintainer's.
-- With `own`, GitHub refuses the agent's merge until the maintainer has
-  approved its latest push, whatever the agent host allows.
+- The agent knows which credentials it uses: the maintainer's.
+- Nothing to set up or keep: no second account, no token kept apart, no
+  approval on every pull request.
 
 ### Negative
 
-- `own` costs a second identity, a token kept apart, and an approval on
-  every agent pull request.
-- The bypass lets the maintainer merge the agent's work unapproved, as
-  under `maintainer`.
+- The history does not tell the agent's work from the maintainer's; a
+  `Co-Authored-By` trailer labels a commit and enforces nothing.
+- What holds the agent back from merging is a deny entry in
+  `.claude/settings.json`, not a rule GitHub enforces.
 
 ### Neutral
 
-- With `maintainer`, nothing changes: ADR-0022's `maintainer` ruling, its
-  denies and its ruleset stay the whole rule.
+- ADR-0022's `maintainer` ruling, its denies and its ruleset stay the
+  whole rule.
 
 ## Alternatives Considered
 

@@ -203,9 +203,12 @@ tools:
   manager: mise
 ```
 
-### Not yet decided
+### Agent identity (trivoallan/ADR-0026-agent-identity)
 
-- Agent identity (trivoallan/ADR-0026-agent-identity)
+```yaml
+agent:
+  identity: maintainer
+```
 
 <!-- ontrack:end -->
 
