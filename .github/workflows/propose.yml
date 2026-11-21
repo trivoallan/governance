@@ -24,6 +24,6 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-    uses: trivoallan/ontrack/.github/workflows/propose.yml@e2144ac9aaa6c4fa13e24852e025ccee9c179518 # main, after trivoallan/ontrack#156
+    uses: trivoallan/ontrack/.github/workflows/propose.yml@5f2f16b0ec1ef1c390778de074911d7113b3c455 # main, after trivoallan/ontrack#156
     with:
       frameworks: openspec
