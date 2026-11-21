@@ -18,7 +18,7 @@ jobs:
   apply:
     permissions:
       pull-requests: write
-    uses: trivoallan/ontrack/.github/workflows/apply.yml@ef7a712178ec68f6f1c02db95e120439875a012c # main, after trivoallan/ontrack#165
+    uses: trivoallan/ontrack/.github/workflows/apply.yml@5f2f16b0ec1ef1c390778de074911d7113b3c455 # main, after trivoallan/ontrack#165
     with:
       routine_id: ${{ vars.APPLY_ROUTINE_ID }}
     secrets:
